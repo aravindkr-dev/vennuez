@@ -1,0 +1,458 @@
+{% extends "base.html" %}
+
+{% block title %}My Bookings - Gaming Center Hub{% endblock %}
+
+{% block content %}
+<div class="user-dashboard">
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="row align-items-center">
+            <div class="col">
+                <h1 class="page-title">
+                    <i class="fas fa-user me-3"></i>Welcome, {{ user.username }}!
+                </h1>
+                <p class="page-subtitle">Manage your gaming bookings and preferences</p>
+            </div>
+            <div class="col-auto">
+                <a href="{{ url_for('available_slots') }}" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>Book New Slot
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Profile Card -->
+    <div class="profile-card mb-4">
+        <div class="card-header">
+            <h4 class="card-title">
+                <i class="fas fa-user-circle me-2"></i>Your Profile
+            </h4>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="profile-info">
+                        <div class="info-item">
+                            <i class="fas fa-user text-primary"></i>
+                            <div class="info-content">
+                                <span class="info-label">Username</span>
+                                <span class="info-value">{{ user.username }}</span>
+                            </div>
+                        </div>
+                        {% if user.email %}
+                        <div class="info-item">
+                            <i class="fas fa-envelope text-success"></i>
+                            <div class="info-content">
+                                <span class="info-label">Email</span>
+                                <span class="info-value">{{ user.email }}</span>
+                            </div>
+                        </div>
+                        {% endif %}
+                        <div class="info-item">
+                            <i class="fas fa-phone text-info"></i>
+                            <div class="info-content">
+                                <span class="info-label">Phone</span>
+                                <span class="info-value">{{ user.phone }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="profile-stats">
+                        <div class="stat-item">
+                            <div class="stat-number">{{ bookings|length }}</div>
+                            <div class="stat-label">Total Bookings</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">{{ bookings|selectattr('start_time', 'gt', now())|list|length }}</div>
+                            <div class="stat-label">Upcoming</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">{{ bookings|selectattr('start_time', 'lt', now())|list|length }}</div>
+                            <div class="stat-label">Completed</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="quick-actions mb-4">
+        <h5 class="actions-title">Quick Actions</h5>
+        <div class="actions-grid">
+            <a href="{{ url_for('available_slots') }}" class="action-item">
+                <div class="action-icon">
+                    <i class="fas fa-gamepad"></i>
+                </div>
+                <div class="action-content">
+                    <h6>Book New Slot</h6>
+                    <p>Find and book gaming slots</p>
+                </div>
+            </a>
+            <a href="#upcoming-bookings" class="action-item">
+                <div class="action-icon">
+                    <i class="fas fa-calendar-check"></i>
+                </div>
+                <div class="action-content">
+                    <h6>Upcoming Bookings</h6>
+                    <p>View your scheduled sessions</p>
+                </div>
+            </a>
+            <a href="#booking-history" class="action-item">
+                <div class="action-icon">
+                    <i class="fas fa-history"></i>
+                </div>
+                <div class="action-content">
+                    <h6>Booking History</h6>
+                    <p>Review past bookings</p>
+                </div>
+            </a>
+            <a href="#profile-settings" class="action-item">
+                <div class="action-icon">
+                    <i class="fas fa-cog"></i>
+                </div>
+                <div class="action-content">
+                    <h6>Settings</h6>
+                    <p>Update your preferences</p>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <!-- Bookings Section -->
+    {% if bookings %}
+        <!-- Upcoming Bookings -->
+        {% set upcoming = bookings|selectattr('start_time', 'gt', now())|list %}
+        {% if upcoming %}
+        <div class="bookings-section" id="upcoming-bookings">
+            <div class="section-header">
+                <h4 class="section-title">
+                    <i class="fas fa-calendar-check me-2"></i>Upcoming Bookings
+                </h4>
+                <span class="section-count">{{ upcoming|length }} booking{{ 's' if upcoming|length != 1 else '' }}</span>
+            </div>
+
+            <div class="bookings-grid">
+                {% for booking in upcoming %}
+                <div class="booking-card upcoming">
+                    <div class="booking-header">
+                        <div class="console-info">
+                            <div class="console-icon">
+                                {% if booking.console.console_type == 'PS5' %}
+                                    <i class="fab fa-playstation"></i>
+                                {% elif 'Xbox' in booking.console.console_type %}
+                                    <i class="fab fa-xbox"></i>
+                                {% elif 'PC' in booking.console.console_type %}
+                                    <i class="fas fa-desktop"></i>
+                                {% else %}
+                                    <i class="fas fa-gamepad"></i>
+                                {% endif %}
+                            </div>
+                            <div class="console-details">
+                                <h6>{{ booking.console.name }}</h6>
+                                <p>{{ booking.console.console_type }}</p>
+                            </div>
+                        </div>
+                        <div class="booking-status upcoming-status">
+                            <i class="fas fa-clock"></i>
+                            <span>Upcoming</span>
+                        </div>
+                    </div>
+
+                    <div class="booking-body">
+                        <div class="booking-details">
+                            <div class="detail-row">
+                                <i class="fas fa-store text-primary"></i>
+                                <span>{{ booking.console.owner.gaming_center_name }}</span>
+                            </div>
+                            <div class="detail-row">
+                                <i class="fas fa-calendar text-warning"></i>
+                                <span>{{ booking.start_time.strftime('%A, %d %B %Y') }}</span>
+                            </div>
+                            <div class="detail-row">
+                                <i class="fas fa-clock text-info"></i>
+                                <span>{{ booking.start_time.strftime('%I:%M %p') }} - {{ booking.end_time.strftime('%I:%M %p') }}</span>
+                            </div>
+                            <div class="detail-row">
+                                <i class="fas fa-tag text-secondary"></i>
+                                <span>{{ booking.booking_id }}</span>
+                            </div>
+                        </div>
+
+                        <div class="payment-status">
+                            <div class="payment-item">
+                                <span class="payment-label">Total:</span>
+                                <span class="payment-amount">₹{{ booking.total_amount }}</span>
+                            </div>
+                            <div class="payment-item">
+                                <span class="payment-label">Paid:</span>
+                                <span class="payment-amount paid">₹{{ booking.advance_paid }}</span>
+                            </div>
+                            <div class="payment-item">
+                                <span class="payment-label">Remaining:</span>
+                                <span class="payment-amount remaining">₹{{ booking.total_amount - booking.advance_paid }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="booking-footer">
+                        <div class="booking-actions">
+                            <a href="{{ url_for('booking_confirmation', booking_id=booking.booking_id) }}"
+                               class="btn btn-primary btn-sm">
+                                <i class="fas fa-eye me-1"></i>View Details
+                            </a>
+                            <a href="tel:{{ booking.console.owner.phone }}" class="btn btn-outline-success btn-sm">
+                                <i class="fas fa-phone me-1"></i>Call Center
+                            </a>
+                        </div>
+                        {% set hours_until = ((booking.start_time - now()).total_seconds() / 3600)|int %}
+                        {% if hours_until > 2 %}
+                        <button class="btn btn-outline-danger btn-sm" onclick="cancelBooking('{{ booking.booking_id }}')">
+                            <i class="fas fa-times me-1"></i>Cancel
+                        </button>
+                        {% else %}
+                        <span class="text-muted small">
+                            <i class="fas fa-exclamation-circle me-1"></i>
+                            Cannot cancel (less than 2 hours)
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Past Bookings -->
+        {% set past = bookings|selectattr('start_time', 'lt', now())|list %}
+        {% if past %}
+        <div class="bookings-section mt-5" id="booking-history">
+            <div class="section-header">
+                <h4 class="section-title">
+                    <i class="fas fa-history me-2"></i>Booking History
+                </h4>
+                <span class="section-count">{{ past|length }} booking{{ 's' if past|length != 1 else '' }}</span>
+            </div>
+
+            <div class="bookings-grid">
+                {% for booking in past %}
+                <div class="booking-card completed">
+                    <div class="booking-header">
+                        <div class="console-info">
+                            <div class="console-icon">
+                                {% if booking.console.console_type == 'PS5' %}
+                                    <i class="fab fa-playstation"></i>
+                                {% elif 'Xbox' in booking.console.console_type %}
+                                    <i class="fab fa-xbox"></i>
+                                {% elif 'PC' in booking.console.console_type %}
+                                    <i class="fas fa-desktop"></i>
+                                {% else %}
+                                    <i class="fas fa-gamepad"></i>
+                                {% endif %}
+                            </div>
+                            <div class="console-details">
+                                <h6>{{ booking.console.name }}</h6>
+                                <p>{{ booking.console.console_type }}</p>
+                            </div>
+                        </div>
+                        <div class="booking-status completed-status">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Completed</span>
+                        </div>
+                    </div>
+
+                    <div class="booking-body">
+                        <div class="booking-details">
+                            <div class="detail-row">
+                                <i class="fas fa-store text-primary"></i>
+                                <span>{{ booking.console.owner.gaming_center_name }}</span>
+                            </div>
+                            <div class="detail-row">
+                                <i class="fas fa-calendar text-secondary"></i>
+                                <span>{{ booking.start_time.strftime('%d %B %Y') }}</span>
+                            </div>
+                            <div class="detail-row">
+                                <i class="fas fa-clock text-secondary"></i>
+                                <span>{{ booking.start_time.strftime('%I:%M %p') }} - {{ booking.end_time.strftime('%I:%M %p') }}</span>
+                            </div>
+                        </div>
+
+                        <div class="rating-section">
+                            <span class="rating-label">Rate your experience:</span>
+                            <div class="rating-stars" data-booking="{{ booking.id }}">
+                                <i class="fas fa-star" data-rating="1"></i>
+                                <i class="fas fa-star" data-rating="2"></i>
+                                <i class="fas fa-star" data-rating="3"></i>
+                                <i class="fas fa-star" data-rating="4"></i>
+                                <i class="fas fa-star" data-rating="5"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="booking-footer">
+                        <div class="booking-actions">
+                            <a href="{{ url_for('booking_confirmation', booking_id=booking.booking_id) }}"
+                               class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-receipt me-1"></i>View Receipt
+                            </a>
+                            <button class="btn btn-outline-success btn-sm" onclick="bookAgain('{{ booking.console.id }}')">
+                                <i class="fas fa-redo me-1"></i>Book Again
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+    {% else %}
+        <!-- Empty State -->
+        <div class="empty-state">
+            <div class="empty-icon">
+                <i class="fas fa-gamepad"></i>
+            </div>
+            <h3 class="empty-title">No bookings yet!</h3>
+            <p class="empty-description">
+                Start your gaming journey by booking your first slot at one of our amazing gaming centers.
+            </p>
+            <a href="{{ url_for('available_slots') }}" class="btn btn-primary btn-lg">
+                <i class="fas fa-gamepad me-2"></i>Find Gaming Slots
+            </a>
+        </div>
+    {% endif %}
+
+    <!-- Profile Settings Section -->
+    <div class="settings-section mt-5" id="profile-settings">
+        <h4 class="section-title">
+            <i class="fas fa-cog me-2"></i>Account Settings
+        </h4>
+
+        <div class="row g-4">
+            <div class="col-md-6">
+                <div class="settings-card">
+                    <h6 class="settings-title">Notification Preferences</h6>
+                    <div class="settings-options">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="sms-notifications" checked>
+                            <label class="form-check-label" for="sms-notifications">
+                                <i class="fas fa-sms me-2"></i>SMS notifications
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="email-notifications">
+                            <label class="form-check-label" for="email-notifications">
+                                <i class="fas fa-envelope me-2"></i>Email notifications
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="whatsapp-notifications" checked>
+                            <label class="form-check-label" for="whatsapp-notifications">
+                                <i class="fab fa-whatsapp me-2"></i>WhatsApp notifications
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="settings-card">
+                    <h6 class="settings-title">Gaming Preferences</h6>
+                    <div class="settings-options">
+                        <div class="preference-item">
+                            <span class="preference-label">Favorite Console Type:</span>
+                            <select class="form-select form-select-sm">
+                                <option>No preference</option>
+                                <option>PlayStation 5</option>
+                                <option>Xbox Series X</option>
+                                <option>Gaming PC</option>
+                                <option>Nintendo Switch</option>
+                            </select>
+                        </div>
+                        <div class="preference-item">
+                            <span class="preference-label">Preferred Time:</span>
+                            <select class="form-select form-select-sm">
+                                <option>No preference</option>
+                                <option>Morning (9 AM - 12 PM)</option>
+                                <option>Afternoon (12 PM - 6 PM)</option>
+                                <option>Evening (6 PM - 10 PM)</option>
+                                <option>Night (10 PM onwards)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function cancelBooking(bookingId) {
+    if (confirm('Are you sure you want to cancel this booking? This action cannot be undone.')) {
+        // Implement booking cancellation
+        alert('Booking cancellation feature will be implemented soon!');
+    }
+}
+
+function bookAgain(consoleId) {
+    window.location.href = `/available_slots?console_id=${consoleId}`;
+}
+
+// Rating system
+document.addEventListener('DOMContentLoaded', function() {
+    const ratingStars = document.querySelectorAll('.rating-stars');
+
+    ratingStars.forEach(ratingContainer => {
+        const stars = ratingContainer.querySelectorAll('.fa-star');
+
+        stars.forEach((star, index) => {
+            star.addEventListener('click', function() {
+                const rating = index + 1;
+                const bookingId = ratingContainer.dataset.booking;
+
+                // Update visual state
+                stars.forEach((s, i) => {
+                    if (i < rating) {
+                        s.classList.add('rated');
+                    } else {
+                        s.classList.remove('rated');
+                    }
+                });
+
+                // Here you would send the rating to the server
+                console.log(`Rating ${rating} for booking ${bookingId}`);
+                alert(`Thank you for rating this experience ${rating} star${rating > 1 ? 's' : ''}!`);
+            });
+
+            star.addEventListener('mouseenter', function() {
+                const rating = index + 1;
+                stars.forEach((s, i) => {
+                    if (i < rating) {
+                        s.classList.add('hover');
+                    } else {
+                        s.classList.remove('hover');
+                    }
+                });
+            });
+        });
+
+        ratingContainer.addEventListener('mouseleave', function() {
+            stars.forEach(s => s.classList.remove('hover'));
+        });
+    });
+
+    // Settings auto-save
+    const settingsInputs = document.querySelectorAll('.settings-section input, .settings-section select');
+    settingsInputs.forEach(input => {
+        input.addEventListener('change', function() {
+            // Auto-save settings
+            console.log('Settings updated:', this.id, this.value || this.checked);
+            // You would implement actual saving here
+        });
+    });
+});
+</script>
+{% endblock %}

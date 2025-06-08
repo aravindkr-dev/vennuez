@@ -1,54 +1,60 @@
+import os
+import logging
 from flask import Flask
-from flask_cors import CORS
-from flask_restful import Api
-from config import Config
-from models import db
-from schemas import ma
-#from resources.bookings import CreateBooking, VerifyBooking , BookingStatus , CancelBooking , ShowSlots
-#from friends_finder import MarkAvailable, FindFriends
-from signup import CreateNewUser , CreateNewTurfOwner
-from login import LoginUser
-#from Admin.user_functions import FindUser , DeleteUsers
+from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.orm import DeclarativeBase
+from werkzeug.middleware.proxy_fix import ProxyFix
 
+# Configure logging
+logging.basicConfig(level=logging.DEBUG)
+
+
+class Base(DeclarativeBase):
+    pass
+
+
+db = SQLAlchemy(model_class=Base)
+
+# Create the app
 app = Flask(__name__)
-app.config.from_object(Config)
+app.secret_key = os.environ.get("SESSION_SECRET", "dev-secret-key-change-in-production")
+app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
+
+# Configure the database
+app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", "sqlite:///gaming_center.db")
+app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+    "pool_recycle": 300,
+    "pool_pre_ping": True,
+}
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
+# Initialize the app with the extension
 db.init_app(app)
-ma.init_app(app)
-CORS(app)
-api = Api(app)
 
+with app.app_context():
+    # Import models to ensure tables are created
+    import models
+    import routes
 
-#Users
-"""api.add_resource(CreateBooking, '/api/bookings')
-api.add_resource(VerifyBooking, '/api/bookings/verify')
-api.add_resource(BookingStatus, '/api/bookings/booking_status')
-api.add_resource(CancelBooking , '/api/bookings/Cancel_booking')"""
+    # Create all tables
+    db.create_all()
 
-"""api.add_resource(MarkAvailable, '/api/mark_available')
-api.add_resource(FindFriends, '/api/find_friends')"""
+    # Add some default data if tables are empty
+    if models.Owner.query.count() == 0:
+        logging.info("Creating default admin user...")
+        from werkzeug.security import generate_password_hash
 
-api.add_resource(CreateNewUser , '/api/create_new_user')
-api.add_resource(LoginUser , '/api/login_user')
+        admin = models.Owner(
+            username="admin",
+            email="admin@gamingcenter.com",
+            password_hash=generate_password_hash("admin123"),
+            phone="9876543210",
+            gaming_center_name="Demo Gaming Center",
+            address="123 Gaming Street, Tech City, TC 12345"
+        )
+        db.session.add(admin)
+        db.session.commit()
+        logging.info("Default admin user created (username: admin, password: admin123)")
 
-
-
-#venue owners
-"""api.add_resource(ShowSlots , '/api/bookings/show_slots')
-
-api.add_resource(ShowSlots , '/api/Create_turf_owner')"""
-api.add_resource(CreateNewTurfOwner , '/api/create_turf_owner')
-
-
-#Admin
-"""api.add_resource(FindUser , '/api/find_user')
-api.add_resource(DeleteUsers , '/api/delete_user')"""
-
-
-@app.route('/')
-def home():
-    return {"status": "Turf Booking REST API Running"}
-
-if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()
-    app.run(debug=True)
+        if __name__ == '__main__':
+            app.run(debug=True, host='0.0.0.0', port=5000)

@@ -1,0 +1,269 @@
+{% extends "base.html" %}
+
+{% block title %}Add Time Slot - Gaming Center Hub{% endblock %}
+
+{% block content %}
+<div class="form-page">
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="row align-items-center">
+            <div class="col">
+                <h1 class="page-title">
+                    <i class="fas fa-clock me-3"></i>Add Time Slot
+                </h1>
+                <p class="page-subtitle">Create a new time slot for {{ console.name }}</p>
+            </div>
+            <div class="col-auto">
+                <a href="{{ url_for('console_details', console_id=console.id) }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Console
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <!-- Console Info Card -->
+            <div class="console-info-card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title">
+                        <i class="fas fa-gamepad me-2"></i>Console Details
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="info-item">
+                                <span class="info-label">Name:</span>
+                                <span class="info-value">{{ console.name }}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Type:</span>
+                                <span class="info-value">{{ console.console_type }}</span>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="info-item">
+                                <span class="info-label">Hourly Rate:</span>
+                                <span class="info-value">₹{{ console.hourly_rate }}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Status:</span>
+                                {% if console.is_available %}
+                                    <span class="status-badge status-available">Available</span>
+                                {% else %}
+                                    <span class="status-badge status-maintenance">Maintenance</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Time Slot Form -->
+            <div class="form-card">
+                <div class="form-header">
+                    <h3 class="form-title">Time Slot Details</h3>
+                    <p class="form-subtitle">Set the date and time for your gaming slot</p>
+                </div>
+
+                <form method="POST" class="slot-form" id="slot-form">
+                    <div class="form-group">
+                        <label for="date" class="form-label">
+                            <i class="fas fa-calendar me-2"></i>Date *
+                        </label>
+                        <input type="date" class="form-control" id="date" name="date" required>
+                        <div class="form-text">Select the date for this gaming slot</div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="start_time" class="form-label">
+                                    <i class="fas fa-clock me-2"></i>Start Time *
+                                </label>
+                                <input type="time" class="form-control" id="start_time" name="start_time" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="end_time" class="form-label">
+                                    <i class="fas fa-clock me-2"></i>End Time *
+                                </label>
+                                <input type="time" class="form-control" id="end_time" name="end_time" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Duration and Amount Display -->
+                    <div class="calculation-display" id="calculation-display" style="display: none;">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <div class="calc-item">
+                                    <div class="calc-label">Duration</div>
+                                    <div class="calc-value" id="duration-display">-</div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="calc-item">
+                                    <div class="calc-label">Hourly Rate</div>
+                                    <div class="calc-value">₹{{ console.hourly_rate }}</div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="calc-item">
+                                    <div class="calc-label">Total Amount</div>
+                                    <div class="calc-value calc-total" id="total-amount-display">₹0</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Time Presets -->
+                    <div class="time-presets">
+                        <label class="form-label">
+                            <i class="fas fa-bolt me-2"></i>Quick Time Presets
+                        </label>
+                        <div class="preset-buttons">
+                            <button type="button" class="btn btn-outline-primary btn-sm" onclick="setTimePreset('10:00', '11:00')">
+                                10:00 AM - 11:00 AM
+                            </button>
+                            <button type="button" class="btn btn-outline-primary btn-sm" onclick="setTimePreset('14:00', '16:00')">
+                                2:00 PM - 4:00 PM
+                            </button>
+                            <button type="button" class="btn btn-outline-primary btn-sm" onclick="setTimePreset('18:00', '20:00')">
+                                6:00 PM - 8:00 PM
+                            </button>
+                            <button type="button" class="btn btn-outline-primary btn-sm" onclick="setTimePreset('20:00', '22:00')">
+                                8:00 PM - 10:00 PM
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Advanced Options -->
+                    <div class="advanced-options">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="allow_advance_booking">
+                            <label class="form-check-label" for="allow_advance_booking">
+                                Allow advance booking (recommended)
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="send_notifications" checked>
+                            <label class="form-check-label" for="send_notifications">
+                                Send notifications for this slot
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-plus me-2"></i>Create Time Slot
+                        </button>
+                        <a href="{{ url_for('console_details', console_id=console.id) }}" class="btn btn-outline-secondary btn-lg">
+                            Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const dateInput = document.getElementById('date');
+    const startTimeInput = document.getElementById('start_time');
+    const endTimeInput = document.getElementById('end_time');
+    const calculationDisplay = document.getElementById('calculation-display');
+    const durationDisplay = document.getElementById('duration-display');
+    const totalAmountDisplay = document.getElementById('total-amount-display');
+    const hourlyRate = {{ console.hourly_rate }};
+
+    // Set minimum date to today
+    const today = new Date().toISOString().split('T')[0];
+    dateInput.min = today;
+    dateInput.value = today;
+
+    // Calculate duration and amount
+    function calculateSlot() {
+        const startTime = startTimeInput.value;
+        const endTime = endTimeInput.value;
+
+        if (startTime && endTime) {
+            const start = new Date(`2000-01-01T${startTime}`);
+            const end = new Date(`2000-01-01T${endTime}`);
+
+            if (end > start) {
+                const durationMs = end - start;
+                const durationHours = durationMs / (1000 * 60 * 60);
+                const totalAmount = durationHours * hourlyRate;
+
+                durationDisplay.textContent = `${durationHours} hour${durationHours !== 1 ? 's' : ''}`;
+                totalAmountDisplay.textContent = `₹${Math.round(totalAmount)}`;
+                calculationDisplay.style.display = 'block';
+
+                return true;
+            } else {
+                calculationDisplay.style.display = 'none';
+                return false;
+            }
+        } else {
+            calculationDisplay.style.display = 'none';
+            return false;
+        }
+    }
+
+    // Event listeners for real-time calculation
+    startTimeInput.addEventListener('change', calculateSlot);
+    endTimeInput.addEventListener('change', calculateSlot);
+
+    // Form validation
+    const form = document.getElementById('slot-form');
+    form.addEventListener('submit', function(e) {
+        const date = dateInput.value;
+        const startTime = startTimeInput.value;
+        const endTime = endTimeInput.value;
+
+        if (!date || !startTime || !endTime) {
+            e.preventDefault();
+            alert('Please fill in all required fields.');
+            return;
+        }
+
+        // Validate that end time is after start time
+        if (!calculateSlot()) {
+            e.preventDefault();
+            alert('End time must be after start time.');
+            return;
+        }
+
+        // Validate that the slot is not in the past
+        const slotStart = new Date(`${date}T${startTime}`);
+        const now = new Date();
+
+        if (slotStart <= now) {
+            e.preventDefault();
+            alert('Cannot create slots in the past.');
+            return;
+        }
+
+        // Show loading state
+        const submitBtn = this.querySelector('button[type="submit"]');
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Creating Slot...';
+        submitBtn.disabled = true;
+    });
+});
+
+// Quick time preset function
+function setTimePreset(startTime, endTime) {
+    document.getElementById('start_time').value = startTime;
+    document.getElementById('end_time').value = endTime;
+
+    // Trigger calculation
+    document.getElementById('end_time').dispatchEvent(new Event('change'));
+}
+</script>
+{% endblock %}

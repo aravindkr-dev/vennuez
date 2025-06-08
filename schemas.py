@@ -1,45 +1,49 @@
-from flask_marshmallow import Marshmallow
+from marshmallow_sqlalchemy import SQLAlchemyAutoSchema
 from models import *
+from marshmallow import fields
 
-ma = Marshmallow()
 
-"""class BookingSchema(ma.SQLAlchemyAutoSchema):
-    class Meta:
-        model = Booking
-        load_instance = True
 
-class SlotSchema(ma.SQLAlchemyAutoSchema):
-    class Meta:
-        model = Slot
-        load_instance = True"""
-
-class UserSchema(ma.SQLAlchemyAutoSchema):
+class UserSchema(SQLAlchemyAutoSchema):
     class Meta:
         model = User
         load_instance = True
+        exclude = ('password_hash',)
+    bookings = fields.Nested('BookingSchema', many=True, exclude=('user',))
 
-"""class VenueSchema(ma.SQLAlchemyAutoSchema):
+class TurfSchema(SQLAlchemyAutoSchema):
     class Meta:
-        model = Venue
+        model = Turf
         load_instance = True
 
-
-class AvailabilitySchema(ma.SQLAlchemyAutoSchema):
+class GamingCenterSchema(SQLAlchemyAutoSchema):
     class Meta:
-        model = Availability
+        model = GamingCenter
         load_instance = True
+    consoles = fields.Nested('ConsoleSchema', many=True, exclude=('gaming_center',))
 
-availability_schema = AvailabilitySchema()
-availabilities_schema = AvailabilitySchema(many=True)"""
-
-
-class TurfOwnerSchema(ma.SQLAlchemyAutoSchema):
+class ConsoleSchema(SQLAlchemyAutoSchema):
     class Meta:
-        model = TurfOwner
+        model = Console
         load_instance = True
+    slots = fields.Nested('SlotSchema', many=True, exclude=('console',))
 
-
-class GamingCenterOwnerSchema(ma.SQLAlchemyAutoSchema):
+class SlotSchema(SQLAlchemyAutoSchema):
     class Meta:
-        model = GamingCenterOwner
+        model = Slot
         load_instance = True
+    booking = fields.Nested('BookingSchema', exclude=('slot',), allow_none=True)
+
+class BookingSchema(SQLAlchemyAutoSchema):
+    class Meta:
+        model = Booking
+        load_instance = True
+    user = fields.Nested(UserSchema, exclude=('bookings',))
+    slot = fields.Nested(SlotSchema, exclude=('booking',))
+
+user_schema = UserSchema()
+turf_schema = TurfSchema()
+gaming_center_schema = GamingCenterSchema()
+console_schema = ConsoleSchema()
+slot_schema = SlotSchema()
+booking_schema = BookingSchema()

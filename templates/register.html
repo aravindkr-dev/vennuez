@@ -1,0 +1,191 @@
+{% extends "base.html" %}
+
+{% block title %}Register - Gaming Center Hub{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-7">
+                <div class="auth-card">
+                    <div class="auth-header">
+                        <div class="auth-icon">
+                            <i class="fas fa-store"></i>
+                        </div>
+                        <h2 class="auth-title">Register Your Gaming Center</h2>
+                        <p class="auth-subtitle">Join our platform and start managing your gaming business</p>
+                    </div>
+
+                    <form method="POST" class="auth-form">
+                        <!-- Personal Information -->
+                        <div class="form-section">
+                            <h5 class="form-section-title">
+                                <i class="fas fa-user me-2"></i>Personal Information
+                            </h5>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="username" class="form-label">Username *</label>
+                                        <input type="text" class="form-control" id="username" name="username" required
+                                               placeholder="Choose a unique username">
+                                        <div class="form-text">This will be your login username</div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="email" class="form-label">Email Address *</label>
+                                        <input type="email" class="form-control" id="email" name="email" required
+                                               placeholder="your@email.com">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="password" class="form-label">Password *</label>
+                                        <div class="password-input">
+                                            <input type="password" class="form-control" id="password" name="password" required
+                                                   placeholder="Create a strong password" minlength="6">
+                                            <button type="button" class="password-toggle" onclick="togglePassword('password')">
+                                                <i class="fas fa-eye" id="password-eye"></i>
+                                            </button>
+                                        </div>
+                                        <div class="form-text">Minimum 6 characters</div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="phone" class="form-label">Phone Number *</label>
+                                        <input type="tel" class="form-control" id="phone" name="phone" required
+                                               placeholder="+91 9876543210" pattern="[0-9+\-\s]+">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Gaming Center Information -->
+                        <div class="form-section">
+                            <h5 class="form-section-title">
+                                <i class="fas fa-gamepad me-2"></i>Gaming Center Details
+                            </h5>
+
+                            <div class="form-group">
+                                <label for="gaming_center_name" class="form-label">Gaming Center Name *</label>
+                                <input type="text" class="form-control" id="gaming_center_name" name="gaming_center_name" required
+                                       placeholder="e.g., GameZone Pro, Pixel Palace">
+                                <div class="form-text">This name will be visible to customers</div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="address" class="form-label">Complete Address *</label>
+                                <textarea class="form-control" id="address" name="address" rows="3" required
+                                          placeholder="Enter your gaming center's full address including area, city, and pincode"></textarea>
+                                <div class="form-text">Include landmarks for easy customer navigation</div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="terms" required>
+                                <label class="form-check-label" for="terms">
+                                    I agree to the <a href="#" class="auth-link">Terms & Conditions</a> and
+                                    <a href="#" class="auth-link">Privacy Policy</a> *
+                                </label>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-success btn-lg w-100 auth-submit">
+                            <i class="fas fa-rocket me-2"></i>Register My Gaming Center
+                        </button>
+                    </form>
+
+                    <div class="auth-footer">
+                        <p class="text-center mb-0">
+                            Already have an account?
+                            <a href="{{ url_for('login') }}" class="auth-link">Login here</a>
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Benefits Section -->
+                <div class="benefits-card mt-4">
+                    <h6 class="text-center mb-3">
+                        <i class="fas fa-star me-2"></i>Why Join Gaming Center Hub?
+                    </h6>
+                    <div class="row text-center g-3">
+                        <div class="col-md-4">
+                            <div class="benefit-item">
+                                <i class="fas fa-chart-line text-success"></i>
+                                <span>Increase Revenue</span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="benefit-item">
+                                <i class="fas fa-globe text-primary"></i>
+                                <span>Online Presence</span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="benefit-item">
+                                <i class="fas fa-bolt text-warning"></i>
+                                <span>Easy Management</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function togglePassword(inputId) {
+    const passwordInput = document.getElementById(inputId);
+    const passwordEye = document.getElementById(inputId + '-eye');
+
+    if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        passwordEye.classList.remove('fa-eye');
+        passwordEye.classList.add('fa-eye-slash');
+    } else {
+        passwordInput.type = 'password';
+        passwordEye.classList.remove('fa-eye-slash');
+        passwordEye.classList.add('fa-eye');
+    }
+}
+
+// Form validation enhancement
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    const password = document.getElementById('password');
+    const phone = document.getElementById('phone');
+
+    // Password strength indicator
+    password.addEventListener('input', function() {
+        const strength = this.value.length;
+        this.style.borderColor = strength < 6 ? '#dc3545' :
+                                 strength < 8 ? '#ffc107' : '#28a745';
+    });
+
+    // Phone number formatting
+    phone.addEventListener('input', function() {
+        let value = this.value.replace(/\D/g, '');
+        if (value.length > 10) value = value.slice(0, 10);
+        this.value = value;
+    });
+
+    // Form submission loading state
+    form.addEventListener('submit', function() {
+        const submitBtn = this.querySelector('button[type="submit"]');
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Creating Account...';
+        submitBtn.disabled = true;
+    });
+});
+</script>
+{% endblock %}

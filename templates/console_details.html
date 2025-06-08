@@ -1,0 +1,339 @@
+{% extends "base.html" %}
+
+{% block title %}{{ console.name }} - Console Details{% endblock %}
+
+{% block content %}
+<div class="console-details-page">
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="row align-items-center">
+            <div class="col">
+                <h1 class="page-title">
+                    <i class="fas fa-gamepad me-3"></i>{{ console.name }}
+                </h1>
+                <p class="page-subtitle">Manage slots and view bookings for this console</p>
+            </div>
+            <div class="col-auto">
+                <div class="header-actions">
+                    <a href="{{ url_for('add_slot', console_id=console.id) }}" class="btn btn-success">
+                        <i class="fas fa-plus me-2"></i>Add Time Slot
+                    </a>
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Console Information -->
+        <div class="col-lg-8">
+            <div class="console-info-card">
+                <div class="card-header">
+                    <div class="header-content">
+                        <h4 class="card-title">Console Information</h4>
+                        {% if console.is_available %}
+                            <span class="status-badge status-available">
+                                <i class="fas fa-check"></i>Available
+                            </span>
+                        {% else %}
+                            <span class="status-badge status-maintenance">
+                                <i class="fas fa-wrench"></i>Under Maintenance
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="info-group">
+                                <div class="info-item">
+                                    <i class="fas fa-gamepad text-primary"></i>
+                                    <div class="info-content">
+                                        <span class="info-label">Console Type</span>
+                                        <span class="info-value">{{ console.console_type }}</span>
+                                    </div>
+                                </div>
+                                <div class="info-item">
+                                    <i class="fas fa-rupee-sign text-success"></i>
+                                    <div class="info-content">
+                                        <span class="info-label">Hourly Rate</span>
+                                        <span class="info-value">₹{{ console.hourly_rate }}</span>
+                                    </div>
+                                </div>
+                                <div class="info-item">
+                                    <i class="fas fa-calendar text-info"></i>
+                                    <div class="info-content">
+                                        <span class="info-label">Added On</span>
+                                        <span class="info-value">{{ console.created_at.strftime('%d %B %Y') }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-group">
+                                <div class="info-item">
+                                    <i class="fas fa-clock text-warning"></i>
+                                    <div class="info-content">
+                                        <span class="info-label">Total Slots</span>
+                                        <span class="info-value">{{ slots|length }}</span>
+                                    </div>
+                                </div>
+                                <div class="info-item">
+                                    <i class="fas fa-check-circle text-success"></i>
+                                    <div class="info-content">
+                                        <span class="info-label">Available Slots</span>
+                                        <span class="info-value">{{ slots|rejectattr('is_booked')|list|length }}</span>
+                                    </div>
+                                </div>
+                                <div class="info-item">
+                                    <i class="fas fa-lock text-danger"></i>
+                                    <div class="info-content">
+                                        <span class="info-label">Booked Slots</span>
+                                        <span class="info-value">{{ slots|selectattr('is_booked')|list|length }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="col-lg-4">
+            <div class="stats-card">
+                <div class="card-header">
+                    <h5 class="card-title">
+                        <i class="fas fa-chart-bar me-2"></i>Quick Stats
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="stat-item">
+                        <div class="stat-icon bg-primary">
+                            <i class="fas fa-rupee-sign"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-value">₹{{ "%.0f"|format(slots|selectattr('is_booked')|sum(attribute='total_amount') or 0) }}</div>
+                            <div class="stat-label">Total Revenue</div>
+                        </div>
+                    </div>
+
+                    <div class="stat-item">
+                        <div class="stat-icon bg-success">
+                            <i class="fas fa-credit-card"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-value">₹{{ "%.0f"|format(slots|selectattr('is_booked')|sum(attribute='advance_paid') or 0) }}</div>
+                            <div class="stat-label">Advance Collected</div>
+                        </div>
+                    </div>
+
+                    <div class="stat-item">
+                        <div class="stat-icon bg-info">
+                            <i class="fas fa-percentage"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-value">{{ "%.1f"|format((slots|selectattr('is_booked')|list|length / slots|length * 100) if slots else 0) }}%</div>
+                            <div class="stat-label">Booking Rate</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Time Slots Section -->
+    <div class="slots-section mt-4">
+        <div class="section-header">
+            <div class="header-content">
+                <h3 class="section-title">
+                    <i class="fas fa-clock me-2"></i>Time Slots
+                </h3>
+                <div class="slot-filters">
+                    <div class="btn-group" role="group">
+                        <input type="radio" class="btn-check" name="slot-filter" id="all-slots" checked>
+                        <label class="btn btn-outline-primary" for="all-slots">All</label>
+
+                        <input type="radio" class="btn-check" name="slot-filter" id="available-slots">
+                        <label class="btn btn-outline-success" for="available-slots">Available</label>
+
+                        <input type="radio" class="btn-check" name="slot-filter" id="booked-slots">
+                        <label class="btn btn-outline-danger" for="booked-slots">Booked</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if slots %}
+            <div class="slots-grid" id="slots-container">
+                {% for slot in slots %}
+                <div class="slot-card {% if slot.is_booked %}booked-slot{% else %}available-slot{% endif %}">
+                    <div class="slot-header">
+                        <div class="slot-date">
+                            <i class="fas fa-calendar-day"></i>
+                            {{ slot.start_time.strftime('%d %b %Y') }}
+                        </div>
+                        <div class="slot-status">
+                            {% if slot.is_booked %}
+                                <span class="status-badge status-booked">
+                                    <i class="fas fa-lock"></i>Booked
+                                </span>
+                            {% else %}
+                                <span class="status-badge status-available">
+                                    <i class="fas fa-check"></i>Available
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="slot-body">
+                        <div class="slot-time">
+                            <i class="fas fa-clock text-primary"></i>
+                            {{ slot.start_time.strftime('%I:%M %p') }} - {{ slot.end_time.strftime('%I:%M %p') }}
+                        </div>
+
+                        <div class="slot-duration">
+                            <i class="fas fa-hourglass-half text-info"></i>
+                            {{ ((slot.end_time - slot.start_time).total_seconds() / 3600)|int }} hours
+                        </div>
+
+                        <div class="slot-amount">
+                            <i class="fas fa-rupee-sign text-success"></i>
+                            ₹{{ slot.total_amount }}
+                        </div>
+
+                        {% if slot.is_booked %}
+                            <div class="booking-details">
+                                <div class="customer-info">
+                                    <div class="customer-name">
+                                        <i class="fas fa-user"></i>
+                                        {{ slot.customer_name }}
+                                    </div>
+                                    <div class="customer-phone">
+                                        <i class="fas fa-phone"></i>
+                                        {{ slot.customer_phone }}
+                                    </div>
+                                </div>
+                                <div class="booking-id">
+                                    <i class="fas fa-tag"></i>
+                                    <code>{{ slot.booking_id }}</code>
+                                </div>
+                                <div class="advance-paid">
+                                    <i class="fas fa-credit-card"></i>
+                                    Advance: ₹{{ slot.advance_paid }}
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="slot-footer">
+                        {% if slot.is_booked %}
+                            <div class="slot-actions">
+                                <button class="btn btn-outline-info btn-sm" onclick="viewBookingDetails('{{ slot.booking_id }}')">
+                                    <i class="fas fa-eye me-1"></i>View Details
+                                </button>
+                                <button class="btn btn-outline-warning btn-sm" onclick="cancelBooking('{{ slot.booking_id }}')">
+                                    <i class="fas fa-times me-1"></i>Cancel
+                                </button>
+                            </div>
+                        {% else %}
+                            <div class="slot-actions">
+                                <button class="btn btn-outline-primary btn-sm" onclick="editSlot({{ slot.id }})">
+                                    <i class="fas fa-edit me-1"></i>Edit
+                                </button>
+                                <button class="btn btn-outline-danger btn-sm" onclick="deleteSlot({{ slot.id }})">
+                                    <i class="fas fa-trash me-1"></i>Delete
+                                </button>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <div class="empty-icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <h4 class="empty-title">No time slots created yet!</h4>
+                <p class="empty-description">Create your first time slot to start accepting bookings for this console.</p>
+                <a href="{{ url_for('add_slot', console_id=console.id) }}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-plus me-2"></i>Create First Time Slot
+                </a>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Upcoming Bookings Alert -->
+    {% set upcoming_bookings = slots | selectattr('is_booked') | selectattr('start_time', 'gt', now) | list %}
+    {% if upcoming_bookings %}
+    <div class="upcoming-alert mt-4">
+        <div class="alert alert-info">
+            <div class="alert-content">
+                <div class="alert-icon">
+                    <i class="fas fa-calendar-check"></i>
+                </div>
+                <div class="alert-text">
+                    <h6 class="alert-heading">Upcoming Bookings</h6>
+                    <p class="mb-0">You have {{ upcoming_bookings|length }} upcoming booking(s) for this console. Make sure the console is ready and available!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// Filter slots functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const filterButtons = document.querySelectorAll('input[name="slot-filter"]');
+    const slotCards = document.querySelectorAll('.slot-card');
+
+    filterButtons.forEach(button => {
+        button.addEventListener('change', function() {
+            const filter = this.id;
+
+            slotCards.forEach(card => {
+                switch(filter) {
+                    case 'all-slots':
+                        card.style.display = 'block';
+                        break;
+                    case 'available-slots':
+                        card.style.display = card.classList.contains('available-slot') ? 'block' : 'none';
+                        break;
+                    case 'booked-slots':
+                        card.style.display = card.classList.contains('booked-slot') ? 'block' : 'none';
+                        break;
+                }
+            });
+        });
+    });
+});
+
+// Slot management functions
+function viewBookingDetails(bookingId) {
+    window.open(`/booking_confirmation/${bookingId}`, '_blank');
+}
+
+function cancelBooking(bookingId) {
+    if (confirm('Are you sure you want to cancel this booking? This action cannot be undone.')) {
+        // Implement booking cancellation
+        alert('Booking cancellation feature will be implemented soon!');
+    }
+}
+
+function editSlot(slotId) {
+    alert('Slot editing feature will be implemented soon!');
+}
+
+function deleteSlot(slotId) {
+    if (confirm('Are you sure you want to delete this time slot? This action cannot be undone.')) {
+        alert('Slot deletion feature will be implemented soon!');
+    }
+}
+</script>
+{% endblock %}

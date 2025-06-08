@@ -1,0 +1,267 @@
+{% extends "base.html" %}
+
+{% block title %}Payment - Gaming Center Hub{% endblock %}
+
+{% block content %}
+<div class="payment-page">
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="row align-items-center">
+            <div class="col">
+                <h1 class="page-title">
+                    <i class="fas fa-credit-card me-3"></i>Complete Your Payment
+                </h1>
+                <p class="page-subtitle">Secure your gaming slot with advance payment</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Payment Header -->
+            <div class="payment-header">
+                <div class="payment-amount">
+                    <div class="amount-label">Advance Payment</div>
+                    <div class="amount-value">₹{{ slot.advance_paid }}</div>
+                </div>
+                <div class="payment-security">
+                    <i class="fas fa-shield-alt me-2"></i>
+                    <span>Secure Payment</span>
+                </div>
+            </div>
+
+            <!-- Booking Summary -->
+            <div class="booking-summary-card">
+                <div class="card-header">
+                    <h4 class="card-title">
+                        <i class="fas fa-receipt me-2"></i>Booking Summary
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="summary-section">
+                                <h6 class="summary-title">Console Details</h6>
+                                <div class="summary-item">
+                                    <span class="item-label">Console:</span>
+                                    <span class="item-value">{{ slot.console.name }}</span>
+                                </div>
+                                <div class="summary-item">
+                                    <span class="item-label">Type:</span>
+                                    <span class="item-value">{{ slot.console.console_type }}</span>
+                                </div>
+                                <div class="summary-item">
+                                    <span class="item-label">Gaming Center:</span>
+                                    <span class="item-value">{{ slot.console.owner.gaming_center_name }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="summary-section">
+                                <h6 class="summary-title">Slot Details</h6>
+                                <div class="summary-item">
+                                    <span class="item-label">Date & Time:</span>
+                                    <span class="item-value">{{ slot.start_time.strftime('%d %B %Y, %I:%M %p') }}</span>
+                                </div>
+                                <div class="summary-item">
+                                    <span class="item-label">Duration:</span>
+                                    <span class="item-value">{{ ((slot.end_time - slot.start_time).total_seconds() // 3600)|int }} hours</span>
+                                </div>
+                                <div class="summary-item">
+                                    <span class="item-label">Customer:</span>
+                                    <span class="item-value">{{ slot.customer_name }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="payment-breakdown">
+                        <div class="breakdown-header">
+                            <h6><i class="fas fa-calculator me-2"></i>Payment Breakdown</h6>
+                        </div>
+                        <div class="breakdown-items">
+                            <div class="breakdown-item">
+                                <span class="breakdown-label">Total Amount</span>
+                                <span class="breakdown-value">₹{{ slot.total_amount }}</span>
+                            </div>
+                            <div class="breakdown-item advance">
+                                <span class="breakdown-label">Advance Payment (Online)</span>
+                                <span class="breakdown-value">₹{{ slot.advance_paid }}</span>
+                            </div>
+                            <div class="breakdown-item remaining">
+                                <span class="breakdown-label">Remaining (Pay at center)</span>
+                                <span class="breakdown-value">₹{{ slot.total_amount - slot.advance_paid }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment Form -->
+            <div class="payment-form-card">
+                <div class="card-header">
+                    <h4 class="card-title">
+                        <i class="fas fa-credit-card me-2"></i>Pay ₹{{ slot.advance_paid }} - Advance Booking Fee
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('process_payment') }}" id="payment-form">
+                        <input type="hidden" name="booking_id" value="{{ slot.booking_id }}">
+
+                        <!-- Payment Method Selection -->
+                        <div class="payment-methods">
+                            <h6 class="methods-title">Choose Payment Method</h6>
+                            <div class="method-options">
+                                <div class="method-option">
+                                    <input class="form-check-input" type="radio" name="payment_method" id="razorpay" value="razorpay" checked>
+                                    <label class="method-label" for="razorpay">
+                                        <div class="method-icon">
+                                            <i class="fas fa-credit-card"></i>
+                                        </div>
+                                        <div class="method-details">
+                                            <div class="method-name">Razorpay</div>
+                                            <div class="method-description">Cards, UPI, Wallets, Net Banking</div>
+                                        </div>
+                                        <div class="method-badges">
+                                            <span class="badge bg-success">Instant</span>
+                                            <span class="badge bg-primary">Secure</span>
+                                        </div>
+                                    </label>
+                                </div>
+                                
+                                <div class="method-option">
+                                    <input class="form-check-input" type="radio" name="payment_method" id="upi" value="upi">
+                                    <label class="method-label" for="upi">
+                                        <div class="method-icon">
+                                            <i class="fas fa-mobile-alt"></i>
+                                        </div>
+                                        <div class="method-details">
+                                            <div class="method-name">UPI Direct</div>
+                                            <div class="method-description">Pay using any UPI app</div>
+                                        </div>
+                                        <div class="method-badges">
+                                            <span class="badge bg-success">Fast</span>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Security Features -->
+                        <div class="security-features">
+                            <div class="security-item">
+                                <i class="fas fa-lock text-success"></i>
+                                <span>256-bit SSL encryption</span>
+                            </div>
+                            <div class="security-item">
+                                <i class="fas fa-shield-alt text-primary"></i>
+                                <span>PCI DSS compliant</span>
+                            </div>
+                            <div class="security-item">
+                                <i class="fas fa-credit-card text-info"></i>
+                                <span>Card details not stored</span>
+                            </div>
+                        </div>
+
+                        <!-- Demo Notice -->
+                        <div class="demo-notice">
+                            <div class="alert alert-warning">
+                                <div class="alert-content">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                    <div>
+                                        <strong>Demo Mode:</strong> This is a dummy payment gateway for demonstration.
+                                        Click "Pay Now" to simulate payment completion.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Payment Button -->
+                        <div class="payment-actions">
+                            <button type="submit" class="btn btn-success btn-lg btn-pay">
+                                <i class="fas fa-lock me-2"></i>Pay ₹{{ slot.advance_paid }} Securely
+                            </button>
+                            <div class="payment-note">
+                                <small class="text-muted">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    You will be redirected to our secure payment partner
+                                </small>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Payment Support -->
+            <div class="payment-support">
+                <div class="support-content">
+                    <h6><i class="fas fa-question-circle me-2"></i>Need Help?</h6>
+                    <p>Having trouble with payment? Contact our support team.</p>
+                    <div class="support-options">
+                        <a href="tel:+911234567890" class="support-link">
+                            <i class="fas fa-phone"></i>
+                            <span>Call Support</span>
+                        </a>
+                        <a href="mailto:support@gamingcenterhub.com" class="support-link">
+                            <i class="fas fa-envelope"></i>
+                            <span>Email Support</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('payment-form');
+    const paymentMethods = document.querySelectorAll('input[name="payment_method"]');
+    
+    // Payment method selection
+    paymentMethods.forEach(method => {
+        method.addEventListener('change', function() {
+            // Remove active class from all options
+            document.querySelectorAll('.method-option').forEach(option => {
+                option.classList.remove('active');
+            });
+            
+            // Add active class to selected option
+            this.closest('.method-option').classList.add('active');
+        });
+    });
+    
+    // Set initial active state
+    const checkedMethod = document.querySelector('input[name="payment_method"]:checked');
+    if (checkedMethod) {
+        checkedMethod.closest('.method-option').classList.add('active');
+    }
+    
+    // Form submission
+    form.addEventListener('submit', function(e) {
+        const submitBtn = this.querySelector('button[type="submit"]');
+        
+        // Show loading state
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Processing Payment...';
+        submitBtn.disabled = true;
+        
+        // Add loading class to form
+        this.classList.add('processing');
+    });
+    
+    // Simulate payment processing delay (for demo)
+    if (window.location.search.includes('demo=true')) {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            setTimeout(() => {
+                window.location.href = `/booking_confirmation/${document.querySelector('input[name="booking_id"]').value}`;
+            }, 2000);
+        });
+    }
+});
+</script>
+{% endblock %}

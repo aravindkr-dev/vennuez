@@ -1,0 +1,259 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Gaming Center Hub{% endblock %}
+
+{% block content %}
+<div class="dashboard-page">
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="row align-items-center">
+            <div class="col">
+                <h1 class="page-title">
+                    <i class="fas fa-tachometer-alt me-3"></i>
+                    Welcome, {{ owner.username }}!
+                </h1>
+                <p class="page-subtitle">Manage your gaming center and track your business performance</p>
+            </div>
+            <div class="col-auto">
+                <a href="{{ url_for('add_console') }}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-plus me-2"></i>Add New Console
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gaming Center Info -->
+    <div class="info-card mb-4">
+        <div class="card-header">
+            <h4 class="mb-0">
+                <i class="fas fa-store me-2"></i>{{ owner.gaming_center_name }}
+            </h4>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="info-item">
+                        <i class="fas fa-envelope text-primary"></i>
+                        <span><strong>Email:</strong> {{ owner.email }}</span>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-phone text-success"></i>
+                        <span><strong>Phone:</strong> {{ owner.phone }}</span>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="info-item">
+                        <i class="fas fa-map-marker-alt text-danger"></i>
+                        <span><strong>Address:</strong> {{ owner.address }}</span>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-calendar text-info"></i>
+                        <span><strong>Member Since:</strong> {{ owner.created_at.strftime('%B %Y') }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon bg-primary">
+                    <i class="fas fa-gamepad"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-number">{{ stats.total_consoles }}</div>
+                    <div class="stat-label">Total Consoles</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon bg-success">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-number">{{ stats.total_slots }}</div>
+                    <div class="stat-label">Total Slots</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon bg-warning">
+                    <i class="fas fa-calendar-check"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-number">{{ stats.booked_slots }}</div>
+                    <div class="stat-label">Booked Slots</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon bg-info">
+                    <i class="fas fa-rupee-sign"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-number">₹{{ "%.0f"|format(stats.total_revenue) }}</div>
+                    <div class="stat-label">Total Revenue</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Performance Metrics -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-6">
+            <div class="metric-card">
+                <h5 class="metric-title">
+                    <i class="fas fa-chart-line me-2"></i>Booking Rate
+                </h5>
+                <div class="metric-value">{{ "%.1f"|format(stats.booking_rate) }}%</div>
+                <div class="progress">
+                    <div class="progress-bar bg-success" style="width: {{ stats.booking_rate }}%"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="metric-card">
+                <h5 class="metric-title">
+                    <i class="fas fa-coins me-2"></i>Average Rate
+                </h5>
+                <div class="metric-value">
+                    {% if consoles %}
+                        ₹{{ "%.0f"|format((consoles|sum(attribute='hourly_rate'))/consoles|length) }}/hr
+                    {% else %}
+                        ₹0/hr
+                    {% endif %}
+                </div>
+                <div class="metric-note">Per hour across all consoles</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Consoles Grid -->
+    <div class="consoles-section">
+        <div class="section-header">
+            <h3 class="section-title">
+                <i class="fas fa-gamepad me-2"></i>Your Gaming Consoles
+            </h3>
+        </div>
+
+        {% if consoles %}
+            <div class="row g-4">
+                {% for console in consoles %}
+                <div class="col-md-6 col-xl-4">
+                    <div class="console-card">
+                        <div class="console-header">
+                            <div class="console-info">
+                                <h5 class="console-name">{{ console.name }}</h5>
+                                <div class="console-type">
+                                    {% if console.console_type == 'PS5' %}
+                                        <i class="fab fa-playstation text-primary"></i>
+                                        <span>PlayStation 5</span>
+                                    {% elif console.console_type == 'PS4' %}
+                                        <i class="fab fa-playstation text-primary"></i>
+                                        <span>PlayStation 4</span>
+                                    {% elif console.console_type == 'Xbox' %}
+                                        <i class="fab fa-xbox text-success"></i>
+                                        <span>Xbox</span>
+                                    {% elif console.console_type == 'PC' %}
+                                        <i class="fas fa-desktop text-info"></i>
+                                        <span>Gaming PC</span>
+                                    {% else %}
+                                        <i class="fas fa-gamepad"></i>
+                                        <span>{{ console.console_type }}</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="console-status">
+                                {% if console.is_available %}
+                                    <span class="status-badge status-available">
+                                        <i class="fas fa-check"></i>Available
+                                    </span>
+                                {% else %}
+                                    <span class="status-badge status-maintenance">
+                                        <i class="fas fa-wrench"></i>Maintenance
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="console-body">
+                            <div class="console-stats">
+                                <div class="stat-item">
+                                    <span class="stat-label">Hourly Rate</span>
+                                    <span class="stat-value">₹{{ console.hourly_rate }}</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Added</span>
+                                    <span class="stat-value">{{ console.created_at.strftime('%d %b %Y') }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="console-footer">
+                            <div class="console-actions">
+                                <a href="{{ url_for('console_details', console_id=console.id) }}"
+                                   class="btn btn-primary btn-sm">
+                                    <i class="fas fa-eye me-1"></i>View Details
+                                </a>
+                                <button class="btn btn-outline-secondary btn-sm"
+                                        onclick="toggleConsoleStatus({{ console.id }}, {{ console.is_available|tojson }})">
+                                    {% if console.is_available %}
+                                        <i class="fas fa-wrench me-1"></i>Maintenance
+                                    {% else %}
+                                        <i class="fas fa-check me-1"></i>Available
+                                    {% endif %}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <div class="empty-icon">
+                    <i class="fas fa-gamepad"></i>
+                </div>
+                <h4 class="empty-title">No consoles added yet!</h4>
+                <p class="empty-description">Start by adding your first gaming console to manage bookings.</p>
+                <a href="{{ url_for('add_console') }}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-plus me-2"></i>Add Your First Console
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function toggleConsoleStatus(consoleId, currentStatus) {
+    const action = currentStatus ? 'mark for maintenance' : 'mark as available';
+
+    if (confirm(`Are you sure you want to ${action} this console?`)) {
+        fetch(`/toggle_console_status/${consoleId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Error updating console status');
+                }
+            })
+            .catch(error => {
+                alert('Error updating console status');
+                console.error('Error:', error);
+            });
+    }
+}
+</script>
+{% endblock %}

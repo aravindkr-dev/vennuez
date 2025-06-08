@@ -1,0 +1,384 @@
+{% extends "base.html" %}
+
+{% block title %}Book Gaming Slot - Gaming Center Hub{% endblock %}
+
+{% block content %}
+<div class="booking-page">
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="row align-items-center">
+            <div class="col">
+                <h1 class="page-title">
+                    <i class="fas fa-gamepad me-3"></i>Book Gaming Slot
+                </h1>
+                <p class="page-subtitle">Complete your booking details and secure your gaming session</p>
+            </div>
+            <div class="col-auto">
+                <a href="{{ url_for('available_slots') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Available Slots
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Slot Details Sidebar -->
+        <div class="col-lg-4">
+            <div class="slot-details-card">
+                <div class="card-header">
+                    <h5 class="card-title">
+                        <i class="fas fa-info-circle me-2"></i>Slot Details
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="console-showcase">
+                        <div class="console-icon">
+                            {% if slot.console.console_type == 'PS5' %}
+                                <i class="fab fa-playstation"></i>
+                            {% elif slot.console.console_type == 'PS4' %}
+                                <i class="fab fa-playstation"></i>
+                            {% elif 'Xbox' in slot.console.console_type %}
+                                <i class="fab fa-xbox"></i>
+                            {% elif 'PC' in slot.console.console_type %}
+                                <i class="fas fa-desktop"></i>
+                            {% elif 'VR' in slot.console.console_type %}
+                                <i class="fas fa-vr-cardboard"></i>
+                            {% else %}
+                                <i class="fas fa-gamepad"></i>
+                            {% endif %}
+                        </div>
+                        <h5 class="console-name">{{ slot.console.name }}</h5>
+                        <p class="console-type">{{ slot.console.console_type }}</p>
+                    </div>
+
+                    <div class="slot-info">
+                        <div class="info-item">
+                            <i class="fas fa-calendar text-primary"></i>
+                            <div class="info-content">
+                                <span class="info-label">Date</span>
+                                <span class="info-value">{{ slot.start_time.strftime('%A, %d %B %Y') }}</span>
+                            </div>
+                        </div>
+
+                        <div class="info-item">
+                            <i class="fas fa-clock text-success"></i>
+                            <div class="info-content">
+                                <span class="info-label">Time</span>
+                                <span class="info-value">{{ slot.start_time.strftime('%I:%M %p') }} - {{ slot.end_time.strftime('%I:%M %p') }}</span>
+                            </div>
+                        </div>
+
+                        <div class="info-item">
+                            <i class="fas fa-hourglass-half text-info"></i>
+                            <div class="info-content">
+                                <span class="info-label">Duration</span>
+                                <span class="info-value">{{ ((slot.end_time - slot.start_time).total_seconds() / 3600)|int }} hours</span>
+                            </div>
+                        </div>
+
+                        <div class="info-item">
+                            <i class="fas fa-rupee-sign text-warning"></i>
+                            <div class="info-content">
+                                <span class="info-label">Total Amount</span>
+                                <span class="info-value">₹{{ slot.total_amount }}</span>
+                            </div>
+                        </div>
+
+                        <div class="info-item">
+                            <i class="fas fa-credit-card text-success"></i>
+                            <div class="info-content">
+                                <span class="info-label">Advance Payment</span>
+                                <span class="info-value">₹{{ slot.advance_paid }}</span>
+                            </div>
+                        </div>
+
+                        <div class="info-item">
+                            <i class="fas fa-money-bill text-danger"></i>
+                            <div class="info-content">
+                                <span class="info-label">Balance at Center</span>
+                                <span class="info-value">₹{{ slot.total_amount - slot.advance_paid }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gaming Center Info -->
+            <div class="center-info-card mt-4">
+                <div class="card-header">
+                    <h6 class="card-title">
+                        <i class="fas fa-store me-2"></i>Gaming Center
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <h6 class="center-name">{{ slot.console.owner.gaming_center_name }}</h6>
+                    <div class="center-details">
+                        <div class="detail-item">
+                            <i class="fas fa-phone text-success"></i>
+                            <span>{{ slot.console.owner.phone }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <i class="fas fa-map-marker-alt text-danger"></i>
+                            <span>{{ slot.console.owner.address }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Booking Form -->
+        <div class="col-lg-8">
+            <div class="booking-form-card">
+                <div class="card-header">
+                    <h4 class="card-title">
+                        <i class="fas fa-user me-2"></i>Customer Details
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST" id="booking-form" class="booking-form">
+                        <!-- Personal Information -->
+                        <div class="form-section">
+                            <h5 class="section-title">Personal Information</h5>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="customer_name" class="form-label">Full Name *</label>
+                                        {% if user %}
+                                            <input type="text" class="form-control" id="customer_name" name="customer_name"
+                                                   value="{{ user.username }}" readonly>
+                                            <div class="form-text">As per your user profile</div>
+                                        {% else %}
+                                            <input type="text" class="form-control" id="customer_name" name="customer_name"
+                                                   placeholder="Enter your full name" required>
+                                            <div class="form-text">As per your ID proof</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="customer_phone" class="form-label">Phone Number *</label>
+                                        {% if user %}
+                                            <input type="tel" class="form-control" id="customer_phone" name="customer_phone"
+                                                   value="{{ user.phone }}" readonly>
+                                            <div class="form-text">As per your user profile</div>
+                                        {% else %}
+                                            <input type="tel" class="form-control" id="customer_phone" name="customer_phone"
+                                                   placeholder="10-digit mobile number" pattern="[0-9]{10}" required>
+                                            <div class="form-text">For booking confirmations and updates</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="customer_email" class="form-label">Email Address</label>
+                                        <input type="email" class="form-control" id="customer_email" name="customer_email"
+                                               placeholder="your.email@example.com">
+                                        <div class="form-text">Optional - for booking receipt</div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="customer_age" class="form-label">Age</label>
+                                        <input type="number" class="form-control" id="customer_age" name="customer_age"
+                                               min="5" max="100" placeholder="Your age">
+                                        <div class="form-text">Required for age-restricted games</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Special Requests -->
+                        <div class="form-section">
+                            <h5 class="section-title">Additional Information</h5>
+                            <div class="form-group">
+                                <label for="special_requests" class="form-label">Special Requests</label>
+                                <textarea class="form-control" id="special_requests" name="special_requests" rows="3"
+                                          placeholder="Any specific games, setup preferences, or special requirements..."></textarea>
+                                <div class="form-text">Optional - Let us know if you have any special requirements</div>
+                            </div>
+                        </div>
+
+                        <!-- Payment Summary -->
+                        <div class="form-section">
+                            <h5 class="section-title">Payment Summary</h5>
+                            <div class="payment-summary">
+                                <div class="summary-item">
+                                    <span class="summary-label">Gaming Session ({{ ((slot.end_time - slot.start_time).total_seconds() / 3600)|int }} hours)</span>
+                                    <span class="summary-value">₹{{ slot.total_amount }}</span>
+                                </div>
+                                <div class="summary-item advance">
+                                    <span class="summary-label">Advance Payment (Online)</span>
+                                    <span class="summary-value">₹{{ slot.advance_paid }}</span>
+                                </div>
+                                <div class="summary-item balance">
+                                    <span class="summary-label">Balance at Center</span>
+                                    <span class="summary-value">₹{{ slot.total_amount - slot.advance_paid }}</span>
+                                </div>
+                                <div class="summary-divider"></div>
+                                <div class="summary-item total">
+                                    <span class="summary-label">Total Amount</span>
+                                    <span class="summary-value">₹{{ slot.total_amount }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Terms and Conditions -->
+                        <div class="form-section">
+                            <h5 class="section-title">Terms & Conditions</h5>
+                            <div class="terms-grid">
+                                <div class="terms-column">
+                                    <h6><i class="fas fa-gamepad me-2"></i>Gaming Rules</h6>
+                                    <ul>
+                                        <li>No food or drinks near the console</li>
+                                        <li>Handle controllers with care</li>
+                                        <li>Report any technical issues immediately</li>
+                                        <li>Follow age restrictions for games</li>
+                                    </ul>
+                                </div>
+                                <div class="terms-column">
+                                    <h6><i class="fas fa-credit-card me-2"></i>Payment & Cancellation</h6>
+                                    <ul>
+                                        <li>Advance payment is non-refundable</li>
+                                        <li>Cancellation allowed up to 2 hours before slot</li>
+                                        <li>Late arrival may result in reduced game time</li>
+                                        <li>Balance payment due at the center</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Agreement Checkboxes -->
+                        <div class="form-section">
+                            <div class="agreement-checks">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="agree-terms" required>
+                                    <label class="form-check-label" for="agree-terms">
+                                        I agree to the <strong>Terms & Conditions</strong> and <strong>Gaming Center Rules</strong>
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="agree-payment" required>
+                                    <label class="form-check-label" for="agree-payment">
+                                        I understand the <strong>Payment Policy</strong> and confirm advance payment of ₹{{ slot.advance_paid }}
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="confirm-details" required>
+                                    <label class="form-check-label" for="confirm-details">
+                                        I confirm that all details provided are <strong>accurate and complete</strong>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Contact Preferences -->
+                        <div class="form-section">
+                            <h5 class="section-title">
+                                <i class="fas fa-bell me-2"></i>Notification Preferences
+                            </h5>
+                            <div class="contact-preferences">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="contact-sms" name="contact_sms" checked>
+                                    <label class="form-check-label" for="contact-sms">
+                                        <i class="fas fa-sms me-2"></i>SMS notifications
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="contact-whatsapp" name="contact_whatsapp" checked>
+                                    <label class="form-check-label" for="contact-whatsapp">
+                                        <i class="fab fa-whatsapp me-2"></i>WhatsApp notifications
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="contact-email" name="contact_email">
+                                    <label class="form-check-label" for="contact-email">
+                                        <i class="fas fa-envelope me-2"></i>Email notifications
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary btn-lg btn-book">
+                                <i class="fas fa-credit-card me-2"></i>Proceed to Payment
+                            </button>
+                            <a href="{{ url_for('available_slots') }}" class="btn btn-outline-secondary btn-lg">
+                                Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('booking-form');
+    const phoneInput = document.getElementById('customer_phone');
+
+    // Phone number validation
+    if (phoneInput && !phoneInput.readOnly) {
+        phoneInput.addEventListener('input', function() {
+            let value = this.value.replace(/\D/g, '');
+            if (value.length > 10) value = value.slice(0, 10);
+            this.value = value;
+
+            // Visual feedback
+            if (value.length === 10) {
+                this.classList.remove('is-invalid');
+                this.classList.add('is-valid');
+            } else {
+                this.classList.remove('is-valid');
+                this.classList.add('is-invalid');
+            }
+        });
+    }
+
+    // Form validation
+    form.addEventListener('submit', function(e) {
+        const requiredCheckboxes = form.querySelectorAll('input[type="checkbox"][required]');
+        let allChecked = true;
+
+        requiredCheckboxes.forEach(checkbox => {
+            if (!checkbox.checked) {
+                allChecked = false;
+                checkbox.classList.add('is-invalid');
+            } else {
+                checkbox.classList.remove('is-invalid');
+            }
+        });
+
+        if (!allChecked) {
+            e.preventDefault();
+            alert('Please agree to all terms and conditions to proceed.');
+            return;
+        }
+
+        // Show loading state
+        const submitBtn = this.querySelector('button[type="submit"]');
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Processing...';
+        submitBtn.disabled = true;
+    });
+
+    // Real-time checkbox validation
+    const checkboxes = form.querySelectorAll('input[type="checkbox"][required]');
+    checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            if (this.checked) {
+                this.classList.remove('is-invalid');
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

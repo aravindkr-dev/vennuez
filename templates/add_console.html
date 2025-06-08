@@ -1,0 +1,202 @@
+{% extends "base.html" %}
+
+{% block title %}Add Console - Gaming Center Hub{% endblock %}
+
+{% block content %}
+<div class="form-page">
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="row align-items-center">
+            <div class="col">
+                <h1 class="page-title">
+                    <i class="fas fa-gamepad me-3"></i>Add New Console
+                </h1>
+                <p class="page-subtitle">Register a new gaming console to your center</p>
+            </div>
+            <div class="col-auto">
+                <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="form-card">
+                <div class="form-header">
+                    <h3 class="form-title">Console Information</h3>
+                    <p class="form-subtitle">Fill in the details for your new gaming console</p>
+                </div>
+
+                <form method="POST" class="console-form">
+                    <div class="form-group">
+                        <label for="name" class="form-label">
+                            <i class="fas fa-tag me-2"></i>Console Name *
+                        </label>
+                        <input type="text" class="form-control" id="name" name="name" required
+                               placeholder="e.g., PS5 Console #1, Gaming PC Pro">
+                        <div class="form-text">Give your console a unique identifier</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="console_type" class="form-label">
+                            <i class="fas fa-gamepad me-2"></i>Console Type *
+                        </label>
+                        <select class="form-select" id="console_type" name="console_type" required>
+                            <option value="">Select console type</option>
+                            <option value="PS5">PlayStation 5</option>
+                            <option value="PS4">PlayStation 4</option>
+                            <option value="Xbox Series X">Xbox Series X</option>
+                            <option value="Xbox Series S">Xbox Series S</option>
+                            <option value="Xbox One">Xbox One</option>
+                            <option value="Nintendo Switch">Nintendo Switch</option>
+                            <option value="Gaming PC">Gaming PC</option>
+                            <option value="VR Setup">VR Setup</option>
+                            <option value="Arcade Machine">Arcade Machine</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="hourly_rate" class="form-label">
+                            <i class="fas fa-rupee-sign me-2"></i>Hourly Rate *
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text">₹</span>
+                            <input type="number" class="form-control" id="hourly_rate" name="hourly_rate"
+                                   min="1" step="1" required placeholder="150">
+                            <span class="input-group-text">per hour</span>
+                        </div>
+                        <div class="form-text">Set competitive pricing for your console</div>
+                    </div>
+
+                    <!-- Console Features (Optional) -->
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-star me-2"></i>Console Features
+                        </label>
+                        <div class="feature-checkboxes">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="4k_support">
+                                <label class="form-check-label" for="4k_support">
+                                    4K Gaming Support
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="online_multiplayer">
+                                <label class="form-check-label" for="online_multiplayer">
+                                    Online Multiplayer
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="premium_games">
+                                <label class="form-check-label" for="premium_games">
+                                    Premium Games Library
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="wireless_controllers">
+                                <label class="form-check-label" for="wireless_controllers">
+                                    Wireless Controllers
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Pricing Suggestions -->
+                    <div class="pricing-suggestions">
+                        <h6 class="suggestions-title">
+                            <i class="fas fa-lightbulb me-2"></i>Pricing Suggestions
+                        </h6>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="suggestion-card">
+                                    <div class="suggestion-type">PlayStation 5</div>
+                                    <div class="suggestion-price">₹200-300/hr</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="suggestion-card">
+                                    <div class="suggestion-type">Gaming PC</div>
+                                    <div class="suggestion-price">₹150-250/hr</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="suggestion-card">
+                                    <div class="suggestion-type">Xbox Series X</div>
+                                    <div class="suggestion-price">₹180-280/hr</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="suggestion-card">
+                                    <div class="suggestion-type">Nintendo Switch</div>
+                                    <div class="suggestion-price">₹120-200/hr</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-plus me-2"></i>Add Console
+                        </button>
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary btn-lg">
+                            Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const consoleType = document.getElementById('console_type');
+    const hourlyRate = document.getElementById('hourly_rate');
+
+    // Auto-suggest pricing based on console type
+    const pricingSuggestions = {
+        'PS5': 250,
+        'PS4': 150,
+        'Xbox Series X': 230,
+        'Xbox Series S': 180,
+        'Xbox One': 130,
+        'Nintendo Switch': 160,
+        'Gaming PC': 200,
+        'VR Setup': 300,
+        'Arcade Machine': 100
+    };
+
+    consoleType.addEventListener('change', function() {
+        const selectedType = this.value;
+        if (pricingSuggestions[selectedType]) {
+            hourlyRate.value = pricingSuggestions[selectedType];
+            hourlyRate.focus();
+        }
+    });
+
+    // Form validation
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function(e) {
+        const name = document.getElementById('name').value.trim();
+        const type = document.getElementById('console_type').value;
+        const rate = parseFloat(document.getElementById('hourly_rate').value);
+
+        if (!name || !type || !rate || rate <= 0) {
+            e.preventDefault();
+            alert('Please fill in all required fields with valid values.');
+            return;
+        }
+
+        // Show loading state
+        const submitBtn = this.querySelector('button[type="submit"]');
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Adding Console...';
+        submitBtn.disabled = true;
+    });
+});
+</script>
+{% endblock %}
