@@ -1,193 +1,151 @@
 {% extends "base.html" %}
-
+{% block title %}BooknPlay - Gaming Center Management{% endblock %}
 {% block content %}
-<!-- Hero Section -->
-<div class="hero-section">
-    <div class="hero-content">
-        <div class="container">
-            <div class="row justify-content-center text-center">
-                <div class="col-lg-8">
-                    <div class="hero-icon mb-4">
-                        <i class="fas fa-gamepad"></i>
-                    </div>
-                    <h1 class="hero-title mb-4">Gaming Center Hub</h1>
-                    <p class="hero-subtitle mb-5">Connect gaming centers with players. Manage bookings, consoles, and grow your business with our modern platform.</p>
+<section class="hero-section" style="padding: 4rem 0; background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.1) 0%, rgba(var(--primary-rgb), 0.05) 100%); position: relative; overflow: hidden;">
+    <div class="container" style="position: relative; z-index: 2;">
+        <div style="max-width: 800px; margin: 0 auto; text-align: center;">
+            <!-- Hero Icon -->
+            <div class="hero-icon" style="display: inline-flex; align-items: center; justify-content: center; width: 80px; height: 80px; background: var(--accent); border-radius: 20px; margin-bottom: 2rem; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+                <i class="fas fa-gamepad" style="font-size: 2.5rem; color: white;"></i>
+            </div>
 
-                    <div class="hero-buttons d-flex justify-content-center gap-3 flex-wrap">
-                        <a href="{{ url_for('available_slots') }}" class="btn btn-primary btn-lg">
-                            <i class="fas fa-search me-2"></i>Find Gaming Slots
-                        </a>
-                        {% if not session.username %}
-                        <a href="{{ url_for('register') }}" class="btn btn-success btn-lg">
-                            <i class="fas fa-store me-2"></i>Register Your Center
-                        </a>
-                        {% else %}
-                        <a href="{{ url_for('dashboard') }}" class="btn btn-success btn-lg">
-                            <i class="fas fa-tachometer-alt me-2"></i>Go to Dashboard
-                        </a>
-                        {% endif %}
-                    </div>
+            <!-- Main Heading -->
+            <h1 style="font-size: clamp(2.5rem, 5vw, 4rem); font-weight: 800; margin-bottom: 1.5rem; background: linear-gradient(135deg, var(--primary), var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">BooknPlay</h1>
+
+            <!-- Subtitle -->
+            <p style="font-size: clamp(1.1rem, 2vw, 1.3rem); color: var(--secondary); margin-bottom: 3rem; line-height: 1.6; max-width: 600px; margin-left: auto; margin-right: auto;">The modern platform for booking and managing gaming centers. Seamless experiences for gamers and center owners alike.</p>
+
+            <!-- Primary CTA -->
+            <div style="margin-bottom: 3rem;">
+                <a href="{{ url_for('available_slots') }}" class="btn" style="padding: 1rem 2.5rem; font-size: 1.1rem; font-weight: 600; border-radius: 50px; box-shadow: 0 8px 25px rgba(var(--accent-rgb), 0.3); transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 0.5rem;">
+                    <i class="fas fa-search"></i>
+                    <span>Find Gaming Slots</span>
+                </a>
+            </div>
+
+            <!-- Current User Center Display -->
+            {% if session.username and session.user_type == 'owner' %}
+                {% set center_name = owner.gaming_center_name if owner and owner.gaming_center_name else session.gaming_center_name if session.gaming_center_name else None %}
+                {% if center_name %}
+                <div style="background: rgba(255,255,255,0.9); backdrop-filter: blur(10px); border-radius: 16px; padding: 1.5rem; margin: 0 auto; max-width: 400px; border: 1px solid rgba(var(--primary-rgb), 0.1); box-shadow: 0 8px 32px rgba(0,0,0,0.1);">
+                    <div style="font-size: 0.9rem; color: var(--secondary); margin-bottom: 0.5rem; font-weight: 500;">Your Gaming Center</div>
+                    <a href="{{ url_for('dashboard') }}" style="font-size: 1.2rem; font-weight: 700; color: var(--primary); text-decoration: none; display: flex; align-items: center; gap: 0.5rem; transition: color 0.3s ease;">
+                        <i class="fas fa-store"></i>
+                        <span>{{ center_name }}</span>
+                    </a>
+                </div>
+                {% endif %}
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Decorative Elements -->
+    <div style="position: absolute; top: 10%; right: -5%; width: 200px; height: 200px; background: linear-gradient(45deg, var(--accent), var(--primary)); border-radius: 50%; opacity: 0.1; z-index: 1;"></div>
+    <div style="position: absolute; bottom: 10%; left: -5%; width: 150px; height: 150px; background: linear-gradient(45deg, var(--primary), var(--accent)); border-radius: 50%; opacity: 0.1; z-index: 1;"></div>
+</section>
+
+<!-- Authentication Section -->
+{% if not session.username %}
+<section style="padding: 3rem 0; background: white;">
+    <div class="container">
+        <div style="text-align: center; margin-bottom: 3rem;">
+            <h2 style="font-size: 2.2rem; font-weight: 700; margin-bottom: 1rem; color: var(--primary);">Get Started</h2>
+            <p style="color: var(--secondary); font-size: 1.1rem;">Choose your path to join the BooknPlay community</p>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; max-width: 1000px; margin: 0 auto;">
+            <!-- For Gamers -->
+            <div class="card" style="padding: 2.5rem; text-align: center; border-radius: 20px; border: 2px solid transparent; background: linear-gradient(white, white) padding-box, linear-gradient(135deg, var(--primary), var(--accent)) border-box; transition: all 0.3s ease; position: relative; overflow: hidden;">
+                <div style="background: linear-gradient(135deg, var(--primary), var(--accent)); width: 60px; height: 60px; border-radius: 15px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem auto;">
+                    <i class="fas fa-user" style="font-size: 1.5rem; color: white;"></i>
+                </div>
+                <h3 style="font-size: 1.4rem; font-weight: 700; margin-bottom: 1rem; color: var(--primary);">For Gamers</h3>
+                <p style="color: var(--secondary); margin-bottom: 2rem; line-height: 1.6;">Join as a player to book gaming slots and enjoy seamless gaming experiences.</p>
+                <div style="display: flex; flex-direction: column; gap: 1rem;">
+                    <a href="{{ url_for('user_register') }}" class="btn btn-secondary" style="width: 100%; justify-content: center; display: flex; align-items: center; gap: 0.5rem; border-radius: 12px; padding: 0.75rem 1.5rem;">
+                        <i class="fas fa-user-plus"></i> Sign Up
+                    </a>
+                    <a href="{{ url_for('user_login') }}" style="color: var(--primary); text-decoration: none; font-weight: 600; padding: 0.75rem; border: 2px solid var(--primary); border-radius: 12px; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                        <i class="fas fa-sign-in-alt"></i> Sign In
+                    </a>
+                </div>
+            </div>
+
+            <!-- For Center Owners -->
+            <div class="card" style="padding: 2.5rem; text-align: center; border-radius: 20px; border: 2px solid transparent; background: linear-gradient(white, white) padding-box, linear-gradient(135deg, var(--accent), var(--primary)) border-box; transition: all 0.3s ease; position: relative; overflow: hidden;">
+                <div style="background: linear-gradient(135deg, var(--accent), var(--primary)); width: 60px; height: 60px; border-radius: 15px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem auto;">
+                    <i class="fas fa-store" style="font-size: 1.5rem; color: white;"></i>
+                </div>
+                <h3 style="font-size: 1.4rem; font-weight: 700; margin-bottom: 1rem; color: var(--primary);">For Center Owners</h3>
+                <p style="color: var(--secondary); margin-bottom: 2rem; line-height: 1.6;">Register your gaming center and manage bookings with our powerful platform.</p>
+                <div>
+                    <a href="{{ url_for('register') }}" class="btn" style="width: 100%; justify-content: center; display: flex; align-items: center; gap: 0.5rem; border-radius: 12px; padding: 0.75rem 1.5rem;">
+                        <i class="fas fa-store"></i> Register Center
+                    </a>
                 </div>
             </div>
         </div>
     </div>
-</div>
+</section>
+{% endif %}
 
 <!-- Features Section -->
-<div class="features-section py-5">
+<section style="padding: 4rem 0; background: var(--muted);">
     <div class="container">
-        <div class="row g-4">
-            <div class="col-lg-6">
-                <div class="feature-card h-100">
-                    <div class="feature-icon">
-                        <i class="fas fa-user-friends"></i>
-                    </div>
-                    <h3 class="feature-title">For Players</h3>
-                    <p class="feature-description">Browse available gaming slots across different centers. Book your favorite console and pay online with ease.</p>
+        <div style="text-align: center; margin-bottom: 3rem;">
+            <h2 style="font-size: 2.2rem; font-weight: 700; margin-bottom: 1rem; color: var(--primary);">Why Choose BooknPlay?</h2>
+            <p style="color: var(--secondary); font-size: 1.1rem; max-width: 600px; margin: 0 auto;">Experience the future of gaming center management with our innovative platform</p>
+        </div>
 
-                    <ul class="feature-list">
-                        <li><i class="fas fa-check text-success me-2"></i>Real-time slot availability</li>
-                        <li><i class="fas fa-check text-success me-2"></i>Multiple console options</li>
-                        <li><i class="fas fa-check text-success me-2"></i>Secure online payments</li>
-                        <li><i class="fas fa-check text-success me-2"></i>Instant booking confirmation</li>
-                    </ul>
-
-                    <a href="{{ url_for('available_slots') }}" class="btn btn-primary mt-3">
-                        Browse Gaming Slots
-                    </a>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; max-width: 1200px; margin: 0 auto;">
+            <div style="background: white; padding: 2rem; border-radius: 16px; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.08); transition: transform 0.3s ease;">
+                <div style="background: linear-gradient(135deg, var(--primary), var(--accent)); width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem auto;">
+                    <i class="fas fa-bolt" style="font-size: 1.2rem; color: white;"></i>
                 </div>
+                <h4 style="font-weight: 700; margin-bottom: 0.5rem; color: var(--primary);">Instant Booking</h4>
+                <p style="color: var(--secondary); font-size: 0.9rem; line-height: 1.5;">Book your gaming slots instantly with real-time availability</p>
             </div>
 
-            <div class="col-lg-6">
-                <div class="feature-card h-100">
-                    <div class="feature-icon">
-                        <i class="fas fa-store"></i>
-                    </div>
-                    <h3 class="feature-title">For Gaming Center Owners</h3>
-                    <p class="feature-description">Manage your gaming center, consoles, and bookings all in one place. Increase your revenue with online presence.</p>
-
-                    <ul class="feature-list">
-                        <li><i class="fas fa-check text-success me-2"></i>Console management system</li>
-                        <li><i class="fas fa-check text-success me-2"></i>Flexible slot scheduling</li>
-                        <li><i class="fas fa-check text-success me-2"></i>Booking management</li>
-                        <li><i class="fas fa-check text-success me-2"></i>Revenue tracking</li>
-                    </ul>
-
-                    {% if not session.username %}
-                    <a href="{{ url_for('register') }}" class="btn btn-success mt-3">
-                        Register Your Center
-                    </a>
-                    {% else %}
-                    <a href="{{ url_for('dashboard') }}" class="btn btn-success mt-3">
-                        Go to Dashboard
-                    </a>
-                    {% endif %}
+            <div style="background: white; padding: 2rem; border-radius: 16px; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.08); transition: transform 0.3s ease;">
+                <div style="background: linear-gradient(135deg, var(--accent), var(--primary)); width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem auto;">
+                    <i class="fas fa-shield-alt" style="font-size: 1.2rem; color: white;"></i>
                 </div>
+                <h4 style="font-weight: 700; margin-bottom: 0.5rem; color: var(--primary);">Secure Platform</h4>
+                <p style="color: var(--secondary); font-size: 0.9rem; line-height: 1.5;">Your data and transactions are protected with industry-standard security</p>
+            </div>
+
+            <div style="background: white; padding: 2rem; border-radius: 16px; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.08); transition: transform 0.3s ease;">
+                <div style="background: linear-gradient(135deg, var(--primary), var(--accent)); width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem auto;">
+                    <i class="fas fa-headset" style="font-size: 1.2rem; color: white;"></i>
+                </div>
+                <h4 style="font-weight: 700; margin-bottom: 0.5rem; color: var(--primary);">24/7 Support</h4>
+                <p style="color: var(--secondary); font-size: 0.9rem; line-height: 1.5;">Round-the-clock support for all your gaming and booking needs</p>
+            </div>
+
+            <div style="background: white; padding: 2rem; border-radius: 16px; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.08); transition: transform 0.3s ease;">
+                <div style="background: linear-gradient(135deg, var(--accent), var(--primary)); width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem auto;">
+                    <i class="fas fa-chart-line" style="font-size: 1.2rem; color: white;"></i>
+                </div>
+                <h4 style="font-weight: 700; margin-bottom: 0.5rem; color: var(--primary);">Analytics Dashboard</h4>
+                <p style="color: var(--secondary); font-size: 0.9rem; line-height: 1.5;">Powerful insights and analytics for center owners to optimize operations</p>
             </div>
         </div>
     </div>
-</div>
+</section>
 
-<!-- Console Types Section -->
-<div class="console-types-section py-5 bg-light">
-    <div class="container">
-        <div class="text-center mb-5">
-            <h2 class="section-title">Popular Console Types</h2>
-            <p class="section-subtitle">Choose from a variety of gaming platforms</p>
-        </div>
-
-        <div class="row g-4">
-            <div class="col-md-3 col-sm-6">
-                <div class="console-type-card text-center">
-                    <div class="console-icon">
-                        <i class="fab fa-playstation"></i>
-                    </div>
-                    <h5>PlayStation 5</h5>
-                    <p class="small text-muted">Latest Sony gaming console</p>
-                </div>
-            </div>
-
-            <div class="col-md-3 col-sm-6">
-                <div class="console-type-card text-center">
-                    <div class="console-icon">
-                        <i class="fab fa-xbox"></i>
-                    </div>
-                    <h5>Xbox Series X</h5>
-                    <p class="small text-muted">Microsoft's flagship console</p>
-                </div>
-            </div>
-
-            <div class="col-md-3 col-sm-6">
-                <div class="console-type-card text-center">
-                    <div class="console-icon">
-                        <i class="fas fa-desktop"></i>
-                    </div>
-                    <h5>Gaming PC</h5>
-                    <p class="small text-muted">High-performance gaming rigs</p>
-                </div>
-            </div>
-
-            <div class="col-md-3 col-sm-6">
-                <div class="console-type-card text-center">
-                    <div class="console-icon">
-                        <i class="fas fa-gamepad"></i>
-                    </div>
-                    <h5>Nintendo Switch</h5>
-                    <p class="small text-muted">Portable gaming experience</p>
-                </div>
-            </div>
-        </div>
+<!-- Final CTA Section -->
+<section style="padding: 4rem 0; background: linear-gradient(135deg, var(--primary), var(--accent)); color: white; text-align: center; position: relative; overflow: hidden;">
+    <div class="container" style="position: relative; z-index: 2;">
+        <h2 style="font-size: 2.5rem; font-weight: 800; margin-bottom: 1rem;">Ready to Level Up?</h2>
+        <p style="font-size: 1.2rem; opacity: 0.9; margin-bottom: 2.5rem; max-width: 600px; margin-left: auto; margin-right: auto;">Join the gaming revolution and experience seamless booking and management</p>
+        <a href="{{ url_for('available_slots') }}" style="background: white; color: var(--primary); padding: 1rem 2.5rem; border-radius: 50px; text-decoration: none; font-weight: 700; font-size: 1.1rem; display: inline-flex; align-items: center; gap: 0.5rem; box-shadow: 0 8px 25px rgba(0,0,0,0.2); transition: all 0.3s ease;">
+            <i class="fas fa-rocket"></i>
+            <span>Start Gaming Now</span>
+        </a>
     </div>
-</div>
 
-<!-- Statistics Section -->
-<div class="stats-section py-5">
-    <div class="container">
-        <div class="row text-center g-4">
-            <div class="col-md-3">
-                <div class="stat-card">
-                    <div class="stat-number">500+</div>
-                    <div class="stat-label">Gaming Centers</div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="stat-card">
-                    <div class="stat-number">1000+</div>
-                    <div class="stat-label">Consoles Available</div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="stat-card">
-                    <div class="stat-number">50K+</div>
-                    <div class="stat-label">Happy Gamers</div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="stat-card">
-                    <div class="stat-number">24/7</div>
-                    <div class="stat-label">Booking Support</div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- CTA Section -->
-<div class="cta-section py-5">
-    <div class="container text-center">
-        <h2 class="cta-title mb-3">Ready to get started?</h2>
-        <p class="cta-subtitle mb-4">Join hundreds of gaming centers and thousands of players on our platform</p>
-
-        {% if not session.username %}
-        <div class="d-flex justify-content-center gap-3 flex-wrap">
-            <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg">
-                <i class="fas fa-user-plus me-2"></i>Register as Owner
-            </a>
-            <a href="{{ url_for('available_slots') }}" class="btn btn-outline-primary btn-lg">
-                <i class="fas fa-search me-2"></i>Browse Slots
-            </a>
-        </div>
-        {% endif %}
-    </div>
-</div>
+    <!-- Decorative Elements -->
+    <div style="position: absolute; top: -50px; right: -50px; width: 200px; height: 200px; background: rgba(255,255,255,0.1); border-radius: 50%; z-index: 1;"></div>
+    <div style="position: absolute; bottom: -100px; left: -100px; width: 300px; height: 300px; background: rgba(255,255,255,0.05); border-radius: 50%; z-index: 1;"></div>
+</section>
 {% endblock %}

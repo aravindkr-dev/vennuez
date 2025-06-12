@@ -2130,4 +2130,224 @@
     window.copyToClipboard = copyToClipboard;
 
     console.log('Gaming Center Hub - All functionality loaded');
+
+    // Simple Booking Flow
+    document.addEventListener('DOMContentLoaded', function() {
+        const bookingFlow = {
+            currentStep: 1,
+            selectedDate: null,
+            selectedTime: null,
+            selectedConsole: null,
+            
+            init() {
+                this.setupEventListeners();
+                this.showStep(1);
+            },
+
+            setupEventListeners() {
+                // Date selection
+                document.querySelectorAll('.date-item').forEach(item => {
+                    item.addEventListener('click', (e) => {
+                        this.selectDate(e.target.dataset.date);
+                    });
+                });
+
+                // Time slot selection
+                document.querySelectorAll('.time-slot').forEach(slot => {
+                    slot.addEventListener('click', (e) => {
+                        if (!e.target.classList.contains('booked')) {
+                            this.selectTimeSlot(e.target);
+                        }
+                    });
+                });
+
+                // Console selection
+                document.querySelectorAll('.console-card').forEach(card => {
+                    card.addEventListener('click', () => {
+                        this.selectConsole(card);
+                    });
+                });
+
+                // Navigation
+                document.querySelectorAll('.nav-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const action = e.target.dataset.action;
+                        if (action === 'next') this.nextStep();
+                        if (action === 'prev') this.prevStep();
+                    });
+                });
+
+                // Form submission
+                const form = document.getElementById('booking-form');
+                if (form) {
+                    form.addEventListener('submit', (e) => {
+                        e.preventDefault();
+                        this.submitBooking();
+                    });
+                }
+            },
+
+            selectDate(date) {
+                this.selectedDate = date;
+                console.log("Selected date:", date);  // Debug print
+                document.querySelectorAll('.date-item').forEach(item => {
+                    item.classList.toggle('selected', item.dataset.date === date);
+                });
+                this.updateTimeSlots();
+            },
+
+            selectTimeSlot(slot) {
+                this.selectedTime = slot.dataset.time;
+                document.querySelectorAll('.time-slot').forEach(s => {
+                    s.classList.remove('selected');
+                });
+                slot.classList.add('selected');
+            },
+
+            selectConsole(card) {
+                this.selectedConsole = card.dataset.consoleId;
+                document.querySelectorAll('.console-card').forEach(c => {
+                    c.classList.remove('selected');
+                });
+                card.classList.add('selected');
+            },
+
+            showStep(step) {
+                document.querySelectorAll('.booking-step').forEach(s => {
+                    s.style.display = parseInt(s.dataset.step) === step ? 'block' : 'none';
+                });
+                this.currentStep = step;
+                this.updateNavigation();
+                this.updateSummary();
+            },
+
+            nextStep() {
+                if (this.validateCurrentStep()) {
+                    this.showStep(this.currentStep + 1);
+                }
+            },
+
+            prevStep() {
+                this.showStep(this.currentStep - 1);
+            },
+
+            validateCurrentStep() {
+                switch(this.currentStep) {
+                    case 1:
+                        if (!this.selectedDate || !this.selectedTime) {
+                            this.showToast('Please select a date and time');
+                            return false;
+                        }
+                        break;
+                    case 2:
+                        if (!this.selectedConsole) {
+                            this.showToast('Please select a console');
+                            return false;
+                        }
+                        break;
+                }
+                return true;
+            },
+
+            updateTimeSlots() {
+                const container = document.querySelector('.time-slots');
+                container.innerHTML = '<div class="loading"></div>';
+                console.log("Selected date:", this.selectedDate);  // Debug print
+
+                fetch(`/api/available-slots?date=${this.selectedDate}&console_id=${typeof CONSOLE_ID !== 'undefined' ? CONSOLE_ID : ''}`)
+                    .then(response => response.json())
+                    .then(slots => {
+                        console.log("API response:", slots);  // Debug print
+                        container.innerHTML = slots.map(slot => `
+                            <div class="time-slot ${slot.isBooked ? 'booked' : ''}" 
+                                 data-time="${slot.time}"
+                                 ${slot.isBooked ? 'disabled' : ''}>
+                                ${slot.time}
+                            </div>
+                        `).join('');
+                        // Attach click event to each time-slot
+                        container.querySelectorAll('.time-slot').forEach(slotEl => {
+                            if (!slotEl.classList.contains('booked')) {
+                                slotEl.addEventListener('click', () => {
+                                    window.bookingFlow.selectTimeSlot(slotEl);
+                                });
+                            }
+                        });
+                    })
+                    .catch(() => {
+                        this.showToast('Error loading time slots');
+                    });
+            },
+
+            updateNavigation() {
+                const prevBtn = document.querySelector('[data-action="prev"]');
+                const nextBtn = document.querySelector('[data-action="next"]');
+                
+                prevBtn.style.display = this.currentStep === 1 ? 'none' : 'block';
+                nextBtn.style.display = this.currentStep === 3 ? 'none' : 'block';
+            },
+
+            updateSummary() {
+                if (this.currentStep === 3) {
+                    // Update booking summary
+                    document.getElementById('summary-date').textContent = this.selectedDate;
+                    document.getElementById('summary-time').textContent = this.selectedTime;
+                    
+                    const selectedConsole = document.querySelector('.console-card.selected');
+                    if (selectedConsole) {
+                        document.getElementById('summary-console').textContent = 
+                            `${selectedConsole.querySelector('h3').textContent} (${selectedConsole.querySelector('p').textContent})`;
+                    }
+                }
+            },
+
+            submitBooking() {
+                const form = document.getElementById('booking-form');
+                const formData = new FormData(form);
+                // Add selected items to form data
+                formData.append('date', this.selectedDate);
+                formData.append('time', this.selectedTime);
+                formData.append('console_id', typeof CONSOLE_ID !== 'undefined' ? CONSOLE_ID : this.selectedConsole);
+
+                // Show loading state
+                const submitBtn = form.querySelector('button[type="submit"]');
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<span class="loading"></span> Processing...';
+
+                // Submit booking
+                fetch('/api/book-slot', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        window.location.href = `/payment/${data.booking_id}`;
+                    } else {
+                        this.showToast(data.message || 'Booking failed');
+                    }
+                })
+                .catch(() => {
+                    this.showToast('Error processing booking');
+                })
+                .finally(() => {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Confirm Booking';
+                });
+            },
+
+            showToast(message) {
+                const toast = document.createElement('div');
+                toast.className = 'toast';
+                toast.textContent = message;
+                document.body.appendChild(toast);
+                
+                setTimeout(() => {
+                    toast.remove();
+                }, 3000);
+            }
+        };
+        window.bookingFlow = bookingFlow;
+        bookingFlow.init();
+    });
 })();

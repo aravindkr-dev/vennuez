@@ -1,191 +1,106 @@
 {% extends "base.html" %}
 
-{% block title %}Register - Gaming Center Hub{% endblock %}
+{% block title %}Register - BooknPlay{% endblock %}
 
 {% block content %}
-<div class="auth-page">
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-md-8 col-lg-7">
-                <div class="auth-card">
-                    <div class="auth-header">
-                        <div class="auth-icon">
+<section class="auth-page" style="padding: 2rem 0;">
+    <div class="container" style="max-width: 500px;">
+        <div class="card" style="margin: 0 auto;">
+            <div class="auth-header" style="text-align: center; margin-bottom: 2rem;">
+                <div class="auth-icon" style="font-size: 2.5rem; color: var(--accent); margin-bottom: 1rem;">
                             <i class="fas fa-store"></i>
                         </div>
-                        <h2 class="auth-title">Register Your Gaming Center</h2>
-                        <p class="auth-subtitle">Join our platform and start managing your gaming business</p>
+                <h2 class="auth-title" style="font-size: 1.5rem; font-weight: 700; margin-bottom: 0.5rem;">Register Your Gaming Center</h2>
+                <p class="auth-subtitle" style="color: var(--secondary);">Join our platform and start managing your gaming business</p>
                     </div>
-
                     <form method="POST" class="auth-form">
-                        <!-- Personal Information -->
-                        <div class="form-section">
-                            <h5 class="form-section-title">
-                                <i class="fas fa-user me-2"></i>Personal Information
-                            </h5>
-
-                            <div class="row">
-                                <div class="col-md-6">
                                     <div class="form-group">
                                         <label for="username" class="form-label">Username *</label>
-                                        <input type="text" class="form-control" id="username" name="username" required
-                                               placeholder="Choose a unique username">
-                                        <div class="form-text">This will be your login username</div>
-                                    </div>
+                    <input type="text" class="form-control" id="username" name="username" required placeholder="Choose a unique username">
                                 </div>
-
-                                <div class="col-md-6">
                                     <div class="form-group">
-                                        <label for="email" class="form-label">Email Address *</label>
-                                        <input type="email" class="form-control" id="email" name="email" required
-                                               placeholder="your@email.com">
-                                    </div>
-                                </div>
+                    <label for="email" class="form-label">Email</label>
+                    <input type="email" class="form-control" id="email" name="email" placeholder="Enter your email">
                             </div>
-
-                            <div class="row">
-                                <div class="col-md-6">
                                     <div class="form-group">
-                                        <label for="password" class="form-label">Password *</label>
-                                        <div class="password-input">
-                                            <input type="password" class="form-control" id="password" name="password" required
-                                                   placeholder="Create a strong password" minlength="6">
-                                            <button type="button" class="password-toggle" onclick="togglePassword('password')">
-                                                <i class="fas fa-eye" id="password-eye"></i>
-                                            </button>
-                                        </div>
-                                        <div class="form-text">Minimum 6 characters</div>
-                                    </div>
+                    <label for="phone" class="form-label">Phone *</label>
+                    <input type="text" class="form-control" id="phone" name="phone" required placeholder="Enter your phone number">
                                 </div>
-
-                                <div class="col-md-6">
                                     <div class="form-group">
-                                        <label for="phone" class="form-label">Phone Number *</label>
-                                        <input type="tel" class="form-control" id="phone" name="phone" required
-                                               placeholder="+91 9876543210" pattern="[0-9+\-\s]+">
-                                    </div>
-                                </div>
-                            </div>
+                    <label for="center_name" class="form-label">Gaming Center Name *</label>
+                    <input type="text" class="form-control" id="center_name" name="center_name" required placeholder="Your center's name">
                         </div>
-
-                        <!-- Gaming Center Information -->
-                        <div class="form-section">
-                            <h5 class="form-section-title">
-                                <i class="fas fa-gamepad me-2"></i>Gaming Center Details
-                            </h5>
-
                             <div class="form-group">
-                                <label for="gaming_center_name" class="form-label">Gaming Center Name *</label>
-                                <input type="text" class="form-control" id="gaming_center_name" name="gaming_center_name" required
-                                       placeholder="e.g., GameZone Pro, Pixel Palace">
-                                <div class="form-text">This name will be visible to customers</div>
+                    <label for="address" class="form-label">Address *</label>
+                    <input type="text" class="form-control" id="address" name="address" required placeholder="Your center's address">
                             </div>
-
-                            <div class="form-group">
-                                <label for="address" class="form-label">Complete Address *</label>
-                                <textarea class="form-control" id="address" name="address" rows="3" required
-                                          placeholder="Enter your gaming center's full address including area, city, and pincode"></textarea>
-                                <div class="form-text">Include landmarks for easy customer navigation</div>
-                            </div>
+                <!-- Location fields: hidden, no labels -->
+                <input type="hidden" id="latitude" name="latitude">
+                <input type="hidden" id="longitude" name="longitude">
+                <div id="location-warning" style="color: red; display: none; margin-bottom: 1rem;">
+                    Location permission is required to register your center.
                         </div>
-
                         <div class="form-group">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="terms" required>
-                                <label class="form-check-label" for="terms">
-                                    I agree to the <a href="#" class="auth-link">Terms & Conditions</a> and
-                                    <a href="#" class="auth-link">Privacy Policy</a> *
-                                </label>
-                            </div>
-                        </div>
-
-                        <button type="submit" class="btn btn-success btn-lg w-100 auth-submit">
-                            <i class="fas fa-rocket me-2"></i>Register My Gaming Center
-                        </button>
-                    </form>
-
-                    <div class="auth-footer">
-                        <p class="text-center mb-0">
-                            Already have an account?
-                            <a href="{{ url_for('login') }}" class="auth-link">Login here</a>
-                        </p>
-                    </div>
+                    <label for="password" class="form-label">Password *</label>
+                    <input type="password" class="form-control" id="password" name="password" required placeholder="Create a password">
                 </div>
-
-                <!-- Benefits Section -->
-                <div class="benefits-card mt-4">
-                    <h6 class="text-center mb-3">
-                        <i class="fas fa-star me-2"></i>Why Join Gaming Center Hub?
-                    </h6>
-                    <div class="row text-center g-3">
-                        <div class="col-md-4">
-                            <div class="benefit-item">
-                                <i class="fas fa-chart-line text-success"></i>
-                                <span>Increase Revenue</span>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="benefit-item">
-                                <i class="fas fa-globe text-primary"></i>
-                                <span>Online Presence</span>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="benefit-item">
-                                <i class="fas fa-bolt text-warning"></i>
-                                <span>Easy Management</span>
-                            </div>
-                        </div>
-                    </div>
+                <div class="form-group">
+                    <label for="confirm_password" class="form-label">Confirm Password *</label>
+                    <input type="password" class="form-control" id="confirm_password" name="confirm_password" required placeholder="Re-enter your password">
                 </div>
-            </div>
+                <button type="submit" class="btn" style="width: 100%;">Register</button>
+            </form>
         </div>
     </div>
-</div>
-{% endblock %}
+</section>
 
-{% block extra_scripts %}
 <script>
-function togglePassword(inputId) {
-    const passwordInput = document.getElementById(inputId);
-    const passwordEye = document.getElementById(inputId + '-eye');
-
-    if (passwordInput.type === 'password') {
-        passwordInput.type = 'text';
-        passwordEye.classList.remove('fa-eye');
-        passwordEye.classList.add('fa-eye-slash');
-    } else {
-        passwordInput.type = 'password';
-        passwordEye.classList.remove('fa-eye-slash');
-        passwordEye.classList.add('fa-eye');
-    }
-}
-
-// Form validation enhancement
 document.addEventListener('DOMContentLoaded', function() {
-    const form = document.querySelector('form');
-    const password = document.getElementById('password');
-    const phone = document.getElementById('phone');
+    var registerBtn = document.querySelector('button[type="submit"]');
+    var latField = document.getElementById('latitude');
+    var lonField = document.getElementById('longitude');
+    var warning = document.getElementById('location-warning');
+    var form = document.querySelector('form.auth-form');
 
-    // Password strength indicator
-    password.addEventListener('input', function() {
-        const strength = this.value.length;
-        this.style.borderColor = strength < 6 ? '#dc3545' :
-                                 strength < 8 ? '#ffc107' : '#28a745';
-    });
+    if (registerBtn) registerBtn.disabled = true;
 
-    // Phone number formatting
-    phone.addEventListener('input', function() {
-        let value = this.value.replace(/\D/g, '');
-        if (value.length > 10) value = value.slice(0, 10);
-        this.value = value;
-    });
+    function enableIfLocation() {
+        if (latField.value && lonField.value) {
+            warning.style.display = 'none';
+            registerBtn.disabled = false;
+        } else {
+            warning.style.display = 'block';
+            registerBtn.disabled = true;
+        }
+    }
 
-    // Form submission loading state
-    form.addEventListener('submit', function() {
-        const submitBtn = this.querySelector('button[type="submit"]');
-        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Creating Account...';
-        submitBtn.disabled = true;
-    });
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function(position) {
+            latField.value = position.coords.latitude;
+            lonField.value = position.coords.longitude;
+            enableIfLocation();
+            console.log('Location success:', position.coords.latitude, position.coords.longitude);
+        }, function(error) {
+            warning.style.display = 'block';
+            registerBtn.disabled = true;
+            console.error('Location error:', error);
+        });
+    } else {
+        warning.style.display = 'block';
+        registerBtn.disabled = true;
+        console.error('Geolocation not supported');
+    }
+
+    // Prevent form submission if location is not set
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            if (!latField.value || !lonField.value) {
+                e.preventDefault();
+                warning.style.display = 'block';
+                registerBtn.disabled = true;
+            }
+        });
+    }
 });
 </script>
 {% endblock %}

@@ -1,315 +1,59 @@
 {% extends "base.html" %}
 
-{% block title %}Booking Confirmed - Gaming Center Hub{% endblock %}
+{% block title %}Booking Confirmation{% endblock %}
 
 {% block content %}
-<div class="confirmation-page">
-    <!-- Success Header -->
-    <div class="success-header">
-        <div class="success-icon">
-            <i class="fas fa-check-circle"></i>
+<div class="container" style="max-width: 800px; margin: 2rem auto;">
+    <div class="card">
+        <div class="card-header" style="background: var(--primary); color: white;">
+            <h2 style="margin: 0;">Booking Confirmation</h2>
         </div>
-        <h1 class="success-title">Booking Confirmed!</h1>
-        <p class="success-subtitle">Your gaming slot has been successfully booked</p>
-    </div>
-
-    <div class="row justify-content-center">
-        <div class="col-lg-8">
-            <!-- Booking Ticket -->
-            <div class="booking-ticket">
-                <div class="ticket-header">
-                    <div class="ticket-brand">
-                        <i class="fas fa-gamepad me-2"></i>
-                        <span>GAMING TICKET</span>
+        <div class="card-body">
+            <div class="booking-details">
+                <div class="row">
+                        <div class="col-md-6">
+                        <h3>Booking Information</h3>
+                        <p><strong>Booking ID:</strong> {{ slot.booking_id }}</p>
+                        <p><strong>Date:</strong> {{ slot.start_time.strftime('%d %b %Y') }}</p>
+                        <p><strong>Time:</strong> {{ slot.start_time.strftime('%I:%M %p') }} - {{ slot.end_time.strftime('%I:%M %p') }}</p>
+                        <p><strong>Duration:</strong> {{ ((slot.end_time - slot.start_time).total_seconds() / 3600)|round }} hours</p>
+                        <p><strong>Number of People:</strong> {{ slot.number_of_people }}</p>
                     </div>
-                    <div class="booking-id">
-                        <span class="id-label">Booking ID</span>
-                        <span class="id-value">{{ slot.booking_id }}</span>
-                    </div>
-                </div>
-
-                <div class="ticket-body">
-                    <div class="row g-4">
                         <div class="col-md-6">
-                            <div class="ticket-section">
-                                <h6 class="section-title">
-                                    <i class="fas fa-store me-2"></i>Venue Details
-                                </h6>
-                                <div class="section-content">
-                                    <div class="detail-item">
-                                        <span class="detail-label">Gaming Center:</span>
-                                        <span class="detail-value">{{ slot.console.owner.gaming_center_name }}</span>
-                                    </div>
-                                    <div class="detail-item">
-                                        <span class="detail-label">Address:</span>
-                                        <span class="detail-value">{{ slot.console.owner.address }}</span>
-                                    </div>
-                                    <div class="detail-item">
-                                        <span class="detail-label">Phone:</span>
-                                        <span class="detail-value">
-                                            <a href="tel:{{ slot.console.owner.phone }}" class="phone-link">
-                                                {{ slot.console.owner.phone }}
-                                            </a>
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="col-md-6">
-                            <div class="ticket-section">
-                                <h6 class="section-title">
-                                    <i class="fas fa-gamepad me-2"></i>Console Details
-                                </h6>
-                                <div class="section-content">
-                                    <div class="detail-item">
-                                        <span class="detail-label">Console:</span>
-                                        <span class="detail-value">{{ slot.console.name }}</span>
-                                    </div>
-                                    <div class="detail-item">
-                                        <span class="detail-label">Type:</span>
-                                        <span class="detail-value">{{ slot.console.console_type }}</span>
-                                    </div>
-                                    <div class="detail-item">
-                                        <span class="detail-label">Rate:</span>
-                                        <span class="detail-value">₹{{ slot.console.hourly_rate }}/hour</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="ticket-divider"></div>
-
-                    <div class="row g-4">
-                        <div class="col-md-6">
-                            <div class="ticket-section">
-                                <h6 class="section-title">
-                                    <i class="fas fa-user me-2"></i>Customer Details
-                                </h6>
-                                <div class="section-content">
-                                    <div class="detail-item">
-                                        <span class="detail-label">Name:</span>
-                                        <span class="detail-value">{{ slot.customer_name }}</span>
-                                    </div>
-                                    <div class="detail-item">
-                                        <span class="detail-label">Phone:</span>
-                                        <span class="detail-value">{{ slot.customer_phone }}</span>
-                                    </div>
-                                    {% if slot.customer_email %}
-                                    <div class="detail-item">
-                                        <span class="detail-label">Email:</span>
-                                        <span class="detail-value">{{ slot.customer_email }}</span>
-                                    </div>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="col-md-6">
-                            <div class="ticket-section">
-                                <h6 class="section-title">
-                                    <i class="fas fa-clock me-2"></i>Slot Details
-                                </h6>
-                                <div class="section-content">
-                                    <div class="detail-item">
-                                        <span class="detail-label">Date:</span>
-                                        <span class="detail-value">{{ slot.start_time.strftime('%d %B %Y') }}</span>
-                                    </div>
-                                    <div class="detail-item">
-                                        <span class="detail-label">Time:</span>
-                                        <span class="detail-value">{{ slot.start_time.strftime('%I:%M %p') }} - {{ slot.end_time.strftime('%I:%M %p') }}</span>
-                                    </div>
-                                    <div class="detail-item">
-                                        <span class="detail-label">Duration:</span>
-                                        <span class="detail-value">{{ ((slot.end_time - slot.start_time).total_seconds() // 3600)|int }} hours</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="ticket-divider"></div>
-
-                    <div class="row g-4">
-                        <div class="col-md-6">
-                            <div class="ticket-section">
-                                <h6 class="section-title">
-                                    <i class="fas fa-credit-card me-2"></i>Payment Details
-                                </h6>
-                                <div class="section-content">
-                                    <div class="detail-item">
-                                        <span class="detail-label">Total Amount:</span>
-                                        <span class="detail-value">₹{{ slot.total_amount }}</span>
-                                    </div>
-                                    <div class="detail-item">
-                                        <span class="detail-label">Advance Paid:</span>
-                                        <span class="detail-value paid">₹{{ slot.advance_paid }} ✓</span>
-                                    </div>
-                                    <div class="detail-item">
-                                        <span class="detail-label">Remaining:</span>
-                                        <span class="detail-value remaining">₹{{ slot.total_amount - slot.advance_paid }}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="col-md-6">
-                            <div class="important-notes">
-                                <h6 class="notes-title">
-                                    <i class="fas fa-exclamation-circle me-2"></i>Important Notes
-                                </h6>
-                                <ul class="notes-list">
-                                    <li>Arrive 10 minutes early</li>
-                                    <li>Bring this booking confirmation</li>
-                                    <li>Pay remaining amount at the center</li>
-                                    <li>No refund for late arrivals</li>
-                                </ul>
-                            </div>
-                        </div>
+                        <h3>Payment Details</h3>
+                        <p><strong>Base Amount:</strong> ₹{{ slot.total_amount }}</p>
+                        <p><strong>Advance Paid:</strong> ₹{{ slot.advance_paid }}</p>
+                        <p><strong>Remaining Amount:</strong> ₹{{ slot.total_amount - slot.advance_paid }}</p>
+                        <p><strong>Payment Status:</strong> {{ slot.payment_status|title }}</p>
                     </div>
                 </div>
-
-                <!-- QR Code Section (Optional) -->
-                <div class="ticket-footer">
-                    <div class="qr-section">
-                        <div class="qr-placeholder">
-                            <i class="fas fa-qrcode"></i>
-                            <span>Show this at center</span>
-                        </div>
-                        <div class="booking-reference">
-                            <strong>Reference:</strong> {{ slot.booking_id }}
-                        </div>
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <h3>Console Details</h3>
+                        <p><strong>Gaming Center:</strong> {{ slot.console.owner.gaming_center_name }}</p>
+                        <p><strong>Console Type:</strong> {{ slot.console.console_type }}</p>
+                        <p><strong>Location:</strong> {{ slot.console.owner.address }}</p>
+                    </div>
+                </div>
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <h3>Customer Information</h3>
+                        <p><strong>Name:</strong> {{ slot.customer_name }}</p>
+                        <p><strong>Phone:</strong> {{ slot.customer_phone }}</p>
+                        <p><strong>Email:</strong> {{ slot.customer_email }}</p>
+                        {% if slot.special_requests %}
+                        <p><strong>Special Requests:</strong> {{ slot.special_requests }}</p>
+                        {% endif %}
                     </div>
                 </div>
             </div>
-
-            <!-- Action Buttons -->
-            <div class="confirmation-actions">
-                <button onclick="window.print()" class="btn btn-primary btn-lg">
-                    <i class="fas fa-print me-2"></i>Print Ticket
-                </button>
-                <button onclick="shareBooking()" class="btn btn-outline-primary btn-lg">
-                    <i class="fas fa-share-alt me-2"></i>Share Details
-                </button>
-                <a href="{{ url_for('available_slots') }}" class="btn btn-success btn-lg">
-                    <i class="fas fa-gamepad me-2"></i>Book Another Slot
-                </a>
-            </div>
-
-            <!-- Next Steps -->
-            <div class="next-steps">
-                <h5 class="steps-title">
-                    <i class="fas fa-list-ol me-2"></i>What's Next?
-                </h5>
-                <div class="steps-grid">
-                    <div class="step-item">
-                        <div class="step-number">1</div>
-                        <div class="step-content">
-                            <h6>Save This Ticket</h6>
-                            <p>Print or screenshot this confirmation for your records</p>
-                        </div>
-                    </div>
-                    <div class="step-item">
-                        <div class="step-number">2</div>
-                        <div class="step-content">
-                            <h6>Arrive Early</h6>
-                            <p>Reach the gaming center 10 minutes before your slot time</p>
-                        </div>
-                    </div>
-                    <div class="step-item">
-                        <div class="step-number">3</div>
-                        <div class="step-content">
-                            <h6>Complete Payment</h6>
-                            <p>Pay the remaining ₹{{ slot.total_amount - slot.advance_paid }} at the center</p>
-                        </div>
-                    </div>
-                    <div class="step-item">
-                        <div class="step-number">4</div>
-                        <div class="step-content">
-                            <h6>Enjoy Gaming</h6>
-                            <p>Have an amazing gaming experience!</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Contact Support -->
-            <div class="support-section">
-                <div class="support-content">
-                    <h6><i class="fas fa-headset me-2"></i>Need Help?</h6>
-                    <p>If you have any questions or need to make changes to your booking, contact us:</p>
-                    <div class="support-options">
-                        <a href="tel:{{ slot.console.owner.phone }}" class="support-option">
-                            <i class="fas fa-phone"></i>
-                            <div>
-                                <strong>Gaming Center</strong>
-                                <span>{{ slot.console.owner.phone }}</span>
-                            </div>
-                        </a>
-                        <a href="mailto:support@gamingcenterhub.com" class="support-option">
-                            <i class="fas fa-envelope"></i>
-                            <div>
-                                <strong>Platform Support</strong>
-                                <span>support@gamingcenterhub.com</span>
-                            </div>
-                        </a>
-                    </div>
-                </div>
+            <div class="mt-4">
+                <a href="{{ url_for('available_slots') }}" class="btn btn-secondary">Back to Available Slots</a>
+                {% if slot.payment_status == 'pending' %}
+                <a href="{{ url_for('payment', booking_id=slot.booking_id) }}" class="btn btn-primary">Complete Payment</a>
+                {% endif %}
             </div>
         </div>
     </div>
 </div>
-{% endblock %}
-
-{% block extra_scripts %}
-<script>
-function shareBooking() {
-    const bookingDetails = `
-🎮 Gaming Slot Booked!
-
-📋 Booking ID: {{ slot.booking_id }}
-🎯 Console: {{ slot.console.name }} ({{ slot.console.console_type }})
-🏢 Center: {{ slot.console.owner.gaming_center_name }}
-📅 Date: {{ slot.start_time.strftime('%d %B %Y') }}
-⏰ Time: {{ slot.start_time.strftime('%I:%M %p') }} - {{ slot.end_time.strftime('%I:%M %p') }}
-💰 Total: ₹{{ slot.total_amount }}
-✅ Advance Paid: ₹{{ slot.advance_paid }}
-
-#GamingCenterHub #Gaming
-    `.trim();
-
-    if (navigator.share) {
-        navigator.share({
-            title: 'Gaming Slot Booking Confirmation',
-            text: bookingDetails,
-            url: window.location.href
-        });
-    } else {
-        // Fallback: Copy to clipboard
-        navigator.clipboard.writeText(bookingDetails).then(() => {
-            alert('Booking details copied to clipboard!');
-        });
-    }
-}
-
-// Print optimization
-window.addEventListener('beforeprint', function() {
-    document.body.classList.add('printing');
-});
-
-window.addEventListener('afterprint', function() {
-    document.body.classList.remove('printing');
-});
-
-// Auto-refresh warning
-document.addEventListener('DOMContentLoaded', function() {
-    window.addEventListener('beforeunload', function(e) {
-        if (performance.navigation.type === 1) {
-            e.preventDefault();
-            e.returnValue = 'Your booking is confirmed. Are you sure you want to refresh?';
-        }
-    });
-});
-</script>
 {% endblock %}

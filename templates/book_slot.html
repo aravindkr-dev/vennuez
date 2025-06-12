@@ -1,384 +1,284 @@
 {% extends "base.html" %}
-
-{% block title %}Book Gaming Slot - Gaming Center Hub{% endblock %}
-
+{% block title %}Book Gaming Slot{% endblock %}
 {% block content %}
-<div class="booking-page">
-    <!-- Page Header -->
-    <div class="page-header">
-        <div class="row align-items-center">
-            <div class="col">
-                <h1 class="page-title">
-                    <i class="fas fa-gamepad me-3"></i>Book Gaming Slot
-                </h1>
-                <p class="page-subtitle">Complete your booking details and secure your gaming session</p>
+<section class="booking-section" style="padding: 2rem 0;">
+    <div class="container" style="max-width: 600px;">
+        <div class="booking-steps" style="display: flex; justify-content: space-between; margin-bottom: 2rem;">
+            <div class="step active" data-step="1">
+                <div class="step-number">1</div>
+                <div class="step-label">Select Time</div>
             </div>
-            <div class="col-auto">
-                <a href="{{ url_for('available_slots') }}" class="btn btn-outline-secondary">
-                    <i class="fas fa-arrow-left me-2"></i>Back to Available Slots
-                </a>
+            <div class="step" data-step="2">
+                <div class="step-number">2</div>
+                <div class="step-label">Confirm</div>
             </div>
         </div>
+        <!-- Step 1: Date and Time Selection -->
+        <div class="booking-step" data-step="1">
+            <div class="card">
+                <h2>Select Date and Time</h2>
+                <div class="date-picker">
+                    <div class="date-grid">
+                        <!-- Debug print -->
+                        <div style="display: none;">Debug: {{ available_dates }}</div>
+                        <div style="display: none;">Debug: Slot console_id: {{ slot.console_id }}</div>
+                        <div style="display: none;">Debug: Selected date: {{ selected_date }}</div>
+                        {% if available_dates %}
+                            {% for date in available_dates %}
+                                <div class="date-item" data-date="{{ date }}">
+                                    {{ date }}
     </div>
-
-    <div class="row g-4">
-        <!-- Slot Details Sidebar -->
-        <div class="col-lg-4">
-            <div class="slot-details-card">
-                <div class="card-header">
-                    <h5 class="card-title">
-                        <i class="fas fa-info-circle me-2"></i>Slot Details
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div class="console-showcase">
-                        <div class="console-icon">
-                            {% if slot.console.console_type == 'PS5' %}
-                                <i class="fab fa-playstation"></i>
-                            {% elif slot.console.console_type == 'PS4' %}
-                                <i class="fab fa-playstation"></i>
-                            {% elif 'Xbox' in slot.console.console_type %}
-                                <i class="fab fa-xbox"></i>
-                            {% elif 'PC' in slot.console.console_type %}
-                                <i class="fas fa-desktop"></i>
-                            {% elif 'VR' in slot.console.console_type %}
-                                <i class="fas fa-vr-cardboard"></i>
+                            {% endfor %}
                             {% else %}
-                                <i class="fas fa-gamepad"></i>
-                            {% endif %}
-                        </div>
-                        <h5 class="console-name">{{ slot.console.name }}</h5>
-                        <p class="console-type">{{ slot.console.console_type }}</p>
-                    </div>
-
-                    <div class="slot-info">
-                        <div class="info-item">
-                            <i class="fas fa-calendar text-primary"></i>
-                            <div class="info-content">
-                                <span class="info-label">Date</span>
-                                <span class="info-value">{{ slot.start_time.strftime('%A, %d %B %Y') }}</span>
+                            <div style="text-align: center; padding: 1rem; color: #666;">
+                                No available dates found. Please check back later.
                             </div>
-                        </div>
-
-                        <div class="info-item">
-                            <i class="fas fa-clock text-success"></i>
-                            <div class="info-content">
-                                <span class="info-label">Time</span>
-                                <span class="info-value">{{ slot.start_time.strftime('%I:%M %p') }} - {{ slot.end_time.strftime('%I:%M %p') }}</span>
-                            </div>
-                        </div>
-
-                        <div class="info-item">
-                            <i class="fas fa-hourglass-half text-info"></i>
-                            <div class="info-content">
-                                <span class="info-label">Duration</span>
-                                <span class="info-value">{{ ((slot.end_time - slot.start_time).total_seconds() / 3600)|int }} hours</span>
-                            </div>
-                        </div>
-
-                        <div class="info-item">
-                            <i class="fas fa-rupee-sign text-warning"></i>
-                            <div class="info-content">
-                                <span class="info-label">Total Amount</span>
-                                <span class="info-value">₹{{ slot.total_amount }}</span>
-                            </div>
-                        </div>
-
-                        <div class="info-item">
-                            <i class="fas fa-credit-card text-success"></i>
-                            <div class="info-content">
-                                <span class="info-label">Advance Payment</span>
-                                <span class="info-value">₹{{ slot.advance_paid }}</span>
-                            </div>
-                        </div>
-
-                        <div class="info-item">
-                            <i class="fas fa-money-bill text-danger"></i>
-                            <div class="info-content">
-                                <span class="info-label">Balance at Center</span>
-                                <span class="info-value">₹{{ slot.total_amount - slot.advance_paid }}</span>
-                            </div>
-                        </div>
+                        {% endif %}
                     </div>
                 </div>
-            </div>
-
-            <!-- Gaming Center Info -->
-            <div class="center-info-card mt-4">
-                <div class="card-header">
-                    <h6 class="card-title">
-                        <i class="fas fa-store me-2"></i>Gaming Center
-                    </h6>
+                <div class="time-slots">
+                    <!-- Time slots will be populated by JavaScript -->
                 </div>
-                <div class="card-body">
-                    <h6 class="center-name">{{ slot.console.owner.gaming_center_name }}</h6>
-                    <div class="center-details">
-                        <div class="detail-item">
-                            <i class="fas fa-phone text-success"></i>
-                            <span>{{ slot.console.owner.phone }}</span>
+
+                <!-- Number of People Calculator -->
+                <div class="people-calculator" style="margin-top: 1rem; padding: 1rem; background: #f8f9fa; border-radius: 8px;">
+                    <h3 style="font-size: 1.1rem; margin-bottom: 1rem;">Number of People</h3>
+                    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="decrementPeople()">-</button>
+                        <input type="number" id="number_of_people" name="number_of_people" value="1" min="1" max="10" class="form-control" style="width: 80px; text-align: center;" onchange="updateTotalAmount()">
+                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="incrementPeople()">+</button>
+                    </div>
+                    <div class="amount-breakdown" style="background: white; padding: 1rem; border-radius: 4px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                            <span>Base Rate (per person per hour):</span>
+                            <span>₹{{ slot.console.hourly_rate }}</span>
                         </div>
-                        <div class="detail-item">
-                            <i class="fas fa-map-marker-alt text-danger"></i>
-                            <span>{{ slot.console.owner.address }}</span>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                            <span>Number of People:</span>
+                            <span id="people-display">1</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-weight: bold; border-top: 1px solid #dee2e6; padding-top: 0.5rem;">
+                            <span>Total Amount:</span>
+                            <span id="total-amount-display">₹0</span>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-
-        <!-- Booking Form -->
-        <div class="col-lg-8">
-            <div class="booking-form-card">
-                <div class="card-header">
-                    <h4 class="card-title">
-                        <i class="fas fa-user me-2"></i>Customer Details
-                    </h4>
+        <!-- Step 2: Booking Confirmation -->
+        <div class="booking-step" data-step="2" style="display: none;">
+            <div class="card">
+                <h2>Confirm Your Booking</h2>
+                <form id="booking-form" method="POST" action="{{ url_for('book_slot', slot_id=slot.id) }}">
+                    <input type="hidden" name="number_of_people" id="form_number_of_people">
+                    <input type="hidden" name="selected_date" id="form_selected_date">
+                    <input type="hidden" name="selected_time" id="form_selected_time">
+                    
+                    {% if user %}
+                    <div class="user-details">
+                        <h3>Your Details</h3>
+                        <p><strong>Name:</strong> {{ user.username }}</p>
+                        <p><strong>Phone:</strong> {{ user.phone }}</p>
+                        <p><strong>Email:</strong> {{ user.email }}</p>
                 </div>
-                <div class="card-body">
-                    <form method="POST" id="booking-form" class="booking-form">
-                        <!-- Personal Information -->
-                        <div class="form-section">
-                            <h5 class="section-title">Personal Information</h5>
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label for="customer_name" class="form-label">Full Name *</label>
-                                        {% if user %}
-                                            <input type="text" class="form-control" id="customer_name" name="customer_name"
-                                                   value="{{ user.username }}" readonly>
-                                            <div class="form-text">As per your user profile</div>
                                         {% else %}
-                                            <input type="text" class="form-control" id="customer_name" name="customer_name"
-                                                   placeholder="Enter your full name" required>
-                                            <div class="form-text">As per your ID proof</div>
+                    <div class="alert alert-warning">
+                        Please <a href="{{ url_for('login') }}">login</a> to book a slot.
+                                </div>
                                         {% endif %}
-                                    </div>
+
+                                    <div class="form-group">
+                        <label for="special_requests">Special Requests (Optional)</label>
+                        <textarea id="special_requests" name="special_requests" class="form-control" rows="3"></textarea>
                                 </div>
 
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label for="customer_phone" class="form-label">Phone Number *</label>
-                                        {% if user %}
-                                            <input type="tel" class="form-control" id="customer_phone" name="customer_phone"
-                                                   value="{{ user.phone }}" readonly>
-                                            <div class="form-text">As per your user profile</div>
-                                        {% else %}
-                                            <input type="tel" class="form-control" id="customer_phone" name="customer_phone"
-                                                   placeholder="10-digit mobile number" pattern="[0-9]{10}" required>
-                                            <div class="form-text">For booking confirmations and updates</div>
-                                        {% endif %}
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label for="customer_email" class="form-label">Email Address</label>
-                                        <input type="email" class="form-control" id="customer_email" name="customer_email"
-                                               placeholder="your.email@example.com">
-                                        <div class="form-text">Optional - for booking receipt</div>
-                                    </div>
-                                </div>
-
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label for="customer_age" class="form-label">Age</label>
-                                        <input type="number" class="form-control" id="customer_age" name="customer_age"
-                                               min="5" max="100" placeholder="Your age">
-                                        <div class="form-text">Required for age-restricted games</div>
-                                    </div>
-                                </div>
-                            </div>
+                    <div class="booking-summary">
+                        <h3>Booking Summary</h3>
+                        <div class="summary-item">
+                            <span>Date:</span>
+                            <span id="summary-date"></span>
                         </div>
-
-                        <!-- Special Requests -->
-                        <div class="form-section">
-                            <h5 class="section-title">Additional Information</h5>
-                            <div class="form-group">
-                                <label for="special_requests" class="form-label">Special Requests</label>
-                                <textarea class="form-control" id="special_requests" name="special_requests" rows="3"
-                                          placeholder="Any specific games, setup preferences, or special requirements..."></textarea>
-                                <div class="form-text">Optional - Let us know if you have any special requirements</div>
-                            </div>
+                        <div class="summary-item">
+                            <span>Time:</span>
+                            <span id="summary-time"></span>
                         </div>
-
-                        <!-- Payment Summary -->
-                        <div class="form-section">
-                            <h5 class="section-title">Payment Summary</h5>
-                            <div class="payment-summary">
                                 <div class="summary-item">
-                                    <span class="summary-label">Gaming Session ({{ ((slot.end_time - slot.start_time).total_seconds() / 3600)|int }} hours)</span>
-                                    <span class="summary-value">₹{{ slot.total_amount }}</span>
-                                </div>
-                                <div class="summary-item advance">
-                                    <span class="summary-label">Advance Payment (Online)</span>
-                                    <span class="summary-value">₹{{ slot.advance_paid }}</span>
-                                </div>
-                                <div class="summary-item balance">
-                                    <span class="summary-label">Balance at Center</span>
-                                    <span class="summary-value">₹{{ slot.total_amount - slot.advance_paid }}</span>
-                                </div>
-                                <div class="summary-divider"></div>
-                                <div class="summary-item total">
-                                    <span class="summary-label">Total Amount</span>
-                                    <span class="summary-value">₹{{ slot.total_amount }}</span>
-                                </div>
-                            </div>
+                            <span>Number of People:</span>
+                            <span id="summary-people"></span>
                         </div>
-
-                        <!-- Terms and Conditions -->
-                        <div class="form-section">
-                            <h5 class="section-title">Terms & Conditions</h5>
-                            <div class="terms-grid">
-                                <div class="terms-column">
-                                    <h6><i class="fas fa-gamepad me-2"></i>Gaming Rules</h6>
-                                    <ul>
-                                        <li>No food or drinks near the console</li>
-                                        <li>Handle controllers with care</li>
-                                        <li>Report any technical issues immediately</li>
-                                        <li>Follow age restrictions for games</li>
-                                    </ul>
-                                </div>
-                                <div class="terms-column">
-                                    <h6><i class="fas fa-credit-card me-2"></i>Payment & Cancellation</h6>
-                                    <ul>
-                                        <li>Advance payment is non-refundable</li>
-                                        <li>Cancellation allowed up to 2 hours before slot</li>
-                                        <li>Late arrival may result in reduced game time</li>
-                                        <li>Balance payment due at the center</li>
-                                    </ul>
-                                </div>
-                            </div>
+                        <div class="summary-item total">
+                            <span>Total Amount:</span>
+                            <span id="summary-total"></span>
                         </div>
-
-                        <!-- Agreement Checkboxes -->
-                        <div class="form-section">
-                            <div class="agreement-checks">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="agree-terms" required>
-                                    <label class="form-check-label" for="agree-terms">
-                                        I agree to the <strong>Terms & Conditions</strong> and <strong>Gaming Center Rules</strong>
-                                    </label>
                                 </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="agree-payment" required>
-                                    <label class="form-check-label" for="agree-payment">
-                                        I understand the <strong>Payment Policy</strong> and confirm advance payment of ₹{{ slot.advance_paid }}
-                                    </label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="confirm-details" required>
-                                    <label class="form-check-label" for="confirm-details">
-                                        I confirm that all details provided are <strong>accurate and complete</strong>
-                                    </label>
-                                </div>
-                            </div>
+                    <div class="form-group" style="margin-top: 1.5rem;">
+                        <div class="form-check" style="display: flex; align-items: center; flex-direction: row-reverse; justify-content: flex-end;">
+                            <input type="checkbox" id="terms" name="terms" class="form-check-input" required style="margin-left: 0.5rem;">
+                            <label class="form-check-label" for="terms">I agree to the terms and conditions</label>
                         </div>
-
-                        <!-- Contact Preferences -->
-                        <div class="form-section">
-                            <h5 class="section-title">
-                                <i class="fas fa-bell me-2"></i>Notification Preferences
-                            </h5>
-                            <div class="contact-preferences">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="contact-sms" name="contact_sms" checked>
-                                    <label class="form-check-label" for="contact-sms">
-                                        <i class="fas fa-sms me-2"></i>SMS notifications
-                                    </label>
                                 </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="contact-whatsapp" name="contact_whatsapp" checked>
-                                    <label class="form-check-label" for="contact-whatsapp">
-                                        <i class="fab fa-whatsapp me-2"></i>WhatsApp notifications
-                                    </label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="contact-email" name="contact_email">
-                                    <label class="form-check-label" for="contact-email">
-                                        <i class="fas fa-envelope me-2"></i>Email notifications
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Submit Button -->
-                        <div class="form-actions">
-                            <button type="submit" class="btn btn-primary btn-lg btn-book">
-                                <i class="fas fa-credit-card me-2"></i>Proceed to Payment
-                            </button>
-                            <a href="{{ url_for('available_slots') }}" class="btn btn-outline-secondary btn-lg">
-                                Cancel
-                            </a>
-                        </div>
+                    <button type="submit" class="btn btn-primary" style="margin-top: 1.5rem; width: 100%;" {% if not user %}disabled{% endif %}>Confirm Booking</button>
                     </form>
                 </div>
             </div>
+        <!-- Navigation Buttons -->
+        <div class="nav-buttons" style="display: flex; justify-content: space-between; margin-top: 1.5rem;">
+            <button class="btn btn-secondary nav-btn" data-action="prev" style="display: none;">Previous</button>
+            <button class="btn nav-btn" data-action="next">Next</button>
         </div>
     </div>
-</div>
+</section>
 {% endblock %}
 
 {% block extra_scripts %}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const form = document.getElementById('booking-form');
-    const phoneInput = document.getElementById('customer_phone');
+  const CONSOLE_ID = {{ slot.console_id }};
+</script>
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+<script>
+    let selectedDuration = 0;
+    const hourlyRate = {{ slot.console.hourly_rate }};
 
-    // Phone number validation
-    if (phoneInput && !phoneInput.readOnly) {
-        phoneInput.addEventListener('input', function() {
-            let value = this.value.replace(/\D/g, '');
-            if (value.length > 10) value = value.slice(0, 10);
-            this.value = value;
-
-            // Visual feedback
-            if (value.length === 10) {
-                this.classList.remove('is-invalid');
-                this.classList.add('is-valid');
-            } else {
-                this.classList.remove('is-valid');
-                this.classList.add('is-invalid');
-            }
-        });
+    function incrementPeople() {
+        const input = document.getElementById('number_of_people');
+        if (input.value < 10) {
+            input.value = parseInt(input.value) + 1;
+            updateTotalAmount();
+        }
     }
 
-    // Form validation
-    form.addEventListener('submit', function(e) {
-        const requiredCheckboxes = form.querySelectorAll('input[type="checkbox"][required]');
-        let allChecked = true;
+    function decrementPeople() {
+        const input = document.getElementById('number_of_people');
+        if (input.value > 1) {
+            input.value = parseInt(input.value) - 1;
+            updateTotalAmount();
+        }
+    }
 
-        requiredCheckboxes.forEach(checkbox => {
-            if (!checkbox.checked) {
-                allChecked = false;
-                checkbox.classList.add('is-invalid');
-            } else {
-                checkbox.classList.remove('is-invalid');
-            }
+    function updateTotalAmount() {
+        const people = parseInt(document.getElementById('number_of_people').value);
+        const total = hourlyRate * people;  // Simple multiplication of hourly rate by number of people
+        
+        document.getElementById('people-display').textContent = people;
+        document.getElementById('total-amount-display').textContent = `₹${Math.round(total)}`;
+        document.getElementById('form_number_of_people').value = people;
+        
+        // Update summary
+        document.getElementById('summary-people').textContent = people;
+        document.getElementById('summary-total').textContent = `₹${Math.round(total)}`;
+    }
+
+    // Update the existing time slot selection handler
+    function selectTimeSlot(slotElement) {
+        // Remove selected class from all slots
+        document.querySelectorAll('.time-slot').forEach(slot => {
+            slot.classList.remove('selected');
         });
+        
+        // Add selected class to clicked slot
+        slotElement.classList.add('selected');
+        
+        // Get time from data attribute
+        const timeRange = slotElement.dataset.time;
+        // Update summary with selected date and time
+        const selectedDate = document.querySelector('.date-item.selected');
+        if (selectedDate) {
+            const dateText = selectedDate.textContent.trim();
+            document.getElementById('summary-date').textContent = dateText;
+            document.getElementById('form_selected_date').value = dateText;
+        }
+        document.getElementById('summary-time').textContent = timeRange;
+        document.getElementById('form_selected_time').value = timeRange;
+        // Update total amount
+        updateTotalAmount();
+        // Show step 2
+        document.querySelector('.booking-step[data-step="1"]').style.display = 'none';
+        document.querySelector('.booking-step[data-step="2"]').style.display = 'block';
+    }
 
-        if (!allChecked) {
+    document.addEventListener('DOMContentLoaded', function() {
+        // Set initial values
+        const initialPeople = parseInt(document.getElementById('number_of_people').value);
+        document.getElementById('people-display').textContent = initialPeople;
+        document.getElementById('form_number_of_people').value = initialPeople;
+        // Add click handlers for date selection
+        document.querySelectorAll('.date-item').forEach(dateItem => {
+            dateItem.addEventListener('click', function() {
+                document.querySelectorAll('.date-item').forEach(item => item.classList.remove('selected'));
+                this.classList.add('selected');
+                // Update summary date when date is selected
+                const dateText = this.textContent.trim();
+                document.getElementById('summary-date').textContent = dateText;
+                document.getElementById('form_selected_date').value = dateText;
+            });
+        });
+        // Initialize total amount
+        updateTotalAmount();
+        // Add form submission handler
+        var bookingForm = document.getElementById('booking-form');
+        if (bookingForm) {
+            bookingForm.addEventListener('submit', function(e) {
             e.preventDefault();
-            alert('Please agree to all terms and conditions to proceed.');
+                if (!document.querySelector('.date-item.selected')) {
+                    alert('Please select a date');
+                    return;
+                }
+                if (!document.querySelector('.time-slot.selected')) {
+                    alert('Please select a time slot');
+                    return;
+                }
+                if (!document.getElementById('terms').checked) {
+                    alert('Please agree to the terms and conditions');
             return;
         }
-
-        // Show loading state
+                // Get selected date and time
+                const selectedDate = document.querySelector('.date-item.selected').textContent.trim();
+                const selectedTime = document.querySelector('.time-slot.selected').dataset.time;
+                // Update hidden fields
+                document.getElementById('form_selected_date').value = selectedDate;
+                document.getElementById('form_selected_time').value = selectedTime;
+                // Disable submit button and show loading state
         const submitBtn = this.querySelector('button[type="submit"]');
-        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Processing...';
         submitBtn.disabled = true;
-    });
-
-    // Real-time checkbox validation
-    const checkboxes = form.querySelectorAll('input[type="checkbox"][required]');
-    checkboxes.forEach(checkbox => {
-        checkbox.addEventListener('change', function() {
-            if (this.checked) {
-                this.classList.remove('is-invalid');
-            }
+                submitBtn.innerHTML = '<span class="loading"></span> Confirming...';
+                // Simulate processing
+                setTimeout(() => {
+                    this.submit();
+                }, 1000);
+            });
+        }
+        // Next button handler
+        const nextBtn = document.querySelector('.nav-btn[data-action="next"]');
+        if (nextBtn) {
+            nextBtn.addEventListener('click', function() {
+                const selectedDate = document.querySelector('.date-item.selected');
+                const selectedTime = document.querySelector('.time-slot.selected');
+                if (!selectedDate) {
+                    alert('Please select a date.');
+                    return;
+                }
+                if (!selectedTime) {
+                    alert('Please select a time slot.');
+                    return;
+                }
+                document.getElementById('summary-date').textContent = selectedDate.textContent.trim();
+                document.getElementById('summary-time').textContent = selectedTime.dataset.time;
+                document.querySelector('.booking-step[data-step="1"]').style.display = 'none';
+                document.querySelector('.booking-step[data-step="2"]').style.display = 'block';
+                document.querySelector('.nav-btn[data-action="prev"]').style.display = 'inline-block';
+                nextBtn.style.display = 'none';
+            });
+        }
+        // Previous button handler
+        const prevBtn = document.querySelector('.nav-btn[data-action="prev"]');
+        if (prevBtn) {
+            prevBtn.addEventListener('click', function() {
+                document.querySelector('.booking-step[data-step="2"]').style.display = 'none';
+                document.querySelector('.booking-step[data-step="1"]').style.display = 'block';
+                prevBtn.style.display = 'none';
+                nextBtn.style.display = 'inline-block';
         });
-    });
+        }
 });
 </script>
 {% endblock %}

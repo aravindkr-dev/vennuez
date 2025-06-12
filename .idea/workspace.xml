@@ -5,49 +5,33 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="2d2dd25c-dea4-4478-80fd-749354506233" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/routes.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/css/main.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/js/main.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/add_console.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/add_slot.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/available_slots.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/base.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/book_slot.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/booking_confirmation.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/console_details.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/dashboard.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/index.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/payment.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/register.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/user_dashboard.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/user_login.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/user_register.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/manage_coins.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/search_users.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Admin/user_functions.py" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/book_slots_trial.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/config.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/friends_finder.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/instance/booking.db" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/login.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/db.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/instance/gaming_center.db" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/models.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/otp.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/payment.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/resources/auth.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/resources/bookings.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/resources/venues.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/routes/login_routes.py" beforeDir="false" afterPath="$PROJECT_DIR$/db.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/routes/signup_routes.py" beforeDir="false" afterPath="$PROJECT_DIR$/resources.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/schemas.py" beforeDir="false" afterPath="$PROJECT_DIR$/schemas.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/signup.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/sms.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/static/login.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/static/login.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/static/qr_codes/booking_1_1.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/static/qr_codes/booking_1_2.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/app.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/booking.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes.py" beforeDir="false" afterPath="$PROJECT_DIR$/routes.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/static/css/main.css" beforeDir="false" afterPath="$PROJECT_DIR$/static/css/main.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/static/js/main.js" beforeDir="false" afterPath="$PROJECT_DIR$/static/js/main.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/add_console.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/add_console.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/add_slot.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/add_slot.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/available_slots.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/available_slots.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/base.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/base.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/book_slot.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/book_slot.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/booking_confirmation.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/booking_confirmation.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/console_details.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/console_details.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/dashboard.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/dashboard.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/index.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/templates/login.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/login.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/payment.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/payment.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/register.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/register.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/user_dashboard.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/user_dashboard.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/user_login.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/user_login.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/user_register.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/user_register.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -85,12 +69,14 @@
     &quot;Python.bookings.executor&quot;: &quot;Run&quot;,
     &quot;Python.config.executor&quot;: &quot;Run&quot;,
     &quot;Python.image_upload_cloudinary.executor&quot;: &quot;Run&quot;,
+    &quot;Python.main.executor&quot;: &quot;Run&quot;,
     &quot;Python.models.executor&quot;: &quot;Run&quot;,
     &quot;Python.otp.executor&quot;: &quot;Run&quot;,
     &quot;Python.payment.executor&quot;: &quot;Run&quot;,
     &quot;Python.schemas.executor&quot;: &quot;Run&quot;,
     &quot;Python.signup.executor&quot;: &quot;Run&quot;,
     &quot;Python.sms.executor&quot;: &quot;Run&quot;,
+    &quot;Python.test.executor&quot;: &quot;Run&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
     &quot;git-widget-placeholder&quot;: &quot;master&quot;

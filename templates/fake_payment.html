@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Payment - BooknPlay{% endblock %}
+{% block content %}
+<section class="payment-page" style="padding: 2rem 0;">
+    <div class="container" style="max-width: 500px;">
+        <div class="card" style="margin: 0 auto; text-align: center;">
+            <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem;">Fake Payment</h2>
+            <p style="color: var(--secondary); margin-bottom: 2rem;">This is a demo payment page. Click below to complete your booking.</p>
+            <form method="POST">
+                <button type="submit" class="btn" style="width: 100%;">Pay & Confirm Booking</button>
+            </form>
+        </div>
+    </div>
+</section>
+{% endblock %} 

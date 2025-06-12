@@ -1,0 +1,322 @@
+{% extends "base.html" %}
+
+{% block title %}Auto Generate Slots - BooknPlay{% endblock %}
+
+{% block content %}
+<div class="form-page">
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="row align-items-center">
+            <div class="col">
+                <h1 class="page-title">
+                    <i class="fas fa-magic me-3"></i>Auto Generate Slots
+                </h1>
+                <p class="page-subtitle">Quickly generate multiple slots for {{ console.name }}</p>
+            </div>
+            <div class="col-auto">
+                <a href="{{ url_for('console_details', console_id=console.id) }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Console
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <!-- Console Info Card -->
+            <div class="console-info-card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title">
+                        <i class="fas fa-gamepad me-2"></i>Console Details
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="info-item">
+                                <span class="info-label">Name:</span>
+                                <span class="info-value">{{ console.name }}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Type:</span>
+                                <span class="info-value">{{ console.console_type }}</span>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="info-item">
+                                <span class="info-label">Hourly Rate:</span>
+                                <span class="info-value">₹{{ console.hourly_rate }}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Status:</span>
+                                {% if console.is_available %}
+                                    <span class="status-badge status-available">Available</span>
+                                {% else %}
+                                    <span class="status-badge status-maintenance">Maintenance</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Auto Slot Generator -->
+            <div class="form-card">
+                <div class="form-header">
+                    <h3 class="form-title">Generate Multiple Slots</h3>
+                    <p class="form-subtitle">Set parameters to automatically generate slots</p>
+                </div>
+                <form id="auto-slot-form" class="auto-slot-form">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="auto_date" class="form-label">Date</label>
+                                <input type="date" class="form-control" id="auto_date" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="slot_duration" class="form-label">Slot Duration</label>
+                                <select class="form-select" id="slot_duration" required>
+                                    <option value="1">1 Hour</option>
+                                    <option value="2">2 Hours</option>
+                                    <option value="3">3 Hours</option>
+                                    <option value="4">4 Hours</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="start_hour" class="form-label">Start Time</label>
+                                <input type="time" class="form-control" id="start_hour" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="end_hour" class="form-label">End Time</label>
+                                <input type="time" class="form-control" id="end_hour" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Preview Section -->
+                    <div class="preview-section mt-4" id="preview-section" style="display: none;">
+                        <h4 class="preview-title">Slot Preview</h4>
+                        <div class="preview-content" id="preview-content"></div>
+                        <div class="preview-summary mt-3">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="summary-item">
+                                        <span class="summary-label">Total Slots:</span>
+                                        <span class="summary-value" id="total-slots">0</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="summary-item">
+                                        <span class="summary-label">Total Hours:</span>
+                                        <span class="summary-value" id="total-hours">0</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="summary-item">
+                                        <span class="summary-label">Total Amount:</span>
+                                        <span class="summary-value" id="total-amount">₹0</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-actions mt-4">
+                        <button type="button" class="btn btn-primary" onclick="previewSlots()">
+                            <i class="fas fa-eye me-2"></i>Preview Slots
+                        </button>
+                        <button type="button" class="btn btn-success" onclick="generateSlots()" id="generate-btn" style="display: none;">
+                            <i class="fas fa-magic me-2"></i>Generate Slots
+                        </button>
+                        <a href="{{ url_for('console_details', console_id=console.id) }}" class="btn btn-outline-secondary">
+                            Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const autoDateInput = document.getElementById('auto_date');
+    const today = new Date().toISOString().split('T')[0];
+    autoDateInput.min = today;
+    autoDateInput.value = today;
+});
+
+function previewSlots() {
+    const date = document.getElementById('auto_date').value;
+    const duration = parseInt(document.getElementById('slot_duration').value);
+    const startHour = document.getElementById('start_hour').value;
+    const endHour = document.getElementById('end_hour').value;
+
+    if (!date || !startHour || !endHour) {
+        alert('Please fill in all required fields');
+        return;
+    }
+
+    const start = new Date(`${date}T${startHour}`);
+    const end = new Date(`${date}T${endHour}`);
+    const now = new Date();
+
+    if (start >= end) {
+        alert('End time must be after start time');
+        return;
+    }
+
+    if (start < now) {
+        alert('Cannot create slots in the past');
+        return;
+    }
+
+    // Calculate number of slots
+    const totalDuration = (end - start) / (1000 * 60 * 60);
+    const numSlots = Math.floor(totalDuration / duration);
+
+    if (numSlots <= 0) {
+        alert('No valid slots can be generated with the given duration');
+        return;
+    }
+
+    // Generate preview
+    const slots = [];
+    let currentStart = start;
+    let totalHours = 0;
+
+    for (let i = 0; i < numSlots; i++) {
+        const slotEnd = new Date(currentStart.getTime() + duration * 60 * 60 * 1000);
+        if (slotEnd > end) break;
+
+        slots.push({
+            start: currentStart.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            end: slotEnd.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        });
+
+        totalHours += duration;
+        currentStart = slotEnd;
+    }
+
+    // Update preview
+    const previewContent = document.getElementById('preview-content');
+    previewContent.innerHTML = slots.map((slot, index) => `
+        <div class="preview-slot">
+            <span class="slot-number">${index + 1}.</span>
+            <span class="slot-time">${slot.start} - ${slot.end}</span>
+        </div>
+    `).join('');
+
+    // Update summary
+    document.getElementById('total-slots').textContent = slots.length;
+    document.getElementById('total-hours').textContent = totalHours;
+    document.getElementById('total-amount').textContent = `₹${(totalHours * {{ console.hourly_rate }}).toFixed(2)}`;
+
+    // Show preview and generate button
+    document.getElementById('preview-section').style.display = 'block';
+    document.getElementById('generate-btn').style.display = 'inline-block';
+}
+
+function generateSlots() {
+    const date = document.getElementById('auto_date').value;
+    const duration = parseInt(document.getElementById('slot_duration').value);
+    const startHour = document.getElementById('start_hour').value;
+    const endHour = document.getElementById('end_hour').value;
+
+    if (!date || !startHour || !endHour) {
+        alert('Please fill in all required fields');
+        return;
+    }
+
+    const start = new Date(`${date}T${startHour}`);
+    const end = new Date(`${date}T${endHour}`);
+    const now = new Date();
+
+    if (start >= end) {
+        alert('End time must be after start time');
+        return;
+    }
+
+    if (start < now) {
+        alert('Cannot create slots in the past');
+        return;
+    }
+
+    // Calculate number of slots
+    const totalDuration = (end - start) / (1000 * 60 * 60);
+    const numSlots = Math.floor(totalDuration / duration);
+
+    if (numSlots <= 0) {
+        alert('No valid slots can be generated with the given duration');
+        return;
+    }
+
+    // Generate slots
+    const slots = [];
+    let currentStart = start;
+
+    for (let i = 0; i < numSlots; i++) {
+        const slotEnd = new Date(currentStart.getTime() + duration * 60 * 60 * 1000);
+        if (slotEnd > end) break;
+
+        slots.push({
+            date: date,
+            start_time: currentStart.toTimeString().slice(0, 5),
+            end_time: slotEnd.toTimeString().slice(0, 5)
+        });
+
+        currentStart = slotEnd;
+    }
+
+    // Submit slots
+    if (slots.length > 0) {
+        if (confirm(`Generate ${slots.length} slots?`)) {
+            let completed = 0;
+            let failed = 0;
+
+            slots.forEach(slot => {
+                const formData = new FormData();
+                formData.append('date', slot.date);
+                formData.append('start_time', slot.start_time);
+                formData.append('end_time', slot.end_time);
+
+                fetch(`/add_slot/{{ console.id }}`, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        completed++;
+                    } else {
+                        failed++;
+                    }
+
+                    if (completed + failed === slots.length) {
+                        alert(`Generated ${completed} slots successfully. ${failed} slots failed.`);
+                        window.location.href = "{{ url_for('console_details', console_id=console.id) }}";
+                    }
+                })
+                .catch(error => {
+                    failed++;
+                    if (completed + failed === slots.length) {
+                        alert(`Generated ${completed} slots successfully. ${failed} slots failed.`);
+                        window.location.href = "{{ url_for('console_details', console_id=console.id) }}";
+                    }
+                });
+            });
+        }
+    } else {
+        alert('No valid slots could be generated');
+    }
+}
+</script>
+{% endblock %}

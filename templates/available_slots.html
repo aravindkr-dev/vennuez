@@ -1,238 +1,67 @@
 {% extends "base.html" %}
 
-{% block title %}Available Gaming Slots - Gaming Center Hub{% endblock %}
+{% block title %}Available Venues - BooknPlay{% endblock %}
 
 {% block content %}
-<div class="slots-page">
-    <!-- Page Header -->
-    <div class="page-header">
-        <div class="row align-items-center">
-            <div class="col">
-                <h1 class="page-title">
-                    <i class="fas fa-calendar-alt me-3"></i>Available Gaming Slots
-                </h1>
-                <p class="page-subtitle">Find and book gaming slots across different centers</p>
-            </div>
-        </div>
-    </div>
+<section class="available-venues" style="padding: 2rem 0;">
+    <div class="container">
+        <h1 class="text-center mb-4">Available Venues</h1>
 
-    <!-- Filters Section -->
-    <div class="filters-section">
-        <div class="filters-card">
-            <div class="card-header">
-                <h5 class="card-title">
-                    <i class="fas fa-filter me-2"></i>Find Your Perfect Slot
-                </h5>
-            </div>
+        <!-- Filters -->
+        <div class="card mb-4">
             <div class="card-body">
-                <form method="GET" class="filters-form">
-                    <div class="row g-3">
-                        <div class="col-md-3">
-                            <label for="console_type" class="form-label">Console Type</label>
-                            <select class="form-select" id="console_type" name="console_type">
-                                <option value="">All Consoles</option>
-                                {% for type in console_types %}
-                                <option value="{{ type }}" {% if current_filters.console_type == type %}selected{% endif %}>
-                                    {{ type }}
-                                </option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        
-                        <div class="col-md-3">
-                            <label for="date" class="form-label">Date</label>
-                            <input type="date" class="form-control" id="date" name="date" 
-                                   value="{{ current_filters.date }}">
-                        </div>
-                        
-                        <div class="col-md-4">
-                            <label for="location" class="form-label">Location</label>
-                            <input type="text" class="form-control" id="location" name="location" 
-                                   placeholder="Search by area or city" value="{{ current_filters.location }}">
-                        </div>
-                        
-                        <div class="col-md-2">
-                            <label class="form-label">&nbsp;</label>
-                            <div class="d-grid">
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="fas fa-search me-1"></i>Search
-                                </button>
-                            </div>
-                        </div>
+                <form method="get" class="row g-3">
+                    <div class="col-md-4">
+                        <label for="console_type" class="form-label">Console Type</label>
+                        <select name="console_type" id="console_type" class="form-select">
+                            <option value="">All Types</option>
+                            {% for type in console_types %}
+                            <option value="{{ type }}" {% if current_filters.console_type == type %}selected{% endif %}>{{ type }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="location" class="form-label">Location</label>
+                        <input type="text" name="location" id="location" class="form-control" placeholder="Enter location" value="{{ current_filters.location }}">
+                    </div>
+                    <div class="col-12 text-center">
+                        <button type="submit" class="btn btn-primary">Apply Filters</button>
+                        <a href="{{ url_for('available_slots') }}" class="btn btn-secondary">Clear Filters</a>
                     </div>
                 </form>
             </div>
         </div>
-    </div>
 
-    <!-- Results Section -->
-    <div class="results-section">
-        {% if slots %}
-            <div class="results-header">
-                <div class="results-count">
-                    <i class="fas fa-gamepad me-2"></i>
-                    Found {{ slots|length }} available slot{{ 's' if slots|length != 1 else '' }}
-                </div>
-                <div class="sort-options">
-                    <select class="form-select form-select-sm" id="sort-slots">
-                        <option value="date">Sort by Date</option>
-                        <option value="price">Sort by Price</option>
-                        <option value="console">Sort by Console</option>
-                    </select>
-                </div>
-            </div>
-            
-            <div class="slots-grid" id="slots-grid">
-                {% for slot in slots %}
-                <div class="available-slot-card" data-date="{{ slot.start_time.isoformat() }}" 
-                     data-price="{{ slot.total_amount }}" data-console="{{ slot.console.console_type }}">
-                    <div class="slot-card-header">
-                        <div class="console-info">
-                            <div class="console-icon">
-                                {% if slot.console.console_type == 'PS5' %}
-                                    <i class="fab fa-playstation text-primary"></i>
-                                {% elif slot.console.console_type == 'Xbox' %}
-                                    <i class="fab fa-xbox text-success"></i>
-                                {% elif 'PC' in slot.console.console_type %}
-                                    <i class="fas fa-desktop text-info"></i>
-                                {% else %}
-                                    <i class="fas fa-gamepad"></i>
-                                {% endif %}
+        <!-- Venues List -->
+        <div class="row">
+            {% if owners %}
+                {% for owner in owners %}
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ owner.gaming_center_name }}</h5>
+                            <div class="mb-2">
+                                <i class="fas fa-map-marker-alt"></i> {{ owner.address }}
                             </div>
-                            <div class="console-details">
-                                <h5 class="console-name">{{ slot.console.name }}</h5>
-                                <p class="console-type">{{ slot.console.console_type }}</p>
+                            <div class="mb-2">
+                                <i class="fas fa-phone"></i> {{ owner.phone }}
                             </div>
+                            <div class="mb-2">
+                                <i class="fas fa-envelope"></i> {{ owner.email }}
+                            </div>
+                            <a href="{{ url_for('center_slots', owner_id=owner.id) }}" class="btn btn-primary w-100">View Slots</a>
                         </div>
-                        <div class="slot-price">
-                            <div class="price-amount">₹{{ slot.total_amount }}</div>
-                            <div class="price-label">Total</div>
-                        </div>
-                    </div>
-                    
-                    <div class="slot-card-body">
-                        <div class="gaming-center">
-                            <div class="center-info">
-                                <i class="fas fa-store text-primary me-2"></i>
-                                <span class="center-name">{{ slot.console.owner.gaming_center_name }}</span>
-                            </div>
-                            <div class="center-location">
-                                <i class="fas fa-map-marker-alt text-secondary me-2"></i>
-                                <span class="location-text">{{ slot.console.owner.address[:50] }}...</span>
-                            </div>
-                        </div>
-                        
-                        <div class="slot-timing">
-                            <div class="timing-item">
-                                <i class="fas fa-calendar text-warning me-2"></i>
-                                <span>{{ slot.start_time.strftime('%A, %d %B %Y') }}</span>
-                            </div>
-                            <div class="timing-item">
-                                <i class="fas fa-clock text-info me-2"></i>
-                                <span>{{ slot.start_time.strftime('%I:%M %p') }} - {{ slot.end_time.strftime('%I:%M %p') }}</span>
-                            </div>
-                            <div class="timing-item">
-                                <i class="fas fa-hourglass-half text-success me-2"></i>
-                                <span>{{ ((slot.end_time - slot.start_time).total_seconds() / 3600)|int }} hours</span>
-                            </div>
-                        </div>
-                        
-                        <div class="payment-info">
-                            <div class="payment-item">
-                                <span class="payment-label">Advance Payment:</span>
-                                <span class="payment-amount text-success">₹{{ slot.advance_paid }}</span>
-                            </div>
-                            <div class="payment-item">
-                                <span class="payment-label">At Center:</span>
-                                <span class="payment-amount">₹{{ slot.total_amount - slot.advance_paid }}</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="slot-card-footer">
-                        <div class="center-contact">
-                            <i class="fas fa-phone text-success me-2"></i>
-                            <span>{{ slot.console.owner.phone }}</span>
-                        </div>
-                        <a href="{{ url_for('book_slot', slot_id=slot.id) }}" class="btn btn-primary btn-book">
-                            <i class="fas fa-gamepad me-2"></i>Book Now
-                        </a>
                     </div>
                 </div>
                 {% endfor %}
-            </div>
-        {% else %}
-            <div class="empty-state">
-                <div class="empty-icon">
-                    <i class="fas fa-search"></i>
+            {% else %}
+                <div class="col-12">
+                    <div class="alert alert-info text-center">
+                        No available venues found. Try adjusting your filters.
+                    </div>
                 </div>
-                <h3 class="empty-title">No gaming slots found</h3>
-                <p class="empty-description">
-                    {% if current_filters.console_type or current_filters.date or current_filters.location %}
-                        Try adjusting your search filters to find more slots.
-                    {% else %}
-                        No gaming slots are currently available. Check back later or contact gaming centers directly.
-                    {% endif %}
-                </p>
-                <div class="empty-actions">
-                    {% if current_filters.console_type or current_filters.date or current_filters.location %}
-                        <a href="{{ url_for('available_slots') }}" class="btn btn-primary">
-                            <i class="fas fa-refresh me-2"></i>Clear Filters
-                        </a>
-                    {% endif %}
-                    <a href="{{ url_for('index') }}" class="btn btn-outline-primary">
-                        <i class="fas fa-home me-2"></i>Back to Home
-                    </a>
-                </div>
-            </div>
-        {% endif %}
+            {% endif %}
+        </div>
     </div>
-</div>
-{% endblock %}
-
-{% block extra_scripts %}
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const dateInput = document.getElementById('date');
-    const sortSelect = document.getElementById('sort-slots');
-    const slotsGrid = document.getElementById('slots-grid');
-    
-    // Set minimum date to today
-    const today = new Date().toISOString().split('T')[0];
-    dateInput.min = today;
-    
-    // Sorting functionality
-    if (sortSelect && slotsGrid) {
-        sortSelect.addEventListener('change', function() {
-            const sortBy = this.value;
-            const slots = Array.from(slotsGrid.children);
-            
-            slots.sort((a, b) => {
-                switch(sortBy) {
-                    case 'date':
-                        return new Date(a.dataset.date) - new Date(b.dataset.date);
-                    case 'price':
-                        return parseFloat(a.dataset.price) - parseFloat(b.dataset.price);
-                    case 'console':
-                        return a.dataset.console.localeCompare(b.dataset.console);
-                    default:
-                        return 0;
-                }
-            });
-            
-            // Re-append sorted elements
-            slots.forEach(slot => slotsGrid.appendChild(slot));
-        });
-    }
-    
-    // Auto-submit form on filter change (optional)
-    const filterInputs = document.querySelectorAll('.filters-form select, .filters-form input[type="date"]');
-    filterInputs.forEach(input => {
-        input.addEventListener('change', function() {
-            // Optional: Auto-submit on filter change
-            // this.form.submit();
-        });
-    });
-});
-</script>
+</section>
 {% endblock %}

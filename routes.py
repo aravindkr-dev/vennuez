@@ -1,7 +1,7 @@
 from flask import render_template, request, redirect, url_for, flash, session, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 from app import app, db
-from models import Owner, Console, TimeSlot, User
+from models import Owner, Console, TimeSlot, User, UserCoinBalance, CoinTransaction
 from datetime import datetime, timedelta
 import logging
 
@@ -39,7 +39,7 @@ def register():
             email = request.form['email']
             password = request.form['password']
             phone = request.form['phone']
-            gaming_center_name = request.form['gaming_center_name']
+            gaming_center_name = request.form['center_name']
             address = request.form['address']
 
             # Check if username or email already exists
@@ -49,6 +49,11 @@ def register():
 
             if Owner.query.filter_by(email=email).first():
                 flash('Email already exists', 'error')
+                return render_template('register.html')
+
+            # Check if gaming center name already exists
+            if Owner.query.filter_by(gaming_center_name=gaming_center_name).first():
+                flash('Gaming center name already exists', 'error')
                 return render_template('register.html')
 
             # Create new owner
@@ -69,7 +74,7 @@ def register():
 
         except Exception as e:
             logging.error(f"Registration error: {e}")
-            flash('Registration failed. Please try again.', 'error')
+            flash(f'Registration failed. {str(e)}', 'error')
 
     return render_template('register.html')
 
@@ -188,10 +193,14 @@ def add_slot(console_id):
 
             # Validate times
             if start_datetime >= end_datetime:
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return jsonify({'success': False, 'error': 'End time must be after start time'})
                 flash('End time must be after start time', 'error')
                 return render_template('add_slot.html', console=console)
 
             if start_datetime < datetime.now():
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return jsonify({'success': False, 'error': 'Cannot create slots in the past'})
                 flash('Cannot create slots in the past', 'error')
                 return render_template('add_slot.html', console=console)
 
@@ -202,6 +211,8 @@ def add_slot(console_id):
             ).first()
 
             if overlapping:
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return jsonify({'success': False, 'error': 'Time slot overlaps with existing slot'})
                 flash('Time slot overlaps with existing slot', 'error')
                 return render_template('add_slot.html', console=console)
 
@@ -219,11 +230,16 @@ def add_slot(console_id):
             db.session.add(new_slot)
             db.session.commit()
 
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify({'success': True, 'message': 'Time slot added successfully'})
+            
             flash('Time slot added successfully!', 'success')
             return redirect(url_for('console_details', console_id=console_id))
 
         except Exception as e:
             logging.error(f"Error adding slot: {e}")
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify({'success': False, 'error': str(e)})
             flash('Failed to add time slot. Please try again.', 'error')
 
     return render_template('add_slot.html', console=console)
@@ -233,35 +249,32 @@ def add_slot(console_id):
 def available_slots():
     # Get filter parameters
     console_type = request.args.get('console_type', '')
-    date_filter = request.args.get('date', '')
     location = request.args.get('location', '')
 
-    # Base query for available slots
-    query = db.session.query(TimeSlot).join(Console).join(Owner).filter(
+    # Query unique owners/centers with at least one available slot
+    query = Owner.query.join(Console).join(TimeSlot).filter(
         TimeSlot.is_booked == False,
         TimeSlot.start_time > datetime.now(),
         Console.is_available == True
     )
-
-    # Apply filters
     if console_type:
         query = query.filter(Console.console_type == console_type)
-
-    if date_filter:
-        filter_date = datetime.strptime(date_filter, "%Y-%m-%d").date()
-        query = query.filter(db.func.date(TimeSlot.start_time) == filter_date)
-
     if location:
         query = query.filter(Owner.address.contains(location))
-
-    slots = query.order_by(TimeSlot.start_time).all()
+    query = query.distinct()
+    owners = query.all()
 
     # Get unique console types for filter
     console_types = db.session.query(Console.console_type).distinct().all()
     console_types = [ct[0] for ct in console_types]
 
-    return render_template('available_slots.html', slots=slots, console_types=console_types,
-                           current_filters={'console_type': console_type, 'date': date_filter, 'location': location})
+    return render_template('available_slots.html', 
+                         owners=owners, 
+                         console_types=console_types,
+                         current_filters={
+                             'console_type': console_type, 
+                             'location': location
+                         })
 
 
 @app.route('/book_slot/<int:slot_id>', methods=['GET', 'POST'])
@@ -272,50 +285,51 @@ def book_slot(slot_id):
         flash('This slot is already booked', 'error')
         return redirect(url_for('available_slots'))
 
-    if request.method == 'POST':
-        try:
-            customer_name = request.form['customer_name']
-            customer_phone = request.form['customer_phone']
-            customer_email = request.form.get('customer_email', '')
-            customer_age = request.form.get('customer_age')
-            special_requests = request.form.get('special_requests', '')
-
-            # Contact preferences
-            contact_sms = 'contact_sms' in request.form
-            contact_whatsapp = 'contact_whatsapp' in request.form
-            contact_email = 'contact_email' in request.form
-
-            # Generate booking ID
-            booking_id = slot.generate_booking_id()
-
-            # Update slot with booking details
-            slot.is_booked = True
-            slot.booking_id = booking_id
-            slot.customer_name = customer_name
-            slot.customer_phone = customer_phone
-            slot.customer_email = customer_email
-            slot.customer_age = int(customer_age) if customer_age else None
-            slot.special_requests = special_requests
-            slot.contact_sms = contact_sms
-            slot.contact_whatsapp = contact_whatsapp
-            slot.contact_email = contact_email
-            slot.booking_time = datetime.now()
-
-            db.session.commit()
-
-            # Redirect to payment
-            return redirect(url_for('payment', booking_id=booking_id))
-
-        except Exception as e:
-            logging.error(f"Error booking slot: {e}")
-            flash('Booking failed. Please try again.', 'error')
-
-    # Check if user is logged in
+    # Existing user logic
     user = None
     if 'user_id' in session and session.get('user_type') == 'user':
         user = User.query.get(session['user_id'])
 
-    return render_template('book_slot.html', slot=slot, user=user)
+    if request.method == 'POST':
+        # Get booking details from form
+        number_of_people = request.form.get('number_of_people', type=int, default=1)
+        special_requests = request.form.get('special_requests', '')
+        customer_name = user.full_name if user else request.form.get('customer_name', '')
+        customer_phone = user.phone if user else request.form.get('customer_phone', '')
+        customer_email = user.email if user else request.form.get('customer_email', '')
+        customer_age = user.age if user else request.form.get('customer_age', type=int)
+
+        # Mark slot as booked and save details
+        slot.is_booked = True
+        slot.user_id = user.id if user else None
+        slot.customer_name = customer_name
+        slot.customer_phone = customer_phone
+        slot.customer_email = customer_email
+        slot.customer_age = customer_age
+        slot.special_requests = special_requests
+        slot.number_of_people = number_of_people
+        slot.booking_time = datetime.now()
+        slot.booking_id = slot.generate_booking_id() if hasattr(slot, 'generate_booking_id') else f"BK{slot.id}{int(datetime.now().timestamp())}"
+        db.session.commit()
+
+        flash('Booking successful!', 'success')
+        return redirect(url_for('booking_confirmation', booking_id=slot.booking_id))
+
+    # Get all unique future dates for this console
+    available_dates = (
+        db.session.query(db.func.date(TimeSlot.start_time))
+        .filter(
+            TimeSlot.console_id == slot.console_id,
+            TimeSlot.is_booked == False,
+            TimeSlot.start_time > datetime.now()
+        )
+        .distinct()
+        .order_by(db.func.date(TimeSlot.start_time))
+        .all()
+    )
+    available_dates = [d[0].strftime("%Y-%m-%d") if hasattr(d[0], 'strftime') else str(d[0]) for d in available_dates]
+
+    return render_template('book_slot.html', slot=slot, user=user, available_dates=available_dates)
 
 
 @app.route('/payment/<booking_id>')
@@ -372,6 +386,50 @@ def user_login():
     return render_template('user_login.html')
 
 
+@app.route('/user_register', methods=['GET', 'POST'])
+def user_register():
+    if request.method == 'POST':
+        username = request.form['username']
+        email = request.form.get('email', '')
+        password = request.form['password']
+        full_name = request.form['full_name']
+        phone = request.form['phone']
+        age = request.form.get('age', type=int)
+
+        # Check if username already exists
+        if User.query.filter_by(username=username).first():
+            flash('Username already exists', 'error')
+            return render_template('user_register.html')
+
+        # Check if phone already exists
+        if User.query.filter_by(phone=phone).first():
+            flash('Phone number already registered', 'error')
+            return render_template('user_register.html')
+
+        try:
+            # Create new user
+            user = User(
+                username=username,
+                email=email if email else None,
+                password_hash=generate_password_hash(password),
+                full_name=full_name,
+                phone=phone,
+                age=age
+            )
+            db.session.add(user)
+            db.session.commit()
+
+            flash('Registration successful! Please login.', 'success')
+            return redirect(url_for('user_login'))
+
+        except Exception as e:
+            logging.error(f"User registration error: {e}")
+            db.session.rollback()
+            flash('Registration failed. Please try again.', 'error')
+
+    return render_template('user_register.html')
+
+
 @app.route('/user_dashboard')
 def user_dashboard():
     if 'user_id' not in session or session.get('user_type') != 'user':
@@ -379,10 +437,105 @@ def user_dashboard():
         return redirect(url_for('user_login'))
 
     user = User.query.get(session['user_id'])
-    # Get user's bookings (you might need to add user_id to TimeSlot model for this)
-    bookings = []  # Placeholder
+    bookings = TimeSlot.query.filter_by(user_id=user.id).order_by(TimeSlot.start_time.desc()).all()
 
-    return render_template('user_dashboard.html', user=user, bookings=bookings)
+    # Get coin balances for all gaming centers
+    coin_balances = UserCoinBalance.query.filter_by(user_id=user.id).all()
+
+    return render_template('user_dashboard.html', user=user, bookings=bookings, coin_balances=coin_balances , now=datetime.now())
+
+
+@app.route('/manage_coins/<int:user_id>', methods=['GET', 'POST'])
+def manage_coins(user_id):
+    if 'user_id' not in session or session.get('user_type') != 'owner':
+        flash('Access denied', 'error')
+        return redirect(url_for('login'))
+
+    owner = Owner.query.get(session['user_id'])
+    user = User.query.get_or_404(user_id)
+
+    if request.method == 'POST':
+        coins_to_add = request.form.get('coins', type=int)
+        action = request.form.get('action')
+
+        if coins_to_add and coins_to_add > 0:
+            # Get or create user's coin balance for this gaming center
+            balance = UserCoinBalance.query.filter_by(
+                user_id=user.id,
+                gaming_center_name=owner.gaming_center_name
+            ).first()
+
+            if not balance:
+                balance = UserCoinBalance(
+                    user_id=user.id,
+                    gaming_center_name=owner.gaming_center_name,
+                    coins=0
+                )
+                db.session.add(balance)
+
+            if action == 'add':
+                balance.coins += coins_to_add
+                transaction_type = 'purchase'
+                amount = coins_to_add
+            elif action == 'deduct' and balance.coins >= coins_to_add:
+                balance.coins -= coins_to_add
+                transaction_type = 'deduction'
+                amount = -coins_to_add
+            else:
+                flash('Insufficient coins for deduction', 'error')
+                return redirect(url_for('manage_coins', user_id=user_id))
+
+            # Record the transaction
+            transaction = CoinTransaction(
+                user_id=user.id,
+                owner_id=owner.id,
+                gaming_center_name=owner.gaming_center_name,
+                amount=amount,
+                transaction_type=transaction_type,
+                description=f"Manual {action} by owner"
+            )
+            db.session.add(transaction)
+            db.session.commit()
+
+            flash(f'Successfully {action}ed {coins_to_add} coins', 'success')
+            return redirect(url_for('manage_coins', user_id=user_id))
+
+    # Get current balance and recent transactions
+    balance = UserCoinBalance.query.filter_by(
+        user_id=user.id,
+        gaming_center_name=owner.gaming_center_name
+    ).first()
+
+    transactions = CoinTransaction.query.filter_by(
+        user_id=user.id,
+        gaming_center_name=owner.gaming_center_name
+    ).order_by(CoinTransaction.created_at.desc()).limit(10).all()
+
+    current_coins = balance.coins if balance else 0
+
+    return render_template('manage_coins.html', user=user, current_coins=current_coins,
+                           transactions=transactions, owner=owner)
+
+
+@app.route('/search_users')
+def search_users():
+    if 'user_id' not in session or session.get('user_type') != 'owner':
+        flash('Access denied', 'error')
+        return redirect(url_for('login'))
+
+    query = request.args.get('q', '')
+    users = []
+
+    if query:
+        users = User.query.filter(
+            db.or_(
+                User.username.ilike(f'%{query}%'),
+                User.full_name.ilike(f'%{query}%'),
+                User.phone.ilike(f'%{query}%')
+            )
+        ).limit(20).all()
+
+    return render_template('search_users.html', users=users, query=query)
 
 
 @app.route('/toggle_console_status/<int:console_id>')
@@ -399,6 +552,184 @@ def toggle_console_status(console_id):
     db.session.commit()
 
     return jsonify({'success': True, 'new_status': console.is_available})
+
+
+@app.route('/edit_slot/<int:slot_id>', methods=['GET', 'POST'])
+def edit_slot(slot_id):
+    slot = TimeSlot.query.get_or_404(slot_id)
+    if 'user_id' not in session or session.get('user_type') != 'owner':
+        flash('Please login as owner to edit slots.', 'error')
+        return redirect(url_for('login'))
+    # Only allow editing if the slot belongs to the owner's console
+    console = Console.query.get(slot.console_id)
+    if not console or console.owner_id != session['user_id']:
+        flash('Access denied.', 'error')
+        return redirect(url_for('dashboard'))
+
+    if request.method == 'POST':
+        try:
+            date = request.form['date']
+            start_time = request.form['start_time']
+            end_time = request.form['end_time']
+            price = request.form['price']
+
+            # Parse datetime
+            start_datetime = datetime.strptime(f"{date} {start_time}", "%Y-%m-%d %H:%M")
+            end_datetime = datetime.strptime(f"{date} {end_time}", "%Y-%m-%d %H:%M")
+
+            # Validate times
+            if start_datetime >= end_datetime:
+                flash('End time must be after start time', 'error')
+                return render_template('edit_slot.html', slot=slot)
+
+            # Update slot
+            slot.start_time = start_datetime
+            slot.end_time = end_datetime
+            slot.total_amount = float(price)
+            db.session.commit()
+            flash('Slot updated successfully!', 'success')
+            return redirect(url_for('console_details', console_id=slot.console_id))
+        except Exception as e:
+            logging.error(f"Edit slot error: {e}")
+            flash('Failed to update slot. Please try again.', 'error')
+
+    # Pre-fill form values
+    return render_template('edit_slot.html', slot=slot)
+
+
+@app.route('/delete_slot/<int:slot_id>', methods=['POST'])
+def delete_slot(slot_id):
+    slot = TimeSlot.query.get_or_404(slot_id)
+    if 'user_id' not in session or session.get('user_type') != 'owner':
+        flash('Please login as owner to delete slots.', 'error')
+        return redirect(url_for('login'))
+    console = Console.query.get(slot.console_id)
+    if not console or console.owner_id != session['user_id']:
+        flash('Access denied.', 'error')
+        return redirect(url_for('dashboard'))
+    try:
+        db.session.delete(slot)
+        db.session.commit()
+        flash('Slot deleted successfully!', 'success')
+    except Exception as e:
+        logging.error(f"Delete slot error: {e}")
+        flash('Failed to delete slot. Please try again.', 'error')
+    return redirect(url_for('console_details', console_id=slot.console_id))
+
+
+@app.route('/api/available-slots')
+def api_available_slots():
+    date_str = request.args.get('date')
+    console_id = request.args.get('console_id', type=int)
+    slots_query = TimeSlot.query.join(Console).filter(
+        TimeSlot.is_booked == False,
+        Console.is_available == True,
+        TimeSlot.start_time > datetime.now()
+    )
+    if date_str:
+        try:
+            filter_date = datetime.strptime(date_str, "%Y-%m-%d").date()
+            slots_query = slots_query.filter(db.func.date(TimeSlot.start_time) == filter_date)
+        except Exception:
+            return jsonify([])
+    if console_id:
+        slots_query = slots_query.filter(TimeSlot.console_id == console_id)
+
+    slots = slots_query.order_by(TimeSlot.start_time).all()
+    slot_list = []
+    for slot in slots:
+        slot_list.append({
+            "id": slot.id,
+            "time": f"{slot.start_time.strftime('%I:%M %p')} - {slot.end_time.strftime('%I:%M %p')}",
+            "isBooked": slot.is_booked,
+            "consoleId": slot.console_id,
+            "consoleType": slot.console.console_type if slot.console else "",
+            "consoleName": slot.console.name if slot.console else "",
+            "price": slot.total_amount,
+        })
+    return jsonify(slot_list)
+
+
+@app.route('/settle_slot/<int:slot_id>', methods=['POST'])
+def settle_slot(slot_id):
+    if 'user_id' not in session or session.get('user_type') != 'owner':
+        flash('Please login to access this page', 'error')
+        return redirect(url_for('login'))
+    
+    slot = TimeSlot.query.get_or_404(slot_id)
+    console = Console.query.get(slot.console_id)
+    
+    if console.owner_id != session['user_id']:
+        flash('Access denied', 'error')
+        return redirect(url_for('dashboard'))
+    
+    now = datetime.now()
+    ten_minutes_before_end = slot.end_time - timedelta(minutes=10)
+    if now < ten_minutes_before_end:
+        flash('You can only checkout within 10 minutes before the slot ends or after it ends.', 'error')
+        return redirect(url_for('console_details', console_id=slot.console_id))
+    
+    try:
+        snacks_amount = float(request.form['snacks_amount'])
+        final_amount = float(request.form['final_amount'])
+        
+        # Update slot details
+        slot.snacks_amount = snacks_amount
+        slot.final_amount = final_amount
+        slot.completed = True
+        
+        # Update user's spending if the slot is booked
+        if slot.is_booked and slot.user_id:
+            user = User.query.get(slot.user_id)
+            if user:
+                # Add the amount to user's total spending
+                user.total_spent = (user.total_spent or 0) + final_amount
+                
+                # Create a transaction record
+                transaction = CoinTransaction(
+                    user_id=user.id,
+                    amount=final_amount,
+                    transaction_type='spending',
+                    description=f'Payment for slot {slot.id} at {console.name}'
+                )
+                db.session.add(transaction)
+        
+        db.session.commit()
+        flash('Checkout completed successfully!', 'success')
+        return redirect(url_for('console_details', console_id=slot.console_id))
+        
+    except Exception as e:
+        db.session.rollback()
+        logging.error(f"Checkout error: {str(e)}")
+        flash('Checkout failed. Please try again.', 'error')
+        return redirect(url_for('console_details', console_id=slot.console_id))
+
+
+@app.route('/auto_slots/<int:console_id>')
+def auto_slots(console_id):
+    if 'user_id' not in session or session.get('user_type') != 'owner':
+        flash('Please login to access this page', 'error')
+        return redirect(url_for('login'))
+
+    console = Console.query.get_or_404(console_id)
+
+    if console.owner_id != session['user_id']:
+        flash('Access denied', 'error')
+        return redirect(url_for('dashboard'))
+
+    return render_template('auto_slots.html', console=console)
+
+
+@app.route('/center_slots/<int:owner_id>')
+def center_slots(owner_id):
+    owner = Owner.query.get_or_404(owner_id)
+    slots = TimeSlot.query.join(Console).filter(
+        Console.owner_id == owner_id,
+        TimeSlot.is_booked == False,
+        TimeSlot.start_time > datetime.now(),
+        Console.is_available == True
+    ).order_by(TimeSlot.start_time).all()
+    return render_template('center_slots.html', owner=owner, slots=slots)
 
 
 # Error handlers

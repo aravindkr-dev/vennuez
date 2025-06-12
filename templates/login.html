@@ -1,85 +1,30 @@
 {% extends "base.html" %}
 
-{% block title %}Login - Gaming Center Hub{% endblock %}
+{% block title %}Login - BooknPlay{% endblock %}
 
 {% block content %}
-<div class="auth-page">
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-md-6 col-lg-5">
-                <div class="auth-card">
-                    <div class="auth-header">
-                        <div class="auth-icon">
-                            <i class="fas fa-sign-in-alt"></i>
-                        </div>
-                        <h2 class="auth-title">Owner Login</h2>
-                        <p class="auth-subtitle">Welcome back! Please sign in to your account.</p>
-                    </div>
-
-                    <form method="POST" class="auth-form">
-                        <div class="form-group">
-                            <label for="username" class="form-label">
-                                <i class="fas fa-user me-2"></i>Username
-                            </label>
-                            <input type="text" class="form-control" id="username" name="username" required
-                                   placeholder="Enter your username">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="password" class="form-label">
-                                <i class="fas fa-lock me-2"></i>Password
-                            </label>
-                            <div class="password-input">
-                                <input type="password" class="form-control" id="password" name="password" required
-                                       placeholder="Enter your password">
-                                <button type="button" class="password-toggle" onclick="togglePassword()">
-                                    <i class="fas fa-eye" id="password-eye"></i>
-                                </button>
-                            </div>
-                        </div>
-
-                        <button type="submit" class="btn btn-primary btn-lg w-100 auth-submit">
-                            <i class="fas fa-sign-in-alt me-2"></i>Login
-                        </button>
-                    </form>
-
-                    <div class="auth-footer">
-                        <p class="text-center mb-0">
-                            Don't have an account?
-                            <a href="{{ url_for('register') }}" class="auth-link">Register here</a>
-                        </p>
-                    </div>
+<section class="auth-page" style="padding: 2rem 0;">
+    <div class="container" style="max-width: 400px;">
+        <div class="card" style="margin: 0 auto;">
+            <div class="auth-header" style="text-align: center; margin-bottom: 2rem;">
+                <div class="auth-icon" style="font-size: 2.5rem; color: var(--accent); margin-bottom: 1rem;">
+                    <i class="fas fa-sign-in-alt"></i>
                 </div>
-
-                <!-- Demo Credentials -->
-                <div class="demo-credentials mt-4">
-                    <div class="alert alert-info">
-                        <h6><i class="fas fa-info-circle me-2"></i>Demo Credentials</h6>
-                        <p class="mb-2"><strong>Username:</strong> admin</p>
-                        <p class="mb-0"><strong>Password:</strong> admin123</p>
-                    </div>
-                </div>
+                <h2 class="auth-title" style="font-size: 1.5rem; font-weight: 700; margin-bottom: 0.5rem;">Owner Login</h2>
+                <p class="auth-subtitle" style="color: var(--secondary);">Welcome back! Please sign in to your account.</p>
             </div>
+            <form method="POST" class="auth-form">
+                <div class="form-group">
+                    <label for="username" class="form-label">Username</label>
+                    <input type="text" class="form-control" id="username" name="username" required placeholder="Enter your username">
+                </div>
+                <div class="form-group">
+                    <label for="password" class="form-label">Password</label>
+                    <input type="password" class="form-control" id="password" name="password" required placeholder="Enter your password">
+                </div>
+                <button type="submit" class="btn" style="width: 100%;">Login</button>
+            </form>
         </div>
     </div>
-</div>
-{% endblock %}
-
-{% block extra_scripts %}
-<script>
-function togglePassword() {
-    const passwordInput = document.getElementById('password');
-    const passwordEye = document.getElementById('password-eye');
-
-    if (passwordInput.type === 'password') {
-        passwordInput.type = 'text';
-        passwordEye.classList.remove('fa-eye');
-        passwordEye.classList.add('fa-eye-slash');
-    } else {
-        passwordInput.type = 'password';
-        passwordEye.classList.remove('fa-eye-slash');
-        passwordEye.classList.add('fa-eye');
-    }
-}
-</script>
+</section>
 {% endblock %}

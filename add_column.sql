@@ -1,0 +1,1 @@
+ALTER TABLE time_slots ADD COLUMN number_of_people INTEGER DEFAULT 1; 

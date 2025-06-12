@@ -3,146 +3,279 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Gaming Center Hub{% endblock %}</title>
-
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <!-- Custom CSS -->
-    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
-
+    <title>{% block title %}BooknPlay{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     {% block extra_head %}{% endblock %}
+    <style>
+        /* Dropdown Styles */
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-toggle {
+            background: none;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            text-decoration: none;
+        }
+
+        .dropdown-toggle:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        .dropdown-toggle.register-btn {
+            background: var(--primary);
+            color: white;
+        }
+
+        .dropdown-toggle.register-btn:hover {
+            background: var(--accent);
+            border-color: var(--accent);
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            border: 1px solid rgba(0,0,0,0.1);
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            min-width: 220px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+            z-index: 1000;
+            margin-top: 0.5rem;
+        }
+
+        .dropdown-menu.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            color: var(--secondary);
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            margin: 0.25rem;
+        }
+
+        .dropdown-item:hover {
+            background: var(--muted);
+            color: var(--primary);
+        }
+
+        .dropdown-icon {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .dropdown-icon i {
+            color: white;
+            font-size: 0.9rem;
+        }
+
+        .dropdown-text {
+            flex: 1;
+        }
+
+        .dropdown-title {
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 0.1rem;
+        }
+
+        .dropdown-subtitle {
+            font-size: 0.8rem;
+            color: var(--secondary);
+        }
+
+        .chevron {
+            font-size: 0.8rem;
+            transition: transform 0.3s ease;
+        }
+
+        .chevron.rotated {
+            transform: rotate(180deg);
+        }
+    </style>
 </head>
 <body>
-    <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
-        <div class="container">
-            <a class="navbar-brand fw-bold" href="{{ url_for('index') }}">
-                <i class="fas fa-gamepad me-2"></i>Gaming Center Hub
+    <header class="header">
+        <div class="header-content">
+            <a href="{{ url_for('index') }}" class="logo">
+                <i class="fas fa-gamepad"></i> BooknPlay
             </a>
-
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('available_slots') }}">
-                            <i class="fas fa-calendar-alt me-1"></i>Browse Slots
-                        </a>
-                    </li>
-                    {% if session.username and session.user_type == 'owner' %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('dashboard') }}">
-                            <i class="fas fa-tachometer-alt me-1"></i>Dashboard
-                        </a>
-                    </li>
-                    {% endif %}
-                </ul>
-
-                <ul class="navbar-nav">
-                    {% if session.username %}
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                                <i class="fas fa-user me-1"></i>{{ session.username }}
-                            </a>
-                            <ul class="dropdown-menu">
-                                {% if session.user_type == 'owner' %}
-                                <li><a class="dropdown-item" href="{{ url_for('dashboard') }}">
-                                    <i class="fas fa-tachometer-alt me-2"></i>Dashboard
-                                </a></li>
-                                <li><a class="dropdown-item" href="{{ url_for('add_console') }}">
-                                    <i class="fas fa-plus me-2"></i>Add Console
-                                </a></li>
-                                {% else %}
-                                <li><a class="dropdown-item" href="{{ url_for('user_dashboard') }}">
-                                    <i class="fas fa-user me-2"></i>My Bookings
-                                </a></li>
-                                {% endif %}
-                                <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="{{ url_for('logout') }}">
-                                    <i class="fas fa-sign-out-alt me-2"></i>Logout
-                                </a></li>
-                            </ul>
-                        </li>
-                    {% else %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('login') }}">
-                                <i class="fas fa-sign-in-alt me-1"></i>Owner Login
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('register') }}">
-                                <i class="fas fa-user-plus me-1"></i>Register
-                            </a>
-                        </li>
-                    {% endif %}
-                </ul>
-            </div>
-        </div>
-    </nav>
-
-    <!-- Main Content -->
-    <main class="main-content">
-        <div class="container-fluid">
-            <!-- Flash Messages -->
-            {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    <div class="row">
-                        <div class="col-12">
-                            {% for category, message in messages %}
-                                <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
-                                    {% if category == 'success' %}
-                                        <i class="fas fa-check-circle me-2"></i>
-                                    {% elif category == 'error' %}
-                                        <i class="fas fa-exclamation-triangle me-2"></i>
-                                    {% elif category == 'info' %}
-                                        <i class="fas fa-info-circle me-2"></i>
-                                    {% endif %}
-                                    {{ message }}
-                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            <nav class="nav-links">
+                {% if session.username and session.user_type == 'owner' %}
+                    <a href="{{ url_for('dashboard') }}" class="{% if request.endpoint == 'dashboard' %}active{% endif %}">Dashboard</a>
+                {% endif %}
+                {% if session.username and session.user_type != 'owner' %}
+                    <a href="{{ url_for('user_dashboard') }}" class="{% if request.endpoint == 'user_dashboard' %}active{% endif %}">My Bookings</a>
+                {% endif %}
+            </nav>
+            <div class="user-info">
+                {% if session.username %}
+                    <i class="fas fa-user"></i> {{ session.username }}
+                    <a href="{{ url_for('logout') }}" class="btn btn-secondary" style="margin-left:1rem;">Logout</a>
+                {% else %}
+                    <!-- Login Dropdown -->
+                    <div class="dropdown">
+                        <button class="dropdown-toggle" onclick="toggleDropdown('loginDropdown')">
+                            <i class="fas fa-sign-in-alt"></i>
+                            <span>Login</span>
+                            <i class="fas fa-chevron-down chevron" id="loginChevron"></i>
+                        </button>
+                        <div class="dropdown-menu" id="loginDropdown">
+                            <a href="{{ url_for('user_login') }}" class="dropdown-item">
+                                <div class="dropdown-icon">
+                                    <i class="fas fa-user"></i>
                                 </div>
-                            {% endfor %}
+                                <div class="dropdown-text">
+                                    <div class="dropdown-title">User Login</div>
+                                    <div class="dropdown-subtitle">For gamers</div>
+                                </div>
+                            </a>
+                            <a href="{{ url_for('login') }}" class="dropdown-item">
+                                <div class="dropdown-icon">
+                                    <i class="fas fa-store"></i>
+                                </div>
+                                <div class="dropdown-text">
+                                    <div class="dropdown-title">Venue Login</div>
+                                    <div class="dropdown-subtitle">For center owners</div>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Register Dropdown -->
+                    <div class="dropdown" style="margin-left: 1rem;">
+                        <button class="dropdown-toggle register-btn" onclick="toggleDropdown('registerDropdown')">
+                            <i class="fas fa-user-plus"></i>
+                            <span>Register</span>
+                            <i class="fas fa-chevron-down chevron" id="registerChevron"></i>
+                        </button>
+                        <div class="dropdown-menu" id="registerDropdown">
+                            <a href="{{ url_for('user_register') }}" class="dropdown-item">
+                                <div class="dropdown-icon">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                <div class="dropdown-text">
+                                    <div class="dropdown-title">User Register</div>
+                                    <div class="dropdown-subtitle">Join as a gamer</div>
+                                </div>
+                            </a>
+                            <a href="{{ url_for('register') }}" class="dropdown-item">
+                                <div class="dropdown-icon">
+                                    <i class="fas fa-store"></i>
+                                </div>
+                                <div class="dropdown-text">
+                                    <div class="dropdown-title">Register Center</div>
+                                    <div class="dropdown-subtitle">List your gaming center</div>
+                                </div>
+                            </a>
                         </div>
                     </div>
                 {% endif %}
+            </div>
+        </div>
+    </header>
+    <main class="main-content">
+        <div class="container">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ 'danger' if category == 'error' else category }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
             {% endwith %}
-
             {% block content %}{% endblock %}
         </div>
     </main>
-
-    <!-- Footer -->
-    <footer class="bg-dark text-white text-center py-4 mt-5">
-        <div class="container">
-            <div class="row">
-                <div class="col-md-4">
-                    <h6><i class="fas fa-gamepad me-2"></i>Gaming Center Hub</h6>
-                    <p class="small">Connecting gamers with gaming centers</p>
-                </div>
-                <div class="col-md-4">
-                    <h6>Quick Links</h6>
-                    <div class="d-flex justify-content-center gap-3">
-                        <a href="{{ url_for('available_slots') }}" class="text-white-50 text-decoration-none">Browse Slots</a>
-                        <a href="{{ url_for('register') }}" class="text-white-50 text-decoration-none">Register</a>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <h6>Contact</h6>
-                    <p class="small mb-0">support@gamingcenterhub.com</p>
-                </div>
+    <footer class="footer">
+        <div>
+            <div style="font-weight:700; font-size:1.1rem;"><i class="fas fa-gamepad"></i> BooknPlay</div>
+            <div style="margin:0.5rem 0; color:#bdbdbd;">Connecting gamers with gaming centers</div>
+            <div style="margin:1rem 0;">
+                <a href="{{ url_for('available_slots') }}" style="color:#bdbdbd; margin-right:1.5rem; text-decoration:none;">Browse Slots</a>
+                <a href="{{ url_for('register') }}" style="color:#bdbdbd; text-decoration:none;">Register</a>
             </div>
-            <hr class="my-3">
-            <p class="mb-0 small">&copy; 2024 Gaming Center Hub. All rights reserved.</p>
+            <div style="color:#bdbdbd; font-size:0.95rem;">support@gamingcenterhub.com</div>
+            <div style="margin-top:1rem; color:#bdbdbd; font-size:0.9rem;">&copy; 2024 BooknPlay. All rights reserved.</div>
         </div>
     </footer>
-
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Custom JS -->
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script>
+        // Dropdown functionality
+        function toggleDropdown(dropdownId) {
+            const dropdown = document.getElementById(dropdownId);
+            const chevron = document.getElementById(dropdownId.replace('Dropdown', 'Chevron'));
+            const isShown = dropdown.classList.contains('show');
+
+            // Close all other dropdowns
+            document.querySelectorAll('.dropdown-menu').forEach(menu => {
+                menu.classList.remove('show');
+            });
+            document.querySelectorAll('.chevron').forEach(chevron => {
+                chevron.classList.remove('rotated');
+            });
+
+            // Toggle current dropdown
+            if (!isShown) {
+                dropdown.classList.add('show');
+                chevron.classList.add('rotated');
+            }
+        }
+
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', function(event) {
+            if (!event.target.closest('.dropdown')) {
+                document.querySelectorAll('.dropdown-menu').forEach(menu => {
+                    menu.classList.remove('show');
+                });
+                document.querySelectorAll('.chevron').forEach(chevron => {
+                    chevron.classList.remove('rotated');
+                });
+            }
+        });
+
+        // Prevent dropdown from closing when clicking inside
+        document.querySelectorAll('.dropdown-menu').forEach(menu => {
+            menu.addEventListener('click', function(event) {
+                event.stopPropagation();
+            });
+        });
+    </script>
     {% block extra_scripts %}{% endblock %}
 </body>
 </html>
