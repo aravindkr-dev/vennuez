@@ -113,6 +113,7 @@ class User(UserMixin, db.Model):
     full_name = db.Column(db.String(120), nullable=False)
     age = db.Column(db.Integer, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    total_spent = db.Column(db.Float, default=0.0)
 
     # Relationships
     bookings = db.relationship('TimeSlot', backref='user', lazy=True, foreign_keys='TimeSlot.user_id')

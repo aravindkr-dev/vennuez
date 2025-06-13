@@ -63,6 +63,8 @@
                             <div style="margin-bottom: 0.3rem;"><i class="fas fa-hourglass-half"></i> {{ ((slot.end_time - slot.start_time).total_seconds() / 3600)|int }} hours</div>
                             <div style="margin-bottom: 0.3rem;"><i class="fas fa-rupee-sign"></i> Base Amount: ₹{{ slot.total_amount }}</div>
                             {% if slot.is_booked %}
+                                <div style="margin-bottom: 0.3rem;"><i class="fas fa-users"></i> Number of People: {{ slot.number_of_people }}</div>
+                                <div style="margin-bottom: 0.3rem;"><i class="fas fa-calculator"></i> Total: ₹{{ (console.hourly_rate * ((slot.end_time - slot.start_time).total_seconds() / 3600) * slot.number_of_people)|round(2) }}</div>
                                 <div style="margin-bottom: 0.3rem;"><i class="fas fa-user"></i> Booked by: {{ slot.customer_name }}</div>
                                 <div style="margin-bottom: 0.3rem;"><i class="fas fa-phone"></i> Phone: {{ slot.customer_phone }}</div>
                                 <div style="margin-bottom: 0.3rem;"><i class="fas fa-envelope"></i> Email: {{ slot.customer_email }}</div>

@@ -665,13 +665,21 @@ def settle_slot(slot_id):
     
     now = datetime.now()
     ten_minutes_before_end = slot.end_time - timedelta(minutes=10)
+    logging.info(f"[CHECKOUT] Server time: {now}, Slot end time: {slot.end_time}, 10 min before: {ten_minutes_before_end}")
+    
     if now < ten_minutes_before_end:
-        flash('You can only checkout within 10 minutes before the slot ends or after it ends.', 'error')
+        flash(f'You can only checkout within 10 minutes before the slot ends or after it ends. (Server time: {now}, Slot end: {slot.end_time})', 'error')
         return redirect(url_for('console_details', console_id=slot.console_id))
     
     try:
-        snacks_amount = float(request.form['snacks_amount'])
-        final_amount = float(request.form['final_amount'])
+        snacks_amount_raw = request.form.get('snacks_amount')
+        final_amount_raw = request.form.get('final_amount')
+        logging.info(f"[CHECKOUT] Form data: snacks_amount={snacks_amount_raw}, final_amount={final_amount_raw}")
+        if snacks_amount_raw is None or final_amount_raw is None:
+            flash('Missing snacks or final amount in form data.', 'error')
+            return redirect(url_for('console_details', console_id=slot.console_id))
+        snacks_amount = float(snacks_amount_raw)
+        final_amount = float(final_amount_raw)
         
         # Update slot details
         slot.snacks_amount = snacks_amount
@@ -688,6 +696,8 @@ def settle_slot(slot_id):
                 # Create a transaction record
                 transaction = CoinTransaction(
                     user_id=user.id,
+                    owner_id=console.owner_id,
+                    gaming_center_name=console.owner.gaming_center_name if console.owner else "",
                     amount=final_amount,
                     transaction_type='spending',
                     description=f'Payment for slot {slot.id} at {console.name}'
@@ -700,8 +710,8 @@ def settle_slot(slot_id):
         
     except Exception as e:
         db.session.rollback()
-        logging.error(f"Checkout error: {str(e)}")
-        flash('Checkout failed. Please try again.', 'error')
+        logging.error(f"Checkout error: {str(e)} | Server time: {now}, Slot end: {slot.end_time}, Form: snacks={request.form.get('snacks_amount')}, final={request.form.get('final_amount')}")
+        flash(f'Checkout failed: {str(e)}', 'error')
         return redirect(url_for('console_details', console_id=slot.console_id))
 
 
