@@ -49,9 +49,18 @@
                         <button type="button" class="btn btn-outline-primary btn-sm" onclick="incrementPeople()">+</button>
                     </div>
                     <div class="amount-breakdown" style="background: white; padding: 1rem; border-radius: 4px;">
+                        <div style="margin-bottom: 1rem;">
+                            <strong>Pricing Tiers:</strong>
+                            <table class="table table-sm" id="pricing-tiers-table">
+                                <thead><tr><th>Up to (people)</th><th>Rate/person (₹)</th></tr></thead>
+                                <tbody id="pricing-tiers-body">
+                                    <tr><td colspan="2">Loading...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
                         <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-                            <span>Base Rate (per person per hour):</span>
-                            <span>₹{{ slot.console.hourly_rate }}</span>
+                            <span>Rate (per person):</span>
+                            <span id="rate-per-person">₹{{ slot.console.hourly_rate }}</span>
                         </div>
                         <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
                             <span>Number of People:</span>
@@ -138,6 +147,7 @@
 <script>
     let selectedDuration = 0;
     const hourlyRate = {{ slot.console.hourly_rate }};
+    let pricingTiers = [];
 
     function incrementPeople() {
         const input = document.getElementById('number_of_people');
@@ -157,8 +167,9 @@
 
     function updateTotalAmount() {
         const people = parseInt(document.getElementById('number_of_people').value);
-        const total = hourlyRate * people;  // Simple multiplication of hourly rate by number of people
-        
+        const rate = getRateForPeople(people);
+        document.getElementById('rate-per-person').textContent = `₹${rate}`;
+        const total = rate * people;
         document.getElementById('people-display').textContent = people;
         document.getElementById('total-amount-display').textContent = `₹${Math.round(total)}`;
         document.getElementById('form_number_of_people').value = people;
@@ -166,6 +177,15 @@
         // Update summary
         document.getElementById('summary-people').textContent = people;
         document.getElementById('summary-total').textContent = `₹${Math.round(total)}`;
+    }
+
+    function getRateForPeople(people) {
+        for (let i = 0; i < pricingTiers.length; i++) {
+            if (people <= pricingTiers[i].max_people) {
+                return pricingTiers[i].rate_per_person;
+            }
+        }
+        return hourlyRate;
     }
 
     // Update the existing time slot selection handler
@@ -279,6 +299,20 @@
                 nextBtn.style.display = 'inline-block';
         });
         }
-});
+
+        fetch(`/console/${CONSOLE_ID}/pricing/json`).then(r => r.json()).then(data => {
+            pricingTiers = data;
+            const tbody = document.getElementById('pricing-tiers-body');
+            if (pricingTiers.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="2">No pricing tiers set. Default rate applies.</td></tr>';
+            } else {
+                tbody.innerHTML = '';
+                pricingTiers.forEach(tier => {
+                    tbody.innerHTML += `<tr><td>${tier.max_people}</td><td>₹${tier.rate_per_person}</td></tr>`;
+                });
+            }
+            updateTotalAmount();
+        });
+    });
 </script>
 {% endblock %}

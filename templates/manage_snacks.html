@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Manage Snacks{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Manage Snacks</h2>
+    <form method="POST" class="row g-3 mb-4">
+        <div class="col-md-5">
+            <input type="text" name="name" class="form-control" placeholder="Snack Name" required>
+        </div>
+        <div class="col-md-5">
+            <input type="number" name="rate" class="form-control" placeholder="Rate (₹)" step="0.01" min="0" required>
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-primary w-100">Add Snack</button>
+        </div>
+    </form>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Rate (₹)</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for snack in snacks %}
+            <tr>
+                <td>{{ snack.name }}</td>
+                <td>{{ snack.rate }}</td>
+                <td>
+                    <form method="POST" action="{{ url_for('delete_snack', snack_id=snack.id) }}" style="display:inline;">
+                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Delete this snack?');">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %} 

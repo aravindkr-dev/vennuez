@@ -1,7 +1,7 @@
 from flask import render_template, request, redirect, url_for, flash, session, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 from app import app, db
-from models import Owner, Console, TimeSlot, User, UserCoinBalance, CoinTransaction
+from models import Owner, Console, TimeSlot, User, UserCoinBalance, CoinTransaction, Snack, ConsolePricingTier
 from datetime import datetime, timedelta
 import logging
 
@@ -740,6 +740,95 @@ def center_slots(owner_id):
         Console.is_available == True
     ).order_by(TimeSlot.start_time).all()
     return render_template('center_slots.html', owner=owner, slots=slots)
+
+
+@app.route('/owner/snacks', methods=['GET', 'POST'])
+def manage_snacks():
+    if 'user_id' not in session or session.get('user_type') != 'owner':
+        flash('Please login as owner', 'error')
+        return redirect(url_for('login'))
+    owner_id = session['user_id']
+    if request.method == 'POST':
+        name = request.form.get('name')
+        rate = request.form.get('rate', type=float)
+        if name and rate is not None:
+            snack = Snack(owner_id=owner_id, name=name, rate=rate)
+            db.session.add(snack)
+            db.session.commit()
+            flash('Snack added!', 'success')
+        return redirect(url_for('manage_snacks'))
+    snacks = Snack.query.filter_by(owner_id=owner_id).all()
+    return render_template('manage_snacks.html', snacks=snacks)
+
+
+@app.route('/owner/snacks/delete/<int:snack_id>', methods=['POST'])
+def delete_snack(snack_id):
+    if 'user_id' not in session or session.get('user_type') != 'owner':
+        flash('Please login as owner', 'error')
+        return redirect(url_for('login'))
+    snack = Snack.query.get_or_404(snack_id)
+    if snack.owner_id != session['user_id']:
+        flash('Access denied', 'error')
+        return redirect(url_for('manage_snacks'))
+    db.session.delete(snack)
+    db.session.commit()
+    flash('Snack deleted!', 'success')
+    return redirect(url_for('manage_snacks'))
+
+
+@app.route('/owner/snacks/json')
+def snacks_json():
+    if 'user_id' not in session or session.get('user_type') != 'owner':
+        return jsonify([])
+    owner_id = session['user_id']
+    snacks = Snack.query.filter_by(owner_id=owner_id).all()
+    return jsonify([{ 'name': s.name, 'rate': s.rate } for s in snacks])
+
+
+@app.route('/console/<int:console_id>/pricing', methods=['GET', 'POST'])
+def manage_pricing(console_id):
+    if 'user_id' not in session or session.get('user_type') != 'owner':
+        flash('Please login as owner', 'error')
+        return redirect(url_for('login'))
+    console = Console.query.get_or_404(console_id)
+    if console.owner_id != session['user_id']:
+        flash('Access denied', 'error')
+        return redirect(url_for('dashboard'))
+    if request.method == 'POST':
+        max_people = request.form.get('max_people', type=int)
+        rate_per_person = request.form.get('rate_per_person', type=float)
+        if max_people and rate_per_person:
+            tier = ConsolePricingTier(console_id=console_id, max_people=max_people, rate_per_person=rate_per_person)
+            db.session.add(tier)
+            db.session.commit()
+            flash('Pricing tier added!', 'success')
+        return redirect(url_for('manage_pricing', console_id=console_id))
+    tiers = ConsolePricingTier.query.filter_by(console_id=console_id).order_by(ConsolePricingTier.max_people).all()
+    return render_template('manage_pricing.html', console=console, tiers=tiers)
+
+
+@app.route('/console/<int:console_id>/pricing/delete/<int:tier_id>', methods=['POST'])
+def delete_pricing_tier(console_id, tier_id):
+    if 'user_id' not in session or session.get('user_type') != 'owner':
+        flash('Please login as owner', 'error')
+        return redirect(url_for('login'))
+    tier = ConsolePricingTier.query.get_or_404(tier_id)
+    if tier.console_id != console_id:
+        flash('Access denied', 'error')
+        return redirect(url_for('manage_pricing', console_id=console_id))
+    db.session.delete(tier)
+    db.session.commit()
+    flash('Pricing tier deleted!', 'success')
+    return redirect(url_for('manage_pricing', console_id=console_id))
+
+
+@app.route('/console/<int:console_id>/pricing/json')
+def pricing_json(console_id):
+    tiers = ConsolePricingTier.query.filter_by(console_id=console_id).order_by(ConsolePricingTier.max_people).all()
+    return jsonify([
+        { 'max_people': t.max_people, 'rate_per_person': t.rate_per_person }
+        for t in tiers
+    ])
 
 
 # Error handlers

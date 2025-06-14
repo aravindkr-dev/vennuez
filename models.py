@@ -172,3 +172,27 @@ class CoinTransaction(db.Model):
 
     def __repr__(self):
         return f'<CoinTransaction {self.transaction_type}:{self.amount}>'
+
+
+class Snack(db.Model):
+    __tablename__ = 'snacks'
+
+    id = db.Column(db.Integer, primary_key=True)
+    owner_id = db.Column(db.Integer, db.ForeignKey('owners.id'), nullable=False)
+    name = db.Column(db.String(100), nullable=False)
+    rate = db.Column(db.Float, nullable=False)
+
+    def __repr__(self):
+        return f'<Snack {self.name}>'
+
+
+class ConsolePricingTier(db.Model):
+    __tablename__ = 'console_pricing_tiers'
+
+    id = db.Column(db.Integer, primary_key=True)
+    console_id = db.Column(db.Integer, db.ForeignKey('consoles.id'), nullable=False)
+    max_people = db.Column(db.Integer, nullable=False)
+    rate_per_person = db.Column(db.Float, nullable=False)
+
+    def __repr__(self):
+        return f'<ConsolePricingTier {self.console_id}:up to {self.max_people}:{self.rate_per_person}>'

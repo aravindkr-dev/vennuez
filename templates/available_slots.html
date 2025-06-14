@@ -12,26 +12,26 @@
             <div class="card-body">
                 <form method="get" class="row g-3">
                     <div class="col-md-4">
-                        <label for="console_type" class="form-label">Console Type</label>
+                            <label for="console_type" class="form-label">Console Type</label>
                         <select name="console_type" id="console_type" class="form-select">
                             <option value="">All Types</option>
-                            {% for type in console_types %}
+                                {% for type in console_types %}
                             <option value="{{ type }}" {% if current_filters.console_type == type %}selected{% endif %}>{{ type }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="col-md-4">
-                        <label for="location" class="form-label">Location</label>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="location" class="form-label">Location</label>
                         <input type="text" name="location" id="location" class="form-control" placeholder="Enter location" value="{{ current_filters.location }}">
-                    </div>
+                        </div>
                     <div class="col-12 text-center">
                         <button type="submit" class="btn btn-primary">Apply Filters</button>
                         <a href="{{ url_for('available_slots') }}" class="btn btn-secondary">Clear Filters</a>
                     </div>
                 </form>
+                </div>
             </div>
-        </div>
-
+            
         <!-- Venues List -->
         <div class="row">
             {% if owners %}
@@ -54,14 +54,14 @@
                     </div>
                 </div>
                 {% endfor %}
-            {% else %}
+        {% else %}
                 <div class="col-12">
                     <div class="alert alert-info text-center">
                         No available venues found. Try adjusting your filters.
-                    </div>
                 </div>
-            {% endif %}
-        </div>
+            </div>
+        {% endif %}
     </div>
+</div>
 </section>
 {% endblock %}

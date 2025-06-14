@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Manage Pricing - {{ console.name }}{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Manage Pricing for {{ console.name }}</h2>
+    <form method="POST" class="row g-3 mb-4">
+        <div class="col-md-4">
+            <input type="number" name="max_people" class="form-control" placeholder="Up to (people)" min="1" required>
+        </div>
+        <div class="col-md-4">
+            <input type="number" name="rate_per_person" class="form-control" placeholder="Rate per Person (₹)" step="0.01" min="0" required>
+        </div>
+        <div class="col-md-4">
+            <button type="submit" class="btn btn-primary w-100">Add Tier</button>
+        </div>
+    </form>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Up to (people)</th>
+                <th>Rate per Person (₹)</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for tier in tiers %}
+            <tr>
+                <td>{{ tier.max_people }}</td>
+                <td>{{ tier.rate_per_person }}</td>
+                <td>
+                    <form method="POST" action="{{ url_for('delete_pricing_tier', console_id=console.id, tier_id=tier.id) }}" style="display:inline;">
+                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Delete this pricing tier?');">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <a href="{{ url_for('console_details', console_id=console.id) }}" class="btn btn-secondary mt-3">Back to Console</a>
+</div>
+{% endblock %} 
