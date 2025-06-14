@@ -831,6 +831,22 @@ def pricing_json(console_id):
     ])
 
 
+@app.route('/set_owner_location', methods=['POST'])
+def set_owner_location():
+    if 'user_id' not in session or session.get('user_type') != 'owner':
+        return jsonify({'success': False, 'error': 'Not logged in'}), 401
+    data = request.get_json()
+    lat = data.get('latitude')
+    lon = data.get('longitude')
+    owner = Owner.query.get(session['user_id'])
+    if owner and lat and lon:
+        owner.latitude = lat
+        owner.longitude = lon
+        db.session.commit()
+        return jsonify({'success': True})
+    return jsonify({'success': False, 'error': 'Invalid data'})
+
+
 # Error handlers
 @app.errorhandler(404)
 def not_found(error):

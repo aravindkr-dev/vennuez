@@ -14,7 +14,7 @@ class Owner(UserMixin, db.Model):
     password_hash = db.Column(db.String(256), nullable=False)
     phone = db.Column(db.String(20), nullable=False)
     gaming_center_name = db.Column(db.String(200), nullable=False)
-    address = db.Column(db.Text, nullable=False)
+    address = db.Column(db.String(255), nullable=True)
     active = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     latitude = db.Column(db.Float, nullable=True)

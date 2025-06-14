@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Dashboard - BooknPlay{% endblock %}
+{% block title %}Dashboard - Vennuez{% endblock %}
 
 {% block content %}
 <section class="dashboard-page" style="padding: 2rem 0;">
@@ -10,6 +10,38 @@
                 <i class="fas fa-tachometer-alt" style="color: var(--accent);"></i> Welcome, {{ owner.username }}!
             </h1>
             <p style="color: var(--secondary);">Manage your gaming center and track your business performance</p>
+        </div>
+        <div style="display: flex; justify-content: center; align-items: center; margin-bottom: 1.5rem;">
+            {% if not owner.latitude or not owner.longitude %}
+            <button id="set-location-btn" class="btn btn-danger" style="background-color: #dc3545; border-color: #dc3545; color: #fff;" onclick="setMyLocation()">
+                <i class="fas fa-map-marker-alt"></i> Set My Location
+            </button>
+            <script>
+            function setMyLocation() {
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(function(pos) {
+                        fetch("{{ url_for('set_owner_location') }}", {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ latitude: pos.coords.latitude, longitude: pos.coords.longitude })
+                        }).then(r => r.json()).then(data => {
+                            if (data.success) {
+                                document.getElementById('set-location-btn').style.display = 'none';
+                                alert('Location set!');
+                                location.reload();
+                            } else {
+                                alert('Failed to set location.');
+                            }
+                        });
+                    }, function() {
+                        alert('Could not get your location.');
+                    });
+                } else {
+                    alert('Geolocation is not supported by your browser.');
+                }
+            }
+            </script>
+            {% endif %}
         </div>
         <div class="dashboard-stats" style="display: flex; flex-wrap: wrap; gap: 2rem; justify-content: center; margin-bottom: 2rem;">
             <div class="card" style="min-width: 180px; text-align: center;">

@@ -5,15 +5,30 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="2d2dd25c-dea4-4478-80fd-749354506233" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/static/logo/logo.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/instance/gaming_center.db" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/models.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/routes.py" beforeDir="false" afterPath="$PROJECT_DIR$/routes.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/add_console.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/add_console.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/add_slot.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/add_slot.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/templates/auto_slots.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/auto_slots.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/templates/available_slots.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/available_slots.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/book_slot.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/book_slot.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/base.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/base.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/templates/console_details.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/console_details.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/templates/dashboard.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/dashboard.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/edit_slot.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/edit_slot.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/fake_payment.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/fake_payment.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/login.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/login.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/manage_coins.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/manage_coins.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/past_bookings.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/past_bookings.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/payment.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/payment.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/register.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/register.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/search_users.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/search_users.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/user_dashboard.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/user_dashboard.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/user_login.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/user_login.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/user_register.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/user_register.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -42,29 +57,34 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;DefaultHtmlFileTemplate&quot;: &quot;HTML File&quot;,
-    &quot;Python.app.executor&quot;: &quot;Run&quot;,
-    &quot;Python.app1.executor&quot;: &quot;Run&quot;,
-    &quot;Python.book_slots_trial.executor&quot;: &quot;Run&quot;,
-    &quot;Python.bookings.executor&quot;: &quot;Run&quot;,
-    &quot;Python.config.executor&quot;: &quot;Run&quot;,
-    &quot;Python.image_upload_cloudinary.executor&quot;: &quot;Run&quot;,
-    &quot;Python.main.executor&quot;: &quot;Run&quot;,
-    &quot;Python.models.executor&quot;: &quot;Run&quot;,
-    &quot;Python.otp.executor&quot;: &quot;Run&quot;,
-    &quot;Python.payment.executor&quot;: &quot;Run&quot;,
-    &quot;Python.schemas.executor&quot;: &quot;Run&quot;,
-    &quot;Python.signup.executor&quot;: &quot;Run&quot;,
-    &quot;Python.sms.executor&quot;: &quot;Run&quot;,
-    &quot;Python.test.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;master&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "DefaultHtmlFileTemplate": "HTML File",
+    "Python.app.executor": "Run",
+    "Python.app1.executor": "Run",
+    "Python.book_slots_trial.executor": "Run",
+    "Python.bookings.executor": "Run",
+    "Python.config.executor": "Run",
+    "Python.image_upload_cloudinary.executor": "Run",
+    "Python.main.executor": "Run",
+    "Python.models.executor": "Run",
+    "Python.otp.executor": "Run",
+    "Python.payment.executor": "Run",
+    "Python.schemas.executor": "Run",
+    "Python.signup.executor": "Run",
+    "Python.sms.executor": "Run",
+    "Python.test.executor": "Run",
+    "Python.update_owner_locations.executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "master",
+    "last_opened_file_path": "C:/Users/K R ARAVIND/Desktop/Turf_booking/static/logo"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\K R ARAVIND\Desktop\Turf_booking\static\logo" />
+    </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\Users\K R ARAVIND\Desktop\Turf_booking\templates" />
       <recent name="C:\Users\K R ARAVIND\Desktop\Turf_booking" />

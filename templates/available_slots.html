@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Available Venues - BooknPlay{% endblock %}
+{% block title %}Available Venues - Vennuez{% endblock %}
 
 {% block content %}
 <section class="available-venues" style="padding: 2rem 0;">
@@ -37,12 +37,13 @@
             {% if owners %}
                 {% for owner in owners %}
                 <div class="col-md-6 col-lg-4 mb-4">
-                    <div class="card h-100">
+                    <div class="card h-100 venue-card" data-lat="{{ owner.latitude }}" data-lon="{{ owner.longitude }}">
                         <div class="card-body">
                             <h5 class="card-title">{{ owner.gaming_center_name }}</h5>
                             <div class="mb-2">
                                 <i class="fas fa-map-marker-alt"></i> {{ owner.address }}
                             </div>
+                            <div class="mb-2 venue-distance" style="color: #007bff;"></div>
                             <div class="mb-2">
                                 <i class="fas fa-phone"></i> {{ owner.phone }}
                             </div>
@@ -64,4 +65,31 @@
     </div>
 </div>
 </section>
+<script>
+function haversine(lat1, lon1, lat2, lon2) {
+    function toRad(x) { return x * Math.PI / 180; }
+    var R = 6371; // km
+    var dLat = toRad(lat2-lat1);
+    var dLon = toRad(lon2-lon1);
+    var a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+            Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+            Math.sin(dLon/2) * Math.sin(dLon/2);
+    var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
+}
+if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(function(pos) {
+        const userLat = pos.coords.latitude;
+        const userLon = pos.coords.longitude;
+        document.querySelectorAll('.venue-card').forEach(function(card) {
+            const lat = parseFloat(card.dataset.lat);
+            const lon = parseFloat(card.dataset.lon);
+            if (!isNaN(lat) && !isNaN(lon)) {
+                const dist = haversine(userLat, userLon, lat, lon);
+                card.querySelector('.venue-distance').textContent = `Distance: ${dist.toFixed(2)} km`;
+            }
+        });
+    });
+}
+</script>
 {% endblock %}

@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Register - BooknPlay{% endblock %}
+{% block title %}Register - Vennuez{% endblock %}
 
 {% block content %}
 <section class="auth-page" style="padding: 2rem 0;">
@@ -100,6 +100,27 @@ document.addEventListener('DOMContentLoaded', function() {
                 registerBtn.disabled = true;
             }
         });
+    }
+});
+
+async function geocodeAddress(address) {
+    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`;
+    const response = await fetch(url);
+    const data = await response.json();
+    if (data && data.length > 0) {
+        return { lat: data[0].lat, lon: data[0].lon };
+    }
+    return { lat: '', lon: '' };
+}
+
+document.querySelector('form').addEventListener('submit', async function(e) {
+    const address = document.getElementById('address').value;
+    if (address) {
+        e.preventDefault();
+        const coords = await geocodeAddress(address);
+        document.getElementById('latitude').value = coords.lat;
+        document.getElementById('longitude').value = coords.lon;
+        this.submit();
     }
 });
 </script>
