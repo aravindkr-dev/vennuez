@@ -6,6 +6,7 @@ from sqlalchemy.orm import DeclarativeBase
 from werkzeug.middleware.proxy_fix import ProxyFix
 from werkzeug.security import generate_password_hash
 from flask_migrate import Migrate
+from flask_login import LoginManager
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
@@ -16,11 +17,26 @@ class Base(DeclarativeBase):
 
 
 db = SQLAlchemy(model_class=Base)
+login_manager = LoginManager()
 
 # Create the app
 app = Flask(__name__)
 app.secret_key = os.environ.get("SESSION_SECRET", "dev-secret-key-change-in-production")
 app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
+
+# Initialize Flask-Login
+login_manager.init_app(app)
+login_manager.login_view = 'login'
+
+@login_manager.user_loader
+def load_user(user_id):
+    from models import Owner, User
+    # Try to load owner first
+    owner = Owner.query.get(int(user_id))
+    if owner:
+        return owner
+    # If not owner, try user
+    return User.query.get(int(user_id))
 
 # Configure the database
 app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", "sqlite:///gaming_center.db")

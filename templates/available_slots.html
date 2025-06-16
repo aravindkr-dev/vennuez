@@ -38,10 +38,41 @@
                 {% for owner in owners %}
                 <div class="col-md-6 col-lg-4 mb-4">
                     <div class="card h-100 venue-card" data-lat="{{ owner.latitude }}" data-lon="{{ owner.longitude }}">
+                        {% if owner.images_uploaded %}
+                        <div id="venue-images-{{ owner.id }}" class="carousel slide" data-bs-ride="carousel">
+                            <div class="carousel-inner">
+                                <div class="carousel-item active">
+                                    <img src="{{ owner.venue_image1 }}" class="d-block w-100" alt="Venue Image 1" style="height: 200px; object-fit: cover;">
+                                </div>
+                                <div class="carousel-item">
+                                    <img src="{{ owner.venue_image2 }}" class="d-block w-100" alt="Venue Image 2" style="height: 200px; object-fit: cover;">
+                                </div>
+                                <div class="carousel-item">
+                                    <img src="{{ owner.venue_image3 }}" class="d-block w-100" alt="Venue Image 3" style="height: 200px; object-fit: cover;">
+                                </div>
+                                <div class="carousel-item">
+                                    <img src="{{ owner.venue_image4 }}" class="d-block w-100" alt="Venue Image 4" style="height: 200px; object-fit: cover;">
+                                </div>
+                            </div>
+                            <button class="carousel-control-prev" type="button" data-bs-target="#venue-images-{{ owner.id }}" data-bs-slide="prev">
+                                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Previous</span>
+                            </button>
+                            <button class="carousel-control-next" type="button" data-bs-target="#venue-images-{{ owner.id }}" data-bs-slide="next">
+                                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Next</span>
+                            </button>
+                        </div>
+                        {% endif %}
                         <div class="card-body">
                             <h5 class="card-title">{{ owner.gaming_center_name }}</h5>
                             <div class="mb-2">
                                 <i class="fas fa-map-marker-alt"></i> {{ owner.address }}
+                                {% if owner.google_maps_link %}
+                                <a href="{{ owner.google_maps_link }}" target="_blank" class="btn btn-sm btn-outline-primary ms-2">
+                                    <i class="fas fa-map"></i> View on Maps
+                                </a>
+                                {% endif %}
                             </div>
                             <div class="mb-2 venue-distance" style="color: #007bff;"></div>
                             <div class="mb-2">
@@ -50,6 +81,16 @@
                             <div class="mb-2">
                                 <i class="fas fa-envelope"></i> {{ owner.email }}
                             </div>
+                            {% if owner.amenities %}
+                            <div class="mb-2">
+                                <i class="fas fa-star"></i> Amenities:
+                                <div class="amenities-list">
+                                    {% for amenity in owner.amenities.split(',') %}
+                                    <span class="badge bg-info me-1">{{ amenity.strip() }}</span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endif %}
                             <a href="{{ url_for('center_slots', owner_id=owner.id) }}" class="btn btn-primary w-100">View Slots</a>
                         </div>
                     </div>

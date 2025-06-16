@@ -1,8 +1,8 @@
 """Initial migration
 
 Revision ID: 31693476c3b2
-Revises: 
-Create Date: 2025-06-12 16:14:28.776070
+Revises: add_venue_details_columns
+Create Date: 2024-02-14 01:00:00.000000
 
 """
 from alembic import op
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = '31693476c3b2'
-down_revision = None
+down_revision = 'add_venue_details_columns'
 branch_labels = None
 depends_on = None
 

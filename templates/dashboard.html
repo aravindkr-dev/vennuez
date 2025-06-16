@@ -43,6 +43,66 @@
             </script>
             {% endif %}
         </div>
+        {% if not current_user.images_uploaded %}
+        <div class="alert alert-warning" role="alert" style="margin-bottom: 2rem;">
+            <strong>Important!</strong> Please upload your venue images and details below. This is mandatory for your venue to be visible to users.
+        </div>
+        {% endif %}
+
+        <!-- Venue Details Section -->
+        {% if not venue_details_complete %}
+        <div class="card" style="margin-bottom: 2rem;">
+            <div class="card-body">
+                <h3 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 1rem;">
+                    <i class="fas fa-store"></i> Venue Details
+                </h3>
+                <form action="{{ url_for('upload_venue_details') }}" method="POST" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label class="form-label">Venue Images (Required)</label>
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <input type="file" name="image1" class="form-control" accept="image/*" {% if not owner.venue_image1 %}required{% endif %}>
+                                {% if owner.venue_image1 %}
+                                <img src="{{ owner.venue_image1 }}" class="img-thumbnail mt-2" alt="Venue Image 1">
+                                {% endif %}
+                            </div>
+                            <div class="col-md-3">
+                                <input type="file" name="image2" class="form-control" accept="image/*" {% if not owner.venue_image2 %}required{% endif %}>
+                                {% if owner.venue_image2 %}
+                                <img src="{{ owner.venue_image2 }}" class="img-thumbnail mt-2" alt="Venue Image 2">
+                                {% endif %}
+                            </div>
+                            <div class="col-md-3">
+                                <input type="file" name="image3" class="form-control" accept="image/*" {% if not owner.venue_image3 %}required{% endif %}>
+                                {% if owner.venue_image3 %}
+                                <img src="{{ owner.venue_image3 }}" class="img-thumbnail mt-2" alt="Venue Image 3">
+                                {% endif %}
+                            </div>
+                            <div class="col-md-3">
+                                <input type="file" name="image4" class="form-control" accept="image/*" {% if not owner.venue_image4 %}required{% endif %}>
+                                {% if owner.venue_image4 %}
+                                <img src="{{ owner.venue_image4 }}" class="img-thumbnail mt-2" alt="Venue Image 4">
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Google Maps Link</label>
+                        <input type="url" name="google_maps_link" class="form-control" value="{{ owner.google_maps_link or '' }}" placeholder="Enter Google Maps link to your venue">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Amenities (comma-separated)</label>
+                        <input type="text" name="amenities" class="form-control" value="{{ owner.amenities or '' }}" placeholder="e.g., WiFi, Parking, Air Conditioning, Refreshments">
+                        <div class="form-text">Enter amenities separated by commas</div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Save Venue Details
+                    </button>
+                </form>
+            </div>
+        </div>
+        {% endif %}
+
         <div class="dashboard-stats" style="display: flex; flex-wrap: wrap; gap: 2rem; justify-content: center; margin-bottom: 2rem;">
             <div class="card" style="min-width: 180px; text-align: center;">
                 <div style="font-size: 1.5rem; font-weight: 700; color: var(--primary);">{{ stats.total_slots }}</div>
@@ -67,6 +127,9 @@
             </a>
             <a href="{{ url_for('manage_snacks') }}" class="btn btn-warning" style="margin-left: 1rem;">
                 <i class="fas fa-cookie-bite"></i> Manage Snacks
+            </a>
+            <a href="{{ url_for('export_bookings') }}" class="btn btn-success" style="margin-left: 1rem;">
+                <i class="fas fa-file-excel"></i> Export Bookings
             </a>
         </div>
         <div class="dashboard-consoles">

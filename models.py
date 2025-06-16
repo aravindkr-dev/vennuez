@@ -19,6 +19,13 @@ class Owner(UserMixin, db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     latitude = db.Column(db.Float, nullable=True)
     longitude = db.Column(db.Float, nullable=True)
+    google_maps_link = db.Column(db.String(500), nullable=True)
+    amenities = db.Column(db.Text, nullable=True)  # Stored as JSON string
+    venue_image1 = db.Column(db.String(500), nullable=True)
+    venue_image2 = db.Column(db.String(500), nullable=True)
+    venue_image3 = db.Column(db.String(500), nullable=True)
+    venue_image4 = db.Column(db.String(500), nullable=True)
+    images_uploaded = db.Column(db.Boolean, default=False)
 
     # Relationships
     consoles = db.relationship('Console', backref='owner', lazy=True, cascade='all, delete-orphan')

@@ -1,9 +1,43 @@
-from flask import render_template, request, redirect, url_for, flash, session, jsonify
+from flask import render_template, request, redirect, url_for, flash, session, jsonify, send_file
 from werkzeug.security import generate_password_hash, check_password_hash
 from app import app, db
 from models import Owner, Console, TimeSlot, User, UserCoinBalance, CoinTransaction, Snack, ConsolePricingTier
 from datetime import datetime, timedelta
+from functools import wraps
+from flask_login import login_required, current_user
 import logging
+import pandas as pd
+import io
+import cloudinary
+import cloudinary.uploader
+import os
+import json
+
+def venue_details_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not current_user.is_authenticated or session.get('user_type') != 'owner':
+            flash('You must be logged in as a venue owner to access this page.', 'error')
+            return redirect(url_for('login'))
+        
+        if not isinstance(current_user, Owner):
+            flash('You must be logged in as a venue owner to access this page.', 'error')
+            return redirect(url_for('login'))
+        
+        # Allow access to dashboard even if venue details are not complete
+        if request.endpoint != 'dashboard' and not current_user.images_uploaded:
+            flash('Please complete your venue details before accessing other features.', 'warning')
+            return redirect(url_for('dashboard'))
+            
+        return f(*args, **kwargs)
+    return decorated_function
+
+# Configure Cloudinary
+cloudinary.config(
+    cloud_name=os.getenv('CLOUDINARY_CLOUD_NAME'),
+    api_key=os.getenv('CLOUDINARY_API_KEY'),
+    api_secret=os.getenv('CLOUDINARY_API_SECRET')
+)
 
 
 @app.route('/')
@@ -14,15 +48,15 @@ def index():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
+        from flask_login import login_user
         username = request.form['username']
         password = request.form['password']
 
         owner = Owner.query.filter_by(username=username).first()
 
         if owner and check_password_hash(owner.password_hash, password):
-            session['user_id'] = owner.id
-            session['username'] = owner.username
-            session['user_type'] = 'owner'
+            login_user(owner)
+            session['user_type'] = 'owner'  # Keep this for role-based checks
             flash('Login successful!', 'success')
             return redirect(url_for('dashboard'))
         else:
@@ -87,12 +121,13 @@ def logout():
 
 
 @app.route('/dashboard')
+@login_required
+@venue_details_required
 def dashboard():
-    if 'user_id' not in session or session.get('user_type') != 'owner':
-        flash('Please login to access dashboard', 'error')
-        return redirect(url_for('login'))
+    # The login_required decorator handles authentication, and venue_details_required handles user type and venue details.
+    # No need for explicit session checks here.
 
-    owner = Owner.query.get(session['user_id'])
+    owner = Owner.query.get(current_user.id)
     consoles = Console.query.filter_by(owner_id=owner.id).all()
 
     # Calculate statistics
@@ -113,17 +148,125 @@ def dashboard():
         'total_slots': total_slots,
         'booked_slots': booked_slots,
         'total_revenue': total_revenue,
-        'booking_rate': (booked_slots / total_slots * 100) if total_slots > 0 else 0
+        'booking_rate': (booked_slots / total_slots * 100) if total_slots > 0 else 0,
+        'advance_collected': sum(slot.advance_paid for console in consoles for slot in console.slots if slot.is_booked)
     }
 
-    return render_template('dashboard.html', owner=owner, consoles=consoles, stats=stats)
+    # Check if all essential venue details are submitted
+    venue_details_complete = (owner.images_uploaded and 
+                              owner.google_maps_link and 
+                              owner.amenities)
+
+    return render_template('dashboard.html', owner=owner, consoles=consoles, stats=stats, venue_details_complete=venue_details_complete)
+
+@app.route('/export_bookings')
+@venue_details_required
+def export_bookings():
+
+    owner = Owner.query.get(current_user.id)
+    bookings = []
+
+    for console in owner.consoles:
+        for slot in console.slots:
+            if slot.is_booked:
+                booking_data = {
+                    'Booking ID': slot.booking_id,
+                    'Customer Name': slot.customer_name,
+                    'Phone Number': slot.customer_phone,
+                    'Number of People': slot.number_of_people,
+                    'Booking Time': slot.start_time.strftime('%Y-%m-%d %H:%M'),
+                    'Duration': f"{(slot.end_time - slot.start_time).total_seconds() / 3600:.1f} hours",
+                    'Console': console.name,
+                    'Snacks Amount': slot.snacks_amount,
+                    'Total Amount': slot.total_amount,
+                    'Advance Paid': slot.advance_paid,
+                    'Payment Status': slot.payment_status
+                }
+                bookings.append(booking_data)
+
+    if not bookings:
+        flash('No bookings found to export', 'info')
+        return redirect(url_for('dashboard'))
+
+    df = pd.DataFrame(bookings)
+    output = io.BytesIO()
+    with pd.ExcelWriter(output, engine='openpyxl') as writer:
+        df.to_excel(writer, index=False, sheet_name='Bookings')
+
+    output.seek(0)
+    return send_file(
+        output,
+        mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        as_attachment=True,
+        download_name=f'bookings_{datetime.now().strftime("%Y%m%d_%H%M%S")}.xlsx'
+    )
+
+
+@app.route('/upload_venue_details', methods=['POST'])
+@login_required
+def upload_venue_details():
+    if not current_user.is_authenticated or not isinstance(current_user, Owner):
+        flash('You must be logged in as a venue owner to access this page.', 'danger')
+        return redirect(url_for('login'))
+    
+    owner = Owner.query.get(current_user.id)
+    if not owner:
+        flash('Owner not found.', 'error')
+        return redirect(url_for('dashboard'))
+    
+    try:
+    
+        # Handle image uploads
+        image_urls = []
+        for i in range(1, 5):
+            image = request.files.get(f'image{i}')
+            if image:
+                # Upload to Cloudinary
+                result = cloudinary.uploader.upload(image,
+                    folder=f'venue_images/{owner.id}',
+                    unique_filename=True,
+                    overwrite=True)
+                image_urls.append(result['secure_url'])
+    
+        
+        # Update owner's image URLs
+        # Initialize all venue_image fields to None
+        owner.venue_image1 = None
+        owner.venue_image2 = None
+        owner.venue_image3 = None
+        owner.venue_image4 = None
+
+        # Assign uploaded image URLs to respective fields
+        if len(image_urls) > 0:
+            owner.venue_image1 = image_urls[0] if len(image_urls) > 0 else None
+            owner.venue_image2 = image_urls[1] if len(image_urls) > 1 else None
+            owner.venue_image3 = image_urls[2] if len(image_urls) > 2 else None
+            owner.venue_image4 = image_urls[3] if len(image_urls) > 3 else None
+            owner.images_uploaded = True
+        else:
+            owner.images_uploaded = False
+        
+        # Update other venue details
+        google_maps_link = request.form.get('google_maps_link')
+        amenities = request.form.get('amenities')
+        
+        if google_maps_link:
+            owner.google_maps_link = google_maps_link
+        if amenities:
+            owner.amenities = json.dumps(amenities.split(','))
+        
+        db.session.commit()
+        flash('Venue details updated successfully!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error updating venue details: {str(e)}', 'danger')
+    
+    return redirect(url_for('dashboard'))
 
 
 @app.route('/add_console', methods=['GET', 'POST'])
+@venue_details_required
 def add_console():
-    if 'user_id' not in session or session.get('user_type') != 'owner':
-        flash('Please login to access this page', 'error')
-        return redirect(url_for('login'))
 
     if request.method == 'POST':
         try:
@@ -135,7 +278,7 @@ def add_console():
                 name=name,
                 console_type=console_type,
                 hourly_rate=hourly_rate,
-                owner_id=session['user_id']
+                owner_id=current_user.id
             )
 
             db.session.add(new_console)
@@ -152,15 +295,13 @@ def add_console():
 
 
 @app.route('/console/<int:console_id>')
+@venue_details_required
 def console_details(console_id):
-    if 'user_id' not in session or session.get('user_type') != 'owner':
-        flash('Please login to access this page', 'error')
-        return redirect(url_for('login'))
 
     console = Console.query.get_or_404(console_id)
 
     # Check if console belongs to current user
-    if console.owner_id != session['user_id']:
+    if console.owner_id != current_user.id:
         flash('Access denied', 'error')
         return redirect(url_for('dashboard'))
 
@@ -170,14 +311,12 @@ def console_details(console_id):
 
 
 @app.route('/add_slot/<int:console_id>', methods=['GET', 'POST'])
+@venue_details_required
 def add_slot(console_id):
-    if 'user_id' not in session or session.get('user_type') != 'owner':
-        flash('Please login to access this page', 'error')
-        return redirect(url_for('login'))
 
     console = Console.query.get_or_404(console_id)
 
-    if console.owner_id != session['user_id']:
+    if console.owner_id != current_user.id:
         flash('Access denied', 'error')
         return redirect(url_for('dashboard'))
 
@@ -288,7 +427,7 @@ def book_slot(slot_id):
     # Existing user logic
     user = None
     if 'user_id' in session and session.get('user_type') == 'user':
-        user = User.query.get(session['user_id'])
+        user = User.query.get(current_user.id)
 
     if request.method == 'POST':
         # Get booking details from form
@@ -431,10 +570,10 @@ def user_register():
 
 
 @app.route('/user_dashboard')
+@login_required
 def user_dashboard():
-    if 'user_id' not in session or session.get('user_type') != 'user':
-        flash('Please login to access dashboard', 'error')
-        return redirect(url_for('user_login'))
+    # The login_required decorator handles authentication.
+    # No need for explicit session checks here.
 
     user = User.query.get(session['user_id'])
     bookings = TimeSlot.query.filter_by(user_id=user.id).order_by(TimeSlot.start_time.desc()).all()
@@ -540,12 +679,12 @@ def search_users():
 
 @app.route('/toggle_console_status/<int:console_id>')
 def toggle_console_status(console_id):
-    if 'user_id' not in session or session.get('user_type') != 'owner':
+    if not current_user.is_authenticated or current_user.user_type != 'owner':
         return jsonify({'error': 'Unauthorized'}), 401
 
     console = Console.query.get_or_404(console_id)
 
-    if console.owner_id != session['user_id']:
+    if console.owner_id != current_user.id:
         return jsonify({'error': 'Access denied'}), 403
 
     console.is_available = not console.is_available
@@ -557,12 +696,12 @@ def toggle_console_status(console_id):
 @app.route('/edit_slot/<int:slot_id>', methods=['GET', 'POST'])
 def edit_slot(slot_id):
     slot = TimeSlot.query.get_or_404(slot_id)
-    if 'user_id' not in session or session.get('user_type') != 'owner':
+    if not current_user.is_authenticated or current_user.user_type != 'owner':
         flash('Please login as owner to edit slots.', 'error')
         return redirect(url_for('login'))
     # Only allow editing if the slot belongs to the owner's console
     console = Console.query.get(slot.console_id)
-    if not console or console.owner_id != session['user_id']:
+    if not console or console.owner_id != current_user.id:
         flash('Access denied.', 'error')
         return redirect(url_for('dashboard'))
 
@@ -600,11 +739,11 @@ def edit_slot(slot_id):
 @app.route('/delete_slot/<int:slot_id>', methods=['POST'])
 def delete_slot(slot_id):
     slot = TimeSlot.query.get_or_404(slot_id)
-    if 'user_id' not in session or session.get('user_type') != 'owner':
+    if not current_user.is_authenticated or current_user.user_type != 'owner':
         flash('Please login as owner to delete slots.', 'error')
         return redirect(url_for('login'))
     console = Console.query.get(slot.console_id)
-    if not console or console.owner_id != session['user_id']:
+    if not console or console.owner_id != current_user.id:
         flash('Access denied.', 'error')
         return redirect(url_for('dashboard'))
     try:
@@ -652,14 +791,14 @@ def api_available_slots():
 
 @app.route('/settle_slot/<int:slot_id>', methods=['POST'])
 def settle_slot(slot_id):
-    if 'user_id' not in session or session.get('user_type') != 'owner':
+    if not current_user.is_authenticated or current_user.user_type != 'owner':
         flash('Please login to access this page', 'error')
         return redirect(url_for('login'))
     
     slot = TimeSlot.query.get_or_404(slot_id)
     console = Console.query.get(slot.console_id)
     
-    if console.owner_id != session['user_id']:
+    if console.owner_id != current_user.id:
         flash('Access denied', 'error')
         return redirect(url_for('dashboard'))
     
@@ -717,13 +856,13 @@ def settle_slot(slot_id):
 
 @app.route('/auto_slots/<int:console_id>')
 def auto_slots(console_id):
-    if 'user_id' not in session or session.get('user_type') != 'owner':
+    if not current_user.is_authenticated or current_user.user_type != 'owner':
         flash('Please login to access this page', 'error')
         return redirect(url_for('login'))
 
     console = Console.query.get_or_404(console_id)
 
-    if console.owner_id != session['user_id']:
+    if console.owner_id != current_user.id:
         flash('Access denied', 'error')
         return redirect(url_for('dashboard'))
 
@@ -744,10 +883,10 @@ def center_slots(owner_id):
 
 @app.route('/owner/snacks', methods=['GET', 'POST'])
 def manage_snacks():
-    if 'user_id' not in session or session.get('user_type') != 'owner':
+    if not current_user.is_authenticated or current_user.user_type != 'owner':
         flash('Please login as owner', 'error')
         return redirect(url_for('login'))
-    owner_id = session['user_id']
+    owner_id = current_user.id
     if request.method == 'POST':
         name = request.form.get('name')
         rate = request.form.get('rate', type=float)
@@ -763,11 +902,11 @@ def manage_snacks():
 
 @app.route('/owner/snacks/delete/<int:snack_id>', methods=['POST'])
 def delete_snack(snack_id):
-    if 'user_id' not in session or session.get('user_type') != 'owner':
+    if not current_user.is_authenticated or current_user.user_type != 'owner':
         flash('Please login as owner', 'error')
         return redirect(url_for('login'))
     snack = Snack.query.get_or_404(snack_id)
-    if snack.owner_id != session['user_id']:
+    if snack.owner_id != current_user.id:
         flash('Access denied', 'error')
         return redirect(url_for('manage_snacks'))
     db.session.delete(snack)
@@ -778,20 +917,20 @@ def delete_snack(snack_id):
 
 @app.route('/owner/snacks/json')
 def snacks_json():
-    if 'user_id' not in session or session.get('user_type') != 'owner':
+    if not current_user.is_authenticated or current_user.user_type != 'owner':
         return jsonify([])
-    owner_id = session['user_id']
+    owner_id = current_user.id
     snacks = Snack.query.filter_by(owner_id=owner_id).all()
     return jsonify([{ 'name': s.name, 'rate': s.rate } for s in snacks])
 
 
 @app.route('/console/<int:console_id>/pricing', methods=['GET', 'POST'])
 def manage_pricing(console_id):
-    if 'user_id' not in session or session.get('user_type') != 'owner':
+    if not current_user.is_authenticated or current_user.user_type != 'owner':
         flash('Please login as owner', 'error')
         return redirect(url_for('login'))
     console = Console.query.get_or_404(console_id)
-    if console.owner_id != session['user_id']:
+    if console.owner_id != current_user.id:
         flash('Access denied', 'error')
         return redirect(url_for('dashboard'))
     if request.method == 'POST':
@@ -833,12 +972,12 @@ def pricing_json(console_id):
 
 @app.route('/set_owner_location', methods=['POST'])
 def set_owner_location():
-    if 'user_id' not in session or session.get('user_type') != 'owner':
+    if not current_user.is_authenticated or current_user.user_type != 'owner':
         return jsonify({'success': False, 'error': 'Not logged in'}), 401
     data = request.get_json()
     lat = data.get('latitude')
     lon = data.get('longitude')
-    owner = Owner.query.get(session['user_id'])
+    owner = Owner.query.get(current_user.id)
     if owner and lat and lon:
         owner.latitude = lat
         owner.longitude = lon
