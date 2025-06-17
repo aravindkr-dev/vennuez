@@ -57,6 +57,35 @@ body {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    position: relative; /* Added for positioning middle nav */
+}
+
+.header-middle-nav {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+}
+
+.header-middle-nav .nav-link {
+    color: var(--secondary);
+    text-decoration: none;
+    font-weight: 500;
+    padding: 0.5rem 0.75rem;
+    border-radius: 4px;
+    transition: background 0.2s, color 0.2s;
+}
+
+.header-middle-nav .nav-link.active, .header-middle-nav .nav-link:hover {
+    color: var(--accent);
+    background: var(--muted);
+}
+
+.header-right-section {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem; /* Adjust as needed for spacing between nav-links and user-info */
 }
 
 .logo {
@@ -69,7 +98,6 @@ body {
 
 .nav-links {
     display: flex;
-    gap: 1.5rem;
     align-items: center;
 }
 
@@ -90,7 +118,6 @@ body {
 .user-info {
     color: var(--secondary);
     font-size: 1rem;
-    margin-left: 1.5rem;
 }
 
 .btn {

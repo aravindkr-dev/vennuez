@@ -3,36 +3,43 @@
 {% block title %}Add Time Slot - Vennuez{% endblock %}
 
 {% block content %}
-<div class="form-page">
-    <!-- Page Header -->
-    <div class="page-header">
+<div class="form-page container">
+    <!-- Enhanced Page Header with Animation -->
+    <div class="page-header animate-fade-in">
         <div class="row align-items-center">
             <div class="col">
-                <h1 class="page-title">
-                    <i class="fas fa-clock me-3"></i>Add Time Slot
-                </h1>
-                <p class="page-subtitle">Create a new time slot for {{ console.name }}</p>
+                <div class="header-content">
+                    <div class="header-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="header-text">
+                        <h1 class="page-title">Add Time Slot</h1>
+                        <p class="page-subtitle">Create a new time slot for {{ console.name }}</p>
+                    </div>
+                </div>
             </div>
             <div class="col-auto">
-                <a href="{{ url_for('console_details', console_id=console.id) }}" class="btn btn-outline-secondary">
-                    <i class="fas fa-arrow-left me-2"></i>Back to Console
+                <a href="{{ url_for('console_details', console_id=console.id) }}" class="btn btn-outline-secondary btn-modern">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>Back to Console</span>
                 </a>
             </div>
         </div>
     </div>
 
     <div class="row justify-content-center">
-        <div class="col-md-8 col-lg-6">
+        <div class="col-xl-8 col-lg-10">
             <!-- Console Info Card -->
-            <div class="console-info-card mb-4">
-                <div class="card-header">
-                    <h5 class="card-title">
+            <div class="form-container">
+                <div class="form-header">
+                    <h3 class="form-title">
                         <i class="fas fa-gamepad me-2"></i>Console Details
-                    </h5>
+                    </h3>
+                    <p class="form-subtitle">Information about the console for which you are adding a slot</p>
                 </div>
-                <div class="card-body">
+                <div class="form-body p-4">
                     <div class="row">
-                        <div class="col-6">
+                        <div class="col-md-6">
                             <div class="info-item">
                                 <span class="info-label">Name:</span>
                                 <span class="info-value">{{ console.name }}</span>
@@ -42,7 +49,7 @@
                                 <span class="info-value">{{ console.console_type }}</span>
                             </div>
                         </div>
-                        <div class="col-6">
+                        <div class="col-md-6">
                             <div class="info-item">
                                 <span class="info-label">Hourly Rate:</span>
                                 <span class="info-value">₹{{ console.hourly_rate }}</span>
@@ -61,69 +68,98 @@
             </div>
 
             <!-- Time Slot Form -->
-            <div class="form-card">
-                <div class="form-header">
-                    <h3 class="form-title">Time Slot Details</h3>
-                    <p class="form-subtitle">Set the date and time for your gaming slot</p>
-                </div>
-
-                <form method="POST" class="slot-form" id="slot-form">
-                    <div class="form-group">
-                        <label for="date" class="form-label">
-                            <i class="fas fa-calendar me-2"></i>Date *
-                        </label>
-                        <input type="date" class="form-control" id="date" name="date" required>
-                        <div class="form-text">Select the date for this gaming slot</div>
+            <div class="form-container animate-slide-up">
+                <div class="form-section active" id="section-1">
+                    <div class="section-header">
+                        <h3 class="section-title">
+                            <span class="section-number">01</span>
+                            Time Slot Details
+                        </h3>
+                        <p class="section-subtitle">Set the date and time for your gaming slot</p>
                     </div>
 
-                    <div class="row">
+                <form method="POST" class="slot-form p-4" id="slot-form">
+                    <div class="form-group enhanced">
+                        <label for="date" class="form-label">
+                            <i class="fas fa-calendar"></i>Date <span class="required">*</span>
+                        </label>
+                        <div class="input-wrapper">
+                            <input type="date" class="form-control modern" id="date" name="date" required>
+                            <div class="input-underline"></div>
+                        </div>
+                        <div class="form-hint">Select the date for this gaming slot</div>
+                    </div>
+
+                    <div class="form-row">
                         <div class="col-md-6">
-                            <div class="form-group">
+                            <div class="form-group enhanced">
                                 <label for="start_time" class="form-label">
-                                    <i class="fas fa-clock me-2"></i>Start Time *
+                                    <i class="fas fa-clock"></i>Start Time <span class="required">*</span>
                                 </label>
-                                <input type="time" class="form-control" id="start_time" name="start_time" required>
+                                <div class="input-wrapper">
+                                    <input type="time" class="form-control modern" id="start_time" name="start_time" required>
+                                    <div class="input-underline"></div>
+                                </div>
                             </div>
                         </div>
                         <div class="col-md-6">
-                            <div class="form-group">
+                            <div class="form-group enhanced">
                                 <label for="end_time" class="form-label">
-                                    <i class="fas fa-clock me-2"></i>End Time *
+                                    <i class="fas fa-clock"></i>End Time <span class="required">*</span>
                                 </label>
-                                <input type="time" class="form-control" id="end_time" name="end_time" required>
+                                <div class="input-wrapper">
+                                    <input type="time" class="form-control modern" id="end_time" name="end_time" required>
+                                    <div class="input-underline"></div>
+                                </div>
                             </div>
                         </div>
                     </div>
 
                     <!-- Duration and Amount Display -->
-                    <div class="calculation-display" id="calculation-display" style="display: none;">
-                        <div class="row g-3">
-                            <div class="col-md-4">
-                                <div class="calc-item">
-                                    <div class="calc-label">Duration</div>
-                                    <div class="calc-value" id="duration-display">-</div>
+                    <div class="features-section" id="calculation-display" style="display: none;">
+                        <div class="section-divider">
+                            <span class="divider-text">
+                                <i class="fas fa-calculator"></i>Slot Calculation
+                            </span>
+                        </div>
+                        <div class="features-grid">
+                            <div class="feature-card">
+                                <div class="feature-icon">
+                                    <i class="fas fa-hourglass-half"></i>
+                                </div>
+                                <div class="feature-content">
+                                    <h6 class="feature-title">Duration</h6>
+                                    <p class="feature-desc" id="duration-display">-</p>
                                 </div>
                             </div>
-                            <div class="col-md-4">
-                                <div class="calc-item">
-                                    <div class="calc-label">Hourly Rate</div>
-                                    <div class="calc-value">₹{{ console.hourly_rate }}</div>
+                            <div class="feature-card">
+                                <div class="feature-icon">
+                                    <i class="fas fa-rupee-sign"></i>
+                                </div>
+                                <div class="feature-content">
+                                    <h6 class="feature-title">Hourly Rate</h6>
+                                    <p class="feature-desc">₹{{ console.hourly_rate }}</p>
                                 </div>
                             </div>
-                            <div class="col-md-4">
-                                <div class="calc-item">
-                                    <div class="calc-label">Total Amount</div>
-                                    <div class="calc-value calc-total" id="total-amount-display">₹0</div>
+                            <div class="feature-card">
+                                <div class="feature-icon">
+                                    <i class="fas fa-money-bill-wave"></i>
+                                </div>
+                                <div class="feature-content">
+                                    <h6 class="feature-title">Total Amount</h6>
+                                    <p class="feature-desc calc-total" id="total-amount-display">₹0</p>
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     <!-- Quick Time Presets -->
-                    <div class="time-presets">
-                        <label class="form-label">
-                            <i class="fas fa-bolt me-2"></i>Quick Time Presets
-                        </label>
+                    <div class="features-section">
+                        <div class="section-divider">
+                            <span class="divider-text">
+                                <i class="fas fa-bolt"></i>Quick Time Presets
+                            </span>
+                        </div>
                         <div class="preset-buttons">
                             <button type="button" class="btn btn-outline-primary btn-sm" onclick="setTimePreset('10:00', '11:00')">
                                 10:00 AM - 11:00 AM
@@ -141,26 +177,51 @@
                     </div>
 
                     <!-- Advanced Options -->
-                    <div class="advanced-options">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="allow_advance_booking" checked>
-                            <label class="form-check-label" for="allow_advance_booking">
-                                Allow advance booking (recommended)
-                            </label>
+                    <div class="features-section">
+                        <div class="section-divider">
+                            <span class="divider-text">
+                                <i class="fas fa-cogs"></i>Advanced Options
+                            </span>
                         </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="send_notifications" checked>
-                            <label class="form-check-label" for="send_notifications">
-                                Send notifications for this slot
-                            </label>
+                        <div class="features-grid">
+                            <div class="feature-card">
+                                <input class="feature-checkbox" type="checkbox" id="allow_advance_booking" checked>
+                                <label class="feature-label" for="allow_advance_booking">
+                                    <div class="feature-icon">
+                                        <i class="fas fa-calendar-check"></i>
+                                    </div>
+                                    <div class="feature-content">
+                                        <h6 class="feature-title">Allow Advance Booking</h6>
+                                        <p class="feature-desc">Enable customers to book this slot in advance</p>
+                                    </div>
+                                    <div class="feature-check">
+                                        <i class="fas fa-check"></i>
+                                    </div>
+                                </label>
+                            </div>
+                            <div class="feature-card">
+                                <input class="feature-checkbox" type="checkbox" id="send_notifications" checked>
+                                <label class="feature-label" for="send_notifications">
+                                    <div class="feature-icon">
+                                        <i class="fas fa-bell"></i>
+                                    </div>
+                                    <div class="feature-content">
+                                        <h6 class="feature-title">Send Notifications</h6>
+                                        <p class="feature-desc">Notify users about this new slot</p>
+                                    </div>
+                                    <div class="feature-check">
+                                        <i class="fas fa-check"></i>
+                                    </div>
+                                </label>
+                            </div>
                         </div>
                     </div>
 
                     <div class="form-actions">
-                        <button type="submit" class="btn btn-primary btn-lg">
+                        <button type="submit" class="btn btn-primary btn-lg btn-modern">
                             <i class="fas fa-plus me-2"></i>Create Time Slot
                         </button>
-                        <a href="{{ url_for('console_details', console_id=console.id) }}" class="btn btn-outline-secondary btn-lg">
+                        <a href="{{ url_for('console_details', console_id=console.id) }}" class="btn btn-outline-secondary btn-lg btn-modern">
                             Cancel
                         </a>
                     </div>

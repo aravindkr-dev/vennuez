@@ -12,7 +12,7 @@
             <p style="color: var(--secondary);">Manage your gaming center and track your business performance</p>
         </div>
         <div style="display: flex; justify-content: center; align-items: center; margin-bottom: 1.5rem;">
-            {% if not owner.latitude or not owner.longitude %}
+            {% if not owner.google_maps_link %}
             <button id="set-location-btn" class="btn btn-danger" style="background-color: #dc3545; border-color: #dc3545; color: #fff;" onclick="setMyLocation()">
                 <i class="fas fa-map-marker-alt"></i> Set My Location
             </button>
@@ -43,7 +43,7 @@
             </script>
             {% endif %}
         </div>
-        {% if not current_user.images_uploaded %}
+        {% if not owner.images_uploaded %}
         <div class="alert alert-warning" role="alert" style="margin-bottom: 2rem;">
             <strong>Important!</strong> Please upload your venue images and details below. This is mandatory for your venue to be visible to users.
         </div>

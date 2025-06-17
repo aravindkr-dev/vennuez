@@ -31,12 +31,15 @@ login_manager.login_view = 'login'
 @login_manager.user_loader
 def load_user(user_id):
     from models import Owner, User
-    # Try to load owner first
-    owner = Owner.query.get(int(user_id))
-    if owner:
-        return owner
-    # If not owner, try user
-    return User.query.get(int(user_id))
+    from flask import session
+
+    user_type = session.get('user_type')
+
+    if user_type == 'owner':
+        return Owner.query.get(int(user_id))
+    elif user_type == 'user':
+        return User.query.get(int(user_id))
+    return None
 
 # Configure the database
 app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", "sqlite:///gaming_center.db")

@@ -23,7 +23,7 @@
             </tr>
         </thead>
         <tbody>
-            {% for tier in tiers %}
+            {% for tier in pricing_tiers %}
             <tr>
                 <td>{{ tier.max_people }}</td>
                 <td>{{ tier.rate_per_person }}</td>
@@ -38,4 +38,4 @@
     </table>
     <a href="{{ url_for('console_details', console_id=console.id) }}" class="btn btn-secondary mt-3">Back to Console</a>
 </div>
-{% endblock %} 
+{% endblock %}

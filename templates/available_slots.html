@@ -1,136 +1,275 @@
 {% extends "base.html" %}
 
-{% block title %}Available Venues - Vennuez{% endblock %}
+{% block title %}Available Slots{% endblock %}
+
+{% block extra_head %}
+<style>
+    body {
+        background-color: #f8f9fa;
+    }
+
+    .container {
+        margin-top: 30px;
+    }
+
+    .filter-section {
+        background-color: #ffffff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+        margin-bottom: 30px;
+    }
+
+    .filter-section h4 {
+        color: #343a40;
+        margin-bottom: 20px;
+    }
+
+    .form-label {
+        font-weight: 500;
+        color: #495057;
+    }
+
+    .form-control, .form-select {
+        border-radius: 5px;
+        border: 1px solid #ced4da;
+        padding: 10px 15px;
+    }
+
+    .btn-primary {
+        background-color: #007bff;
+        border-color: #007bff;
+        padding: 10px 20px;
+        border-radius: 5px;
+        font-weight: 600;
+    }
+
+    .btn-primary:hover {
+        background-color: #0056b3;
+        border-color: #0056b3;
+    }
+
+    .owner-card {
+        background-color: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
+        margin-bottom: 30px;
+        overflow: hidden;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+
+    .owner-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+    }
+
+    .card-img-top {
+        height: 200px;
+        object-fit: cover;
+        border-bottom: 1px solid #eee;
+    }
+
+    .card-body {
+        padding: 25px;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .card-title {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: #343a40;
+        margin-bottom: 10px;
+    }
+
+    .card-text {
+        color: #6c757d;
+        font-size: 0.95rem;
+        margin-bottom: 8px;
+    }
+
+    .card-text strong {
+        color: #495057;
+    }
+
+    .amenities-list {
+        list-style: none;
+        padding: 0;
+        margin-top: 15px;
+        margin-bottom: 15px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .amenities-list li {
+        background-color: #e9ecef;
+        color: #495057;
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 500;
+    }
+
+    .btn-view-slots {
+        background-color: #28a745;
+        border-color: #28a745;
+        padding: 10px 20px;
+        border-radius: 5px;
+        font-weight: 600;
+        margin-top: auto; /* Pushes the button to the bottom */
+        align-self: flex-start; /* Aligns button to the start of the flex container */
+    }
+
+    .btn-view-slots:hover {
+        background-color: #218838;
+        border-color: #218838;
+    }
+
+    .distance-text {
+        font-size: 0.9rem;
+        color: #007bff;
+        font-weight: 500;
+        margin-top: 10px;
+    }
+
+    .carousel-item img {
+        height: 200px;
+        object-fit: cover;
+    }
+
+    .carousel-control-prev-icon, .carousel-control-next-icon {
+        filter: invert(1);
+    }
+</style>
+{% endblock %}
 
 {% block content %}
-<section class="available-venues" style="padding: 2rem 0;">
-    <div class="container">
-        <h1 class="text-center mb-4">Available Venues</h1>
+<div class="container">
+    <div class="filter-section">
+        <h4>Filter Venues</h4>
+        <form method="GET" action="{{ url_for('available_slots') }}">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label for="console_type" class="form-label">Console Type</label>
+                    <select class="form-select" id="console_type" name="console_type">
+                        <option value="">All</option>
+                        {% for type in console_types %}
+                        <option value="{{ type }}" {% if type == request.args.get('console_type') %}selected{% endif %}>{{ type }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label for="location" class="form-label">Location</label>
+                    <input type="text" class="form-control" id="location" name="location" value="{{ request.args.get('location', '') }}" placeholder="Enter city or area">
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">Apply Filters</button>
+                </div>
+            </div>
+        </form>
+    </div>
 
-        <!-- Filters -->
-        <div class="card mb-4">
-            <div class="card-body">
-                <form method="get" class="row g-3">
-                    <div class="col-md-4">
-                            <label for="console_type" class="form-label">Console Type</label>
-                        <select name="console_type" id="console_type" class="form-select">
-                            <option value="">All Types</option>
-                                {% for type in console_types %}
-                            <option value="{{ type }}" {% if current_filters.console_type == type %}selected{% endif %}>{{ type }}</option>
-                                {% endfor %}
-                            </select>
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        {% for owner in owners %}
+        <div class="col">
+            <div class="owner-card">
+                {% set owner_images = [] %}
+                {% if owner.venue_image1 %}{% set _ = owner_images.append(owner.venue_image1) %}{% endif %}
+                {% if owner.venue_image2 %}{% set _ = owner_images.append(owner.venue_image2) %}{% endif %}
+                {% if owner.venue_image3 %}{% set _ = owner_images.append(owner.venue_image3) %}{% endif %}
+                {% if owner.venue_image4 %}{% set _ = owner_images.append(owner.venue_image4) %}{% endif %}
+
+                {% if owner_images %}
+                <div id="carousel{{ owner.id }}" class="carousel slide" data-bs-ride="carousel">
+                    <div class="carousel-inner">
+                        {% for image_url in owner_images %}
+                        <div class="carousel-item {% if loop.first %}active{% endif %}">
+                            <img src="{{ image_url }}" class="d-block w-100" alt="{{ owner.gaming_center_name }} Image">
                         </div>
-                        <div class="col-md-4">
-                            <label for="location" class="form-label">Location</label>
-                        <input type="text" name="location" id="location" class="form-control" placeholder="Enter location" value="{{ current_filters.location }}">
-                        </div>
-                    <div class="col-12 text-center">
-                        <button type="submit" class="btn btn-primary">Apply Filters</button>
-                        <a href="{{ url_for('available_slots') }}" class="btn btn-secondary">Clear Filters</a>
+                        {% endfor %}
                     </div>
-                </form>
+                    {% if owner_images|length > 1 %}
+                    <button class="carousel-control-prev" type="button" data-bs-target="#carousel{{ owner.id }}" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Previous</span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#carousel{{ owner.id }}" data-bs-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Next</span>
+                    </button>
+                    {% endif %}
+                </div>
+                {% else %}
+                <img src="{{ url_for('static', filename='images/placeholder.png') }}" class="card-img-top" alt="No Image Available">
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title">{{ owner.gaming_center_name }}</h5>
+                    <p class="card-text"><strong>Address:</strong> {{ owner.address }}</p>
+                    <p class="card-text"><strong>Phone:</strong> {{ owner.phone_number }}</p>
+                    <p class="card-text"><strong>Email:</strong> {{ owner.email }}</p>
+                    {% if owner.amenities %}
+                    <ul class="amenities-list">
+                        {% for amenity in owner.amenities.split(',') %}
+                        <li>{{ amenity.strip() }}</li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
+                    <p class="card-text distance-text" id="distance-{{ owner.id }}">Calculating distance...</p>
+                    <a href="{{ url_for('center_slots', owner_id=owner.id) }}" class="btn btn-view-slots">View Slots</a>
                 </div>
             </div>
-            
-        <!-- Venues List -->
-        <div class="row">
-            {% if owners %}
-                {% for owner in owners %}
-                <div class="col-md-6 col-lg-4 mb-4">
-                    <div class="card h-100 venue-card" data-lat="{{ owner.latitude }}" data-lon="{{ owner.longitude }}">
-                        {% if owner.images_uploaded %}
-                        <div id="venue-images-{{ owner.id }}" class="carousel slide" data-bs-ride="carousel">
-                            <div class="carousel-inner">
-                                <div class="carousel-item active">
-                                    <img src="{{ owner.venue_image1 }}" class="d-block w-100" alt="Venue Image 1" style="height: 200px; object-fit: cover;">
-                                </div>
-                                <div class="carousel-item">
-                                    <img src="{{ owner.venue_image2 }}" class="d-block w-100" alt="Venue Image 2" style="height: 200px; object-fit: cover;">
-                                </div>
-                                <div class="carousel-item">
-                                    <img src="{{ owner.venue_image3 }}" class="d-block w-100" alt="Venue Image 3" style="height: 200px; object-fit: cover;">
-                                </div>
-                                <div class="carousel-item">
-                                    <img src="{{ owner.venue_image4 }}" class="d-block w-100" alt="Venue Image 4" style="height: 200px; object-fit: cover;">
-                                </div>
-                            </div>
-                            <button class="carousel-control-prev" type="button" data-bs-target="#venue-images-{{ owner.id }}" data-bs-slide="prev">
-                                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                                <span class="visually-hidden">Previous</span>
-                            </button>
-                            <button class="carousel-control-next" type="button" data-bs-target="#venue-images-{{ owner.id }}" data-bs-slide="next">
-                                <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                                <span class="visually-hidden">Next</span>
-                            </button>
-                        </div>
-                        {% endif %}
-                        <div class="card-body">
-                            <h5 class="card-title">{{ owner.gaming_center_name }}</h5>
-                            <div class="mb-2">
-                                <i class="fas fa-map-marker-alt"></i> {{ owner.address }}
-                                {% if owner.google_maps_link %}
-                                <a href="{{ owner.google_maps_link }}" target="_blank" class="btn btn-sm btn-outline-primary ms-2">
-                                    <i class="fas fa-map"></i> View on Maps
-                                </a>
-                                {% endif %}
-                            </div>
-                            <div class="mb-2 venue-distance" style="color: #007bff;"></div>
-                            <div class="mb-2">
-                                <i class="fas fa-phone"></i> {{ owner.phone }}
-                            </div>
-                            <div class="mb-2">
-                                <i class="fas fa-envelope"></i> {{ owner.email }}
-                            </div>
-                            {% if owner.amenities %}
-                            <div class="mb-2">
-                                <i class="fas fa-star"></i> Amenities:
-                                <div class="amenities-list">
-                                    {% for amenity in owner.amenities.split(',') %}
-                                    <span class="badge bg-info me-1">{{ amenity.strip() }}</span>
-                                    {% endfor %}
-                                </div>
-                            </div>
-                            {% endif %}
-                            <a href="{{ url_for('center_slots', owner_id=owner.id) }}" class="btn btn-primary w-100">View Slots</a>
-                        </div>
-                    </div>
-                </div>
-                {% endfor %}
+        </div>
         {% else %}
-                <div class="col-12">
-                    <div class="alert alert-info text-center">
-                        No available venues found. Try adjusting your filters.
-                </div>
-            </div>
-        {% endif %}
+        <div class="col-12">
+            <p class="text-center text-muted">No gaming centers found matching your criteria.</p>
+        </div>
+        {% endfor %}
     </div>
 </div>
-</section>
+{% endblock %}
+
+{% block extra_scripts %}
 <script>
-function haversine(lat1, lon1, lat2, lon2) {
-    function toRad(x) { return x * Math.PI / 180; }
-    var R = 6371; // km
-    var dLat = toRad(lat2-lat1);
-    var dLon = toRad(lon2-lon1);
-    var a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-            Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
-            Math.sin(dLon/2) * Math.sin(dLon/2);
-    var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    return R * c;
-}
-if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(function(pos) {
-        const userLat = pos.coords.latitude;
-        const userLon = pos.coords.longitude;
-        document.querySelectorAll('.venue-card').forEach(function(card) {
-            const lat = parseFloat(card.dataset.lat);
-            const lon = parseFloat(card.dataset.lon);
-            if (!isNaN(lat) && !isNaN(lon)) {
-                const dist = haversine(userLat, userLon, lat, lon);
-                card.querySelector('.venue-distance').textContent = `Distance: ${dist.toFixed(2)} km`;
-            }
+    function calculateDistance(lat1, lon1, lat2, lon2) {
+        const R = 6371; // Radius of Earth in kilometers
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLon = (lon2 - lon1) * Math.PI / 180;
+        const a =
+            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        const distance = R * c;
+        return distance.toFixed(2);
+    }
+
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function(position) {
+            const userLat = position.coords.latitude;
+            const userLon = position.coords.longitude;
+
+            {% for owner in owners %}
+            const ownerLat = {{ owner.latitude }};
+            const ownerLon = {{ owner.longitude }};
+            const distance = calculateDistance(userLat, userLon, ownerLat, ownerLon);
+            document.getElementById('distance-{{ owner.id }}').innerText = `Distance: ${distance} km`;
+            {% endfor %}
+        }, function(error) {
+            console.error("Error getting geolocation: ", error);
+            {% for owner in owners %}
+            document.getElementById('distance-{{ owner.id }}').innerText = "Distance: N/A";
+            {% endfor %}
         });
-    });
-}
+    } else {
+        console.log("Geolocation is not supported by this browser.");
+        {% for owner in owners %}
+        document.getElementById('distance-{{ owner.id }}').innerText = "Distance: N/A";
+        {% endfor %}
+    }
 </script>
 {% endblock %}

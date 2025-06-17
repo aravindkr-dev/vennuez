@@ -4,7 +4,7 @@ from app import app, db
 from models import Owner, Console, TimeSlot, User, UserCoinBalance, CoinTransaction, Snack, ConsolePricingTier
 from datetime import datetime, timedelta
 from functools import wraps
-from flask_login import login_required, current_user
+from flask_login import login_user, logout_user, login_required, current_user
 import logging
 import pandas as pd
 import io
@@ -25,7 +25,7 @@ def venue_details_required(f):
             return redirect(url_for('login'))
         
         # Allow access to dashboard even if venue details are not complete
-        if request.endpoint != 'dashboard' and not current_user.images_uploaded:
+        if request.endpoint != 'dashboard' and not current_user.google_maps_link:
             flash('Please complete your venue details before accessing other features.', 'warning')
             return redirect(url_for('dashboard'))
             
@@ -426,7 +426,7 @@ def book_slot(slot_id):
 
     # Existing user logic
     user = None
-    if 'user_id' in session and session.get('user_type') == 'user':
+    if current_user.is_authenticated and isinstance(current_user, User):
         user = User.query.get(current_user.id)
 
     if request.method == 'POST':
@@ -514,9 +514,10 @@ def user_login():
         user = User.query.filter_by(username=username).first()
 
         if user and check_password_hash(user.password_hash, password):
+            login_user(user)  # Use Flask-Login's login_user function
+            session['user_type'] = 'user'
             session['user_id'] = user.id
             session['username'] = user.username
-            session['user_type'] = 'user'
             flash('Login successful!', 'success')
             return redirect(url_for('user_dashboard'))
         else:
@@ -694,16 +695,15 @@ def toggle_console_status(console_id):
 
 
 @app.route('/edit_slot/<int:slot_id>', methods=['GET', 'POST'])
+@login_required
 def edit_slot(slot_id):
     slot = TimeSlot.query.get_or_404(slot_id)
-    if not current_user.is_authenticated or current_user.user_type != 'owner':
-        flash('Please login as owner to edit slots.', 'error')
-        return redirect(url_for('login'))
-    # Only allow editing if the slot belongs to the owner's console
-    console = Console.query.get(slot.console_id)
-    if not console or console.owner_id != current_user.id:
-        flash('Access denied.', 'error')
-        return redirect(url_for('dashboard'))
+    console = Console.query.get_or_404(slot.console_id)
+
+    # Ensure only the owner of the console can edit the slot
+    if not current_user.is_authenticated or (isinstance(current_user, Owner) and console.owner_id != current_user.id):
+        flash('You are not authorized to edit this slot.', 'danger')
+        return redirect(url_for('owner_dashboard'))
 
     if request.method == 'POST':
         try:
@@ -737,15 +737,16 @@ def edit_slot(slot_id):
 
 
 @app.route('/delete_slot/<int:slot_id>', methods=['POST'])
+@login_required
 def delete_slot(slot_id):
     slot = TimeSlot.query.get_or_404(slot_id)
-    if not current_user.is_authenticated or current_user.user_type != 'owner':
-        flash('Please login as owner to delete slots.', 'error')
-        return redirect(url_for('login'))
-    console = Console.query.get(slot.console_id)
-    if not console or console.owner_id != current_user.id:
-        flash('Access denied.', 'error')
-        return redirect(url_for('dashboard'))
+    console = Console.query.get_or_404(slot.console_id)
+
+    # Ensure only the owner of the console can delete the slot
+    if not current_user.is_authenticated or (isinstance(current_user, Owner) and console.owner_id != current_user.id):
+        flash('You are not authorized to delete this slot.', 'danger')
+        return redirect(url_for('owner_dashboard'))
+
     try:
         db.session.delete(slot)
         db.session.commit()
@@ -790,17 +791,14 @@ def api_available_slots():
 
 
 @app.route('/settle_slot/<int:slot_id>', methods=['POST'])
+@login_required
 def settle_slot(slot_id):
-    if not current_user.is_authenticated or current_user.user_type != 'owner':
-        flash('Please login to access this page', 'error')
-        return redirect(url_for('login'))
-    
     slot = TimeSlot.query.get_or_404(slot_id)
-    console = Console.query.get(slot.console_id)
-    
-    if console.owner_id != current_user.id:
-        flash('Access denied', 'error')
-        return redirect(url_for('dashboard'))
+    console = Console.query.get_or_404(slot.console_id)
+
+    if not current_user.is_authenticated or (isinstance(current_user, Owner) and console.owner_id != current_user.id):
+        flash('You are not authorized to settle this slot.', 'danger')
+        return redirect(url_for('owner_dashboard'))
     
     now = datetime.now()
     ten_minutes_before_end = slot.end_time - timedelta(minutes=10)
@@ -855,16 +853,13 @@ def settle_slot(slot_id):
 
 
 @app.route('/auto_slots/<int:console_id>')
+@login_required
 def auto_slots(console_id):
-    if not current_user.is_authenticated or current_user.user_type != 'owner':
-        flash('Please login to access this page', 'error')
-        return redirect(url_for('login'))
-
     console = Console.query.get_or_404(console_id)
 
-    if console.owner_id != current_user.id:
-        flash('Access denied', 'error')
-        return redirect(url_for('dashboard'))
+    if not current_user.is_authenticated or (isinstance(current_user, Owner) and console.owner_id != current_user.id):
+        flash('You are not authorized to manage auto slots for this console.', 'danger')
+        return redirect(url_for('owner_dashboard'))
 
     return render_template('auto_slots.html', console=console)
 
@@ -882,10 +877,11 @@ def center_slots(owner_id):
 
 
 @app.route('/owner/snacks', methods=['GET', 'POST'])
+@login_required
 def manage_snacks():
-    if not current_user.is_authenticated or current_user.user_type != 'owner':
-        flash('Please login as owner', 'error')
-        return redirect(url_for('login'))
+    if not current_user.is_authenticated or not isinstance(current_user, Owner):
+        flash('You are not authorized to manage snacks.', 'danger')
+        return redirect(url_for('owner_dashboard'))
     owner_id = current_user.id
     if request.method == 'POST':
         name = request.form.get('name')
@@ -901,10 +897,11 @@ def manage_snacks():
 
 
 @app.route('/owner/snacks/delete/<int:snack_id>', methods=['POST'])
+@login_required
 def delete_snack(snack_id):
-    if not current_user.is_authenticated or current_user.user_type != 'owner':
-        flash('Please login as owner', 'error')
-        return redirect(url_for('login'))
+    if not current_user.is_authenticated or not isinstance(current_user, Owner):
+        flash('You are not authorized to delete snacks.', 'danger')
+        return redirect(url_for('owner_dashboard'))
     snack = Snack.query.get_or_404(snack_id)
     if snack.owner_id != current_user.id:
         flash('Access denied', 'error')
@@ -916,8 +913,9 @@ def delete_snack(snack_id):
 
 
 @app.route('/owner/snacks/json')
+@login_required
 def snacks_json():
-    if not current_user.is_authenticated or current_user.user_type != 'owner':
+    if not current_user.is_authenticated or not isinstance(current_user, Owner):
         return jsonify([])
     owner_id = current_user.id
     snacks = Snack.query.filter_by(owner_id=owner_id).all()
@@ -925,14 +923,14 @@ def snacks_json():
 
 
 @app.route('/console/<int:console_id>/pricing', methods=['GET', 'POST'])
+@login_required
 def manage_pricing(console_id):
-    if not current_user.is_authenticated or current_user.user_type != 'owner':
-        flash('Please login as owner', 'error')
-        return redirect(url_for('login'))
     console = Console.query.get_or_404(console_id)
-    if console.owner_id != current_user.id:
-        flash('Access denied', 'error')
-        return redirect(url_for('dashboard'))
+
+    if not current_user.is_authenticated or (isinstance(current_user, Owner) and console.owner_id != current_user.id):
+        flash('You are not authorized to manage pricing for this console.', 'danger')
+        return redirect(url_for('owner_dashboard'))
+
     if request.method == 'POST':
         max_people = request.form.get('max_people', type=int)
         rate_per_person = request.form.get('rate_per_person', type=float)
@@ -941,16 +939,20 @@ def manage_pricing(console_id):
             db.session.add(tier)
             db.session.commit()
             flash('Pricing tier added!', 'success')
-        return redirect(url_for('manage_pricing', console_id=console_id))
-    tiers = ConsolePricingTier.query.filter_by(console_id=console_id).order_by(ConsolePricingTier.max_people).all()
-    return render_template('manage_pricing.html', console=console, tiers=tiers)
+            return redirect(url_for('manage_pricing', console_id=console_id))
+    pricing_tiers = ConsolePricingTier.query.filter_by(console_id=console_id).all()
+    return render_template('manage_pricing.html', console=console, pricing_tiers=pricing_tiers)
 
 
 @app.route('/console/<int:console_id>/pricing/delete/<int:tier_id>', methods=['POST'])
+@login_required
 def delete_pricing_tier(console_id, tier_id):
-    if 'user_id' not in session or session.get('user_type') != 'owner':
-        flash('Please login as owner', 'error')
-        return redirect(url_for('login'))
+    console = Console.query.get_or_404(console_id)
+
+    if not current_user.is_authenticated or (isinstance(current_user, Owner) and console.owner_id != current_user.id):
+        flash('You are not authorized to delete pricing tiers for this console.', 'danger')
+        return redirect(url_for('owner_dashboard'))
+
     tier = ConsolePricingTier.query.get_or_404(tier_id)
     if tier.console_id != console_id:
         flash('Access denied', 'error')
