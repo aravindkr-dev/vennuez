@@ -1,4 +1,5 @@
 Flask
+Flask
 Flask-Migrate
 Flask-SQLAlchemy
 Flask-Login
@@ -9,4 +10,5 @@ SQLAlchemy
 alembic
 pandas
 openpyxl
+cloudinary
 gunicorn
