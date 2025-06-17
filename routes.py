@@ -115,9 +115,45 @@ def register():
 
 @app.route('/logout')
 def logout():
-    session.clear()
-    flash('You have been logged out', 'info')
-    return redirect(url_for('index'))
+    logout_user()
+    flash('You have been logged out.', 'info')
+    return redirect(url_for('login'))
+
+@app.route('/walkin_book_slot', methods=['POST'])
+@login_required
+def walkin_book_slot():
+    data = request.get_json()
+    print(f"Received walk-in booking data: {data}") # Debugging line
+    console_id = data.get('consoleId')
+    username = data.get('username')
+    phone = data.get('phone')
+    start_time_str = data.get('slotStartTime')
+    end_time_str = data.get('slotEndTime')
+
+    if not all([console_id, start_time_str, end_time_str, username, phone]):
+        return jsonify({'success': False, 'message': 'Missing required fields.'}), 400
+
+    try:
+        start_time = datetime.fromisoformat(start_time_str)
+        end_time = datetime.fromisoformat(end_time_str)
+    except ValueError:
+        return jsonify({'success': False, 'message': 'Invalid date/time format.'}), 400
+
+    slot = TimeSlot.query.filter_by(console_id=console_id, start_time=start_time, end_time=end_time, is_booked=False).first()
+
+    if slot:
+        slot.is_booked = True
+        slot.booking_type = 'walk-in'
+        slot.customer_name = username
+        slot.customer_phone = phone
+        slot.booking_time = datetime.now()
+        db.session.flush()
+        slot.booking_id = slot.generate_booking_id() if hasattr(slot, 'generate_booking_id') else f"WK{slot.id}{int(datetime.now().timestamp())}"
+        db.session.commit()
+
+        return jsonify({'success': True, 'message': 'Walk-in booking successful!', 'booking_id': slot.booking_id}), 200
+    else:
+        return jsonify({'success': False, 'message': 'Slot not available or already booked.'}), 404
 
 
 @app.route('/dashboard')
@@ -174,6 +210,7 @@ def export_bookings():
                     'Customer Name': slot.customer_name,
                     'Phone Number': slot.customer_phone,
                     'Number of People': slot.number_of_people,
+                    'Booking Date': slot.start_time.strftime('%Y-%m-%d'),
                     'Booking Time': slot.start_time.strftime('%Y-%m-%d %H:%M'),
                     'Duration': f"{(slot.end_time - slot.start_time).total_seconds() / 3600:.1f} hours",
                     'Console': console.name,

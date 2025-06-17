@@ -203,12 +203,9 @@
 
 
 
-    // Add initializeWalkinBooking to initializeApp
     function initializePageSpecific(page) {
-        // ... existing code ...
+        // No page-specific initialization needed here after moving walk-in booking logic
     }
-
-    // ... existing code ...
 
     // Call initializeApp when DOM is loaded
     document.addEventListener('DOMContentLoaded', function() {
@@ -2301,8 +2298,12 @@
                 const prevBtn = document.querySelector('[data-action="prev"]');
                 const nextBtn = document.querySelector('[data-action="next"]');
                 
-                prevBtn.style.display = this.currentStep === 1 ? 'none' : 'block';
-                nextBtn.style.display = this.currentStep === 3 ? 'none' : 'block';
+                if (prevBtn) {
+                    prevBtn.style.display = this.currentStep === 1 ? 'none' : 'block';
+                }
+                if (nextBtn) {
+                    nextBtn.style.display = this.currentStep === 3 ? 'none' : 'block';
+                }
             },
 
             updateSummary() {

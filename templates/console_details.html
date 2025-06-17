@@ -35,7 +35,7 @@
         <!-- Add Slot Buttons -->
         <div class="card mb-4">
             <div class="card-body d-flex justify-content-between align-items-center">
-                <a href="{{ url_for('add_slot', console_id=console.id) }}" class="btn btn-success">
+                <a href="{{ url_for('add_slot', console_id=console.id) }}" class="btn btn-success"  >
                     <i class="fas fa-plus me-2"></i>Add Single Slot
                 </a>
                 <a href="{{ url_for('auto_slots', console_id=console.id) }}" class="btn btn-success">
@@ -82,6 +82,9 @@
                                 <form method="post" action="{{ url_for('delete_slot', slot_id=slot.id) }}" style="margin: 0;" onsubmit="return confirm('Are you sure you want to delete this slot?');">
                                     <button type="submit" class="btn btn-secondary" style="width: 100%; background: var(--danger);"> <i class="fas fa-trash"></i> Delete</button>
                                 </form>
+                                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#walkinBookingModal" data-console-id="{{ console.id }}" data-slot-start-time="{{ slot.start_time.isoformat() }}" data-slot-end-time="{{ slot.end_time.isoformat() }}" style="width: 100%; margin-top: 0.5rem;">
+                                    <i class="fas fa-walking"></i> Mark Walk-in
+                                </button>
 
                             {% endif %}
                             {% if slot.is_booked and not slot.completed %}
@@ -146,6 +149,37 @@
         </div>
     </div>
 </section>
+
+<!-- Walk-in Booking Modal -->
+<div class="modal fade" id="walkinBookingModal" tabindex="-1" aria-labelledby="walkinBookingModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="walkinBookingModalLabel">Mark Walk-in Booking</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="walkinBookingForm">
+                    <input type="hidden" id="walkinConsoleId" name="console_id">
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Username</label>
+                        <input type="text" class="form-control" id="username" name="username" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="phone" class="form-label">Phone Number</label>
+                        <input type="tel" class="form-control" id="phone" name="phone" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="special_requests" class="form-label">Special Requests</label>
+                        <textarea class="form-control" id="special_requests" name="special_requests" rows="3"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-success">Mark Booked</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 
 <script>
 let snackMasterList = {};
@@ -242,5 +276,111 @@ function checkConfirmPaymentTime() {
 // Check immediately and then every minute
 checkConfirmPaymentTime();
 setInterval(checkConfirmPaymentTime, 60000);
+document.addEventListener('DOMContentLoaded', function() {
+    const walkinBookingModalElement = document.getElementById('walkinBookingModal');
+
+    if (walkinBookingModalElement) {
+        console.log('Walk-in booking modal element found:', walkinBookingModalElement);
+
+        // Add a small delay before initializing the Bootstrap modal instance
+        setTimeout(() => {
+            const walkinBookingModal = bootstrap.Modal.getOrCreateInstance(walkinBookingModalElement, {});
+            console.log('Walk-in booking modal initialized:', walkinBookingModal);
+
+            let currentWalkinButton = null; // Declare a variable to store the button
+            walkinBookingModalElement.addEventListener('show.bs.modal', function(event) {
+                currentWalkinButton = event.relatedTarget; // Store the button
+                const consoleId = currentWalkinButton.getAttribute('data-console-id');
+                const slotStartTime = currentWalkinButton.getAttribute('data-slot-start-time');
+                const slotEndTime = currentWalkinButton.getAttribute('data-slot-end-time');
+
+                console.log('Raw data-slot-start-time:', slotStartTime);
+                console.log('Raw data-slot-end-time:', slotEndTime);
+
+                const formattedStartTime = new Date(slotStartTime).toISOString().slice(0, 16);
+                const formattedEndTime = new Date(slotEndTime).toISOString().slice(0, 16);
+
+                console.log('Formatted start time for datetime-local:', formattedStartTime);
+                console.log('Formatted end time for datetime-local:', formattedEndTime);
+
+                const modalTitle = walkinBookingModalElement.querySelector('.modal-title');
+                const consoleIdInput = walkinBookingModalElement.querySelector('#walkinConsoleId');
+                const startTimeInput = walkinBookingModalElement.querySelector('#walkinStartTime');
+                const endTimeInput = walkinBookingModalElement.querySelector('#walkinEndTime');
+
+                if (modalTitle) modalTitle.textContent = `Mark Walk-in for Console ${consoleId}`;
+                if (consoleIdInput) consoleIdInput.value = consoleId;
+                // The user wants to use the slot's time itself, so we don't set these values here.
+                // if (startTimeInput) startTimeInput.value = formattedStartTime;
+                // if (endTimeInput) endTimeInput.value = formattedEndTime;
+            });
+
+            const walkinForm = walkinBookingModalElement.querySelector('#walkinBookingForm');
+            if (walkinForm) {
+                walkinForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    const formData = new FormData(walkinForm);
+                    const jsonData = {};
+                    jsonData.username = formData.get('username');
+                    jsonData.phone = formData.get('phone');
+                            jsonData.special_requests = formData.get('special_requests');
+                            jsonData.consoleId = currentWalkinButton.getAttribute('data-console-id'); // Get consoleId from the button
+
+
+                            // Add slot start and end times from the button's data attributes
+                            jsonData.slotStartTime = currentWalkinButton.getAttribute('data-slot-start-time');
+                            jsonData.slotEndTime = currentWalkinButton.getAttribute('data-slot-end-time');
+
+                    console.log('jsonData.username:', jsonData.username);
+                    console.log('jsonData.phone:', jsonData.phone);
+                    console.log('jsonData.consoleId:', jsonData.consoleId);
+                    console.log('jsonData.slotStartTime:', jsonData.slotStartTime);
+                    console.log('jsonData.slotEndTime:', jsonData.slotEndTime);
+                    console.log('Sending walk-in booking data:', jsonData);
+                    fetch('/walkin_book_slot', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify(jsonData),
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                showNotification(data.message, 'success');
+                                walkinBookingModal.hide();
+                                // Optionally refresh the page or update the UI
+                                location.reload();
+                            } else {
+                                showNotification(data.message, 'danger');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            showNotification('An error occurred during walk-in booking.', 'danger');
+                        });
+                });
+            }
+        }, 100);
+    } else {
+        console.warn('Walk-in booking modal element not found.');
+    }
+});
+
+// Helper function for notifications (assuming it's defined elsewhere or needs to be added)
+function showNotification(message, type) {
+    // Implement your notification display logic here
+    console.log(`Notification (${type}): ${message}`);
+    // Example: You might append a div to the body with the message and appropriate styling
+    const notificationContainer = document.getElementById('notification-container');
+    if (notificationContainer) {
+        notificationContainer.innerHTML = `<div class="alert alert-${type} alert-dismissible fade show" role="alert">
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>`;
+    } else {
+        alert(message); // Fallback to alert if no container
+    }
+}
 </script>
 {% endblock %}
