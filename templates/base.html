@@ -198,7 +198,35 @@
                                 </div>
                             </a>
                             <a href="{{ url_for('register') }}" class="dropdown-item">
-                                <div class="dropdown-icon">
+
+    <script>
+        function toggleDropdown(id) {
+            const dropdown = document.getElementById(id);
+            const chevron = document.getElementById(id.replace('Dropdown', 'Chevron'));
+            dropdown.classList.toggle('show');
+            chevron.classList.toggle('rotated');
+        }
+
+        // Close the dropdown if the user clicks outside of it
+        window.onclick = function(event) {
+            if (!event.target.matches('.dropdown-toggle')) {
+                var dropdowns = document.getElementsByClassName("dropdown-menu");
+                for (var i = 0; i < dropdowns.length; i++) {
+                    var openDropdown = dropdowns[i];
+                    if (openDropdown.classList.contains('show')) {
+                        openDropdown.classList.remove('show');
+                        document.getElementById(openDropdown.id.replace('Dropdown', 'Chevron')).classList.remove('rotated');
+                    }
+                }
+            }
+        }
+    </script>
+
+
+
+</body>
+
+</html>                                <div class="dropdown-icon">
                                     <i class="fas fa-store"></i>
                                 </div>
                                 <div class="dropdown-text">
@@ -238,6 +266,7 @@
             <div style="margin-top:1rem; color:#bdbdbd; font-size:0.9rem;">&copy; 2024 Vennuez. All rights reserved.</div>
         </div>
     </footer>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
     <script>
         // Dropdown functionality
@@ -281,6 +310,5 @@
         });
     </script>
     {% block extra_scripts %}{% endblock %}
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

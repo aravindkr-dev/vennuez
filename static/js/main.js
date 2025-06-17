@@ -33,6 +33,8 @@
         const currentPage = getCurrentPage();
         initializePageSpecific(currentPage);
 
+
+
         // Enhanced user experience
         initializeKeyboardShortcuts();
         initializeProgressIndicators();
@@ -198,6 +200,20 @@
     /**
      * Get icon for notification type
      */
+
+
+
+    // Add initializeWalkinBooking to initializeApp
+    function initializePageSpecific(page) {
+        // ... existing code ...
+    }
+
+    // ... existing code ...
+
+    // Call initializeApp when DOM is loaded
+    document.addEventListener('DOMContentLoaded', function() {
+        initializeApp();
+    });
     function getIconForType(type) {
         const icons = {
             'success': 'fa-check-circle',
@@ -603,10 +619,12 @@
      */
     function initializeTooltips() {
         // Initialize Bootstrap tooltips
-        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-        tooltipTriggerList.map(function(tooltipTriggerEl) {
-            return new bootstrap.Tooltip(tooltipTriggerEl);
-        });
+        const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+        if (tooltipTriggerList.length > 0) {
+            [].slice.call(tooltipTriggerList).map(function(tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+        }
 
         // Add helpful tooltips to common elements
         addHelpfulTooltips();

@@ -2,6 +2,8 @@
 
 {% block title %}Console Details - Vennuez{% endblock %}
 
+
+
 {% block content %}
 <section class="console-details" style="padding: 2rem 0;">
     <div class="container" style="max-width: 900px;">
@@ -80,6 +82,7 @@
                                 <form method="post" action="{{ url_for('delete_slot', slot_id=slot.id) }}" style="margin: 0;" onsubmit="return confirm('Are you sure you want to delete this slot?');">
                                     <button type="submit" class="btn btn-secondary" style="width: 100%; background: var(--danger);"> <i class="fas fa-trash"></i> Delete</button>
                                 </form>
+
                             {% endif %}
                             {% if slot.is_booked and not slot.completed %}
                                 <button class="btn btn-warning" type="button" onclick="toggleCalculator({{ slot.id }})" id="calc_btn_{{ slot.id }}">Open Calculator</button>

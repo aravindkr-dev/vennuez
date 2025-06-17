@@ -988,6 +988,9 @@ def set_owner_location():
     return jsonify({'success': False, 'error': 'Invalid data'})
 
 
+
+
+
 # Error handlers
 @app.errorhandler(404)
 def not_found(error):

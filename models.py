@@ -117,7 +117,7 @@ class User(UserMixin, db.Model):
     email = db.Column(db.String(120), unique=True, nullable=True)
     phone = db.Column(db.String(20), nullable=False)
     password_hash = db.Column(db.String(256), nullable=False)
-    full_name = db.Column(db.String(120), nullable=False)
+    full_name = db.Column(db.String(120), nullable=True)
     age = db.Column(db.Integer, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     total_spent = db.Column(db.Float, default=0.0)
