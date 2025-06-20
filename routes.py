@@ -127,10 +127,11 @@ def walkin_book_slot():
     console_id = data.get('consoleId')
     username = data.get('username')
     phone = data.get('phone')
+    no_of_people = data.get('no_of_people')
     start_time_str = data.get('slotStartTime')
     end_time_str = data.get('slotEndTime')
 
-    if not all([console_id, start_time_str, end_time_str, username, phone]):
+    if not all([console_id, start_time_str, end_time_str, username, phone , no_of_people]):
         return jsonify({'success': False, 'message': 'Missing required fields.'}), 400
 
     try:
@@ -147,6 +148,7 @@ def walkin_book_slot():
         slot.customer_name = username
         slot.customer_phone = phone
         slot.booking_time = datetime.now()
+        slot.number_of_people = no_of_people
         db.session.flush()
         slot.booking_id = slot.generate_booking_id() if hasattr(slot, 'generate_booking_id') else f"WK{slot.id}{int(datetime.now().timestamp())}"
         db.session.commit()

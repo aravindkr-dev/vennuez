@@ -167,12 +167,12 @@
                     </div>
                     <div class="mb-3">
                         <label for="phone" class="form-label">Phone Number</label>
-                        <input type="tel" class="form-control" id="phone" name="phone" required>
+                        <input type="text" class="form-control" id="phone" name="phone" required>
                     </div>
 
                     <div class="mb-3">
-                        <label for="special_requests" class="form-label">Special Requests</label>
-                        <textarea class="form-control" id="special_requests" name="special_requests" rows="3"></textarea>
+                        <label for="no_of_people" class="form-label">Number of people</label>
+                        <input type="text" class="form-control" id="no_of_people" name="no_of_people" required>
                     </div>
                     <button type="submit" class="btn btn-success">Mark Booked</button>
                 </form>
@@ -307,6 +307,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const consoleIdInput = walkinBookingModalElement.querySelector('#walkinConsoleId');
                 const startTimeInput = walkinBookingModalElement.querySelector('#walkinStartTime');
                 const endTimeInput = walkinBookingModalElement.querySelector('#walkinEndTime');
+                //const endTimeInput = walkinBookingModalElement.querySelector('#walkinEndTime');
 
                 if (modalTitle) modalTitle.textContent = `Mark Walk-in for Console ${consoleId}`;
                 if (consoleIdInput) consoleIdInput.value = consoleId;
@@ -323,8 +324,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     const jsonData = {};
                     jsonData.username = formData.get('username');
                     jsonData.phone = formData.get('phone');
-                            jsonData.special_requests = formData.get('special_requests');
-                            jsonData.consoleId = currentWalkinButton.getAttribute('data-console-id'); // Get consoleId from the button
+                    jsonData.no_of_people = formData.get('no_of_people');
+                    jsonData.consoleId = currentWalkinButton.getAttribute('data-console-id'); // Get consoleId from the button
 
 
                             // Add slot start and end times from the button's data attributes

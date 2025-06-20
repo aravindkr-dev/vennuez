@@ -61,7 +61,7 @@ class TimeSlot(db.Model):
     start_time = db.Column(db.DateTime, nullable=False)
     end_time = db.Column(db.DateTime, nullable=False)
     total_amount = db.Column(db.Float, nullable=False)
-    advance_paid = db.Column(db.Float, default=50.0)  # Fixed advance amount
+    advance_paid = db.Column(db.Float, default=0.0)  # Fixed advance amount
     is_booked = db.Column(db.Boolean, default=False)
     snacks_amount = db.Column(db.Float, default=0.0)
     final_amount = db.Column(db.Float, default=0.0)
