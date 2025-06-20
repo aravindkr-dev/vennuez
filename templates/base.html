@@ -1,314 +1,183 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}BooknPlay{% endblock %}</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    {% block extra_head %}{% endblock %}
-    <style>
-        /* Dropdown Styles */
-        .dropdown {
-            position: relative;
-            display: inline-block;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}Vennuez{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <style>
+    :root {
+      --primary: #003049;
+      --accent: #d62828;
+    }
 
-        .dropdown-toggle {
-            background: none;
-            border: 2px solid var(--primary);
-            color: var(--primary);
-            padding: 0.75rem 1.5rem;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            transition: all 0.3s ease;
-            font-family: inherit;
-            text-decoration: none;
-        }
+    body {
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      background: #fff;
+    }
 
-        .dropdown-toggle:hover {
-            background: var(--primary);
-            color: white;
-        }
+    .navbar {
+      background-color: white;
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid #e5e5e5;
+    }
 
-        .dropdown-toggle.register-btn {
-            background: var(--primary);
-            color: white;
-        }
+    .navbar .nav-link {
+      color: var(--primary);
+      font-weight: 500;
+    }
 
-        .dropdown-toggle.register-btn:hover {
-            background: var(--accent);
-            border-color: var(--accent);
-        }
+    .navbar .nav-link:hover,
+    .navbar .nav-link.active {
+      background-color: var(--primary);
+      color: #fff !important;
+      border-radius: 5px;
+      padding: 0.4rem 0.75rem;
+    }
 
-        .dropdown-menu {
-            position: absolute;
-            top: 100%;
-            right: 0;
-            background: white;
-            border: 1px solid rgba(0,0,0,0.1);
-            border-radius: 12px;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-            min-width: 220px;
-            opacity: 0;
-            visibility: hidden;
-            transform: translateY(-10px);
-            transition: all 0.3s ease;
-            z-index: 1000;
-            margin-top: 0.5rem;
-        }
+    .navbar-brand {
+      font-weight: bold;
+      color: var(--primary) !important;
+    }
 
-        .dropdown-menu.show {
-            opacity: 1;
-            visibility: visible;
-            transform: translateY(0);
-        }
+    .dropdown-menu {
+      min-width: 200px;
+    }
 
-        .dropdown-item {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            padding: 0.75rem 1rem;
-            color: var(--secondary);
-            text-decoration: none;
-            border-radius: 8px;
-            transition: all 0.3s ease;
-            font-weight: 500;
-            margin: 0.25rem;
-        }
+    .footer {
+      background: #000;
+      color: #bdbdbd;
+      padding: 2rem;
+      text-align: center;
+      font-size: 0.9rem;
+    }
 
-        .dropdown-item:hover {
-            background: var(--muted);
-            color: var(--primary);
-        }
+    @media (max-width: 768px) {
+      .navbar .container {
+        flex-direction: column;
+        align-items: stretch;
+      }
 
-        .dropdown-icon {
-            background: linear-gradient(135deg, var(--primary), var(--accent));
-            width: 32px;
-            height: 32px;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
+      .navbar-nav {
+        flex-direction: column;
+        align-items: center;
+      }
 
-        .dropdown-icon i {
-            color: white;
-            font-size: 0.9rem;
-        }
+      .navbar-collapse {
+        width: 100%;
+        justify-content: center;
+      }
 
-        .dropdown-text {
-            flex: 1;
-        }
+      .navbar-buttons {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        width: 100%;
+        align-items: center;
+      }
 
-        .dropdown-title {
-            font-weight: 600;
-            color: var(--primary);
-            margin-bottom: 0.1rem;
-        }
+      .navbar-buttons .btn {
+        width: 100%;
+      }
+    }
 
-        .dropdown-subtitle {
-            font-size: 0.8rem;
-            color: var(--secondary);
-        }
-
-        .chevron {
-            font-size: 0.8rem;
-            transition: transform 0.3s ease;
-        }
-
-        .chevron.rotated {
-            transform: rotate(180deg);
-        }
-    </style>
+    .navbar-buttons {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+  </style>
+  {% block extra_head %}{% endblock %}
 </head>
 <body>
-    <header class="header">
-        <div class="header-content">
-            <a href="{{ url_for('index') }}" class="logo">
-                Vennuez
+  <nav class="navbar navbar-expand-md">
+    <div class="container d-flex flex-wrap justify-content-between align-items-center">
+      <a class="navbar-brand" href="{{ url_for('index') }}">Vennuez</a>
+
+      <!-- Center Nav Item -->
+      <div class="d-none d-md-block mx-auto">
+        {% if current_user.is_authenticated %}
+          {% if session.user_type != 'owner' %}
+            <a href="{{ url_for('user_dashboard') }}" class="nav-link {% if request.endpoint == 'user_dashboard' %}active{% endif %}">
+              My Bookings
             </a>
-            <div class="header-middle-nav">
-                {% if current_user.is_authenticated and session.user_type == 'owner' %}
-                    <a href="{{ url_for('dashboard') }}" class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}">Dashboard</a>
-                {% endif %}
-            </div>
-            <div class="header-right-section">
-                <nav class="nav-links">
-                    {% if session.username and session.user_type != 'owner' %}
-                        <a href="{{ url_for('user_dashboard') }}" class="{% if request.endpoint == 'user_dashboard' %}active{% endif %}">My Bookings</a>
-                    {% endif %}
-                </nav>
-                <div class="user-info">
-                {% if current_user.is_authenticated %}
-                    <i class="fas fa-user"></i> {{ current_user.username }}
-                    <a href="{{ url_for('logout') }}" class="btn btn-secondary" style="margin-left:1rem;">Logout</a>
-                {% else %}
-                    <!-- Login Dropdown -->
-                    <div class="dropdown">
-                        <button class="dropdown-toggle" onclick="toggleDropdown('loginDropdown')">
-                            <i class="fas fa-sign-in-alt"></i>
-                            <span>Login</span>
-                            <i class="fas fa-chevron-down chevron" id="loginChevron"></i>
-                        </button>
-                        <div class="dropdown-menu" id="loginDropdown">
-                            <a href="{{ url_for('user_login') }}" class="dropdown-item">
-                                <div class="dropdown-icon">
-                                    <i class="fas fa-user"></i>
-                                </div>
-                                <div class="dropdown-text">
-                                    <div class="dropdown-title">User Login</div>
-                                    <div class="dropdown-subtitle">For gamers</div>
-                                </div>
-                            </a>
-                            <a href="{{ url_for('login') }}" class="dropdown-item">
-                                <div class="dropdown-icon">
-                                    <i class="fas fa-store"></i>
-                                </div>
-                                <div class="dropdown-text">
-                                    <div class="dropdown-title">Venue Login</div>
-                                    <div class="dropdown-subtitle">For center owners</div>
-                                </div>
-                            </a>
-                        </div>
-                    </div>
+          {% elif session.user_type == 'owner' %}
+            <a href="{{ url_for('dashboard') }}" class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}">
+              Dashboard
+            </a>
+          {% endif %}
+        {% endif %}
+      </div>
 
-                    <!-- Register Dropdown -->
-                    <div class="dropdown" style="margin-left: 1rem;">
-                        <button class="dropdown-toggle register-btn" onclick="toggleDropdown('registerDropdown')">
-                            <i class="fas fa-user-plus"></i>
-                            <span>Register</span>
-                            <i class="fas fa-chevron-down chevron" id="registerChevron"></i>
-                        </button>
-                        <div class="dropdown-menu" id="registerDropdown">
-                            <a href="{{ url_for('user_register') }}" class="dropdown-item">
-                                <div class="dropdown-icon">
-                                    <i class="fas fa-user"></i>
-                                </div>
-                                <div class="dropdown-text">
-                                    <div class="dropdown-title">User Register</div>
-                                    <div class="dropdown-subtitle">Join as a gamer</div>
-                                </div>
-                            </a>
-                            <a href="{{ url_for('register') }}" class="dropdown-item">
+      <!-- Right Buttons -->
+      <div class="navbar-buttons">
+        {% if current_user.is_authenticated %}
+          <div class="dropdown">
+            <button class="btn btn-outline-secondary dropdown-toggle btn-sm" data-bs-toggle="dropdown">
+              <i class="fas fa-user"></i> {{ current_user.username }}
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+              {% if session.user_type == 'owner' %}
+                <li><a class="dropdown-item" href="{{ url_for('dashboard') }}">Dashboard</a></li>
+              {% endif %}
+              <li><a class="dropdown-item" href="{{ url_for('logout') }}">Logout</a></li>
+            </ul>
+          </div>
+        {% else %}
+          <div class="dropdown">
+            <button class="btn btn-outline-primary dropdown-toggle btn-sm" data-bs-toggle="dropdown">
+              Login
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li><a class="dropdown-item" href="{{ url_for('user_login') }}">User Login</a></li>
+              <li><a class="dropdown-item" href="{{ url_for('login') }}">Venue Login</a></li>
+            </ul>
+          </div>
 
-    <script>
-        function toggleDropdown(id) {
-            const dropdown = document.getElementById(id);
-            const chevron = document.getElementById(id.replace('Dropdown', 'Chevron'));
-            dropdown.classList.toggle('show');
-            chevron.classList.toggle('rotated');
-        }
+          <div class="dropdown">
+            <button class="btn btn-primary dropdown-toggle btn-sm" data-bs-toggle="dropdown">
+              Register
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li><a class="dropdown-item" href="{{ url_for('user_register') }}">User Register</a></li>
+              <li><a class="dropdown-item" href="{{ url_for('register') }}">Register Center</a></li>
+            </ul>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </nav>
 
-        // Close the dropdown if the user clicks outside of it
-        window.onclick = function(event) {
-            if (!event.target.matches('.dropdown-toggle')) {
-                var dropdowns = document.getElementsByClassName("dropdown-menu");
-                for (var i = 0; i < dropdowns.length; i++) {
-                    var openDropdown = dropdowns[i];
-                    if (openDropdown.classList.contains('show')) {
-                        openDropdown.classList.remove('show');
-                        document.getElementById(openDropdown.id.replace('Dropdown', 'Chevron')).classList.remove('rotated');
-                    }
-                }
-            }
-        }
-    </script>
+  <main class="container my-4">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+  </main>
 
+  <footer class="footer">
+    <div>
+      <strong>Vennuez</strong><br />
+      Connecting gamers with gaming centers<br />
+      <a href="{{ url_for('available_slots') }}" style="color:#ccc; margin-right:1rem;">Browse Slots</a>
+      <a href="{{ url_for('register') }}" style="color:#ccc;">Register</a><br />
+      support@vennuez.com<br />
+      &copy; 2024 Vennuez. All rights reserved.
+    </div>
+  </footer>
 
-
-</body>
-
-</html>                                <div class="dropdown-icon">
-                                    <i class="fas fa-store"></i>
-                                </div>
-                                <div class="dropdown-text">
-                                    <div class="dropdown-title">Register Center</div>
-                                    <div class="dropdown-subtitle">List your gaming center</div>
-                                </div>
-                            </a>
-                        </div>
-                    </div>
-                {% endif %}
-            </div>
-        </div>
-    </header>
-    <main class="main-content">
-        <div class="container">
-            {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    {% for category, message in messages %}
-                        <div class="alert alert-{{ 'danger' if category == 'error' else category }}">
-                            {{ message }}
-                        </div>
-                    {% endfor %}
-                {% endif %}
-            {% endwith %}
-            {% block content %}{% endblock %}
-        </div>
-    </main>
-    <footer class="footer">
-        <div>
-            <div style="font-weight:700; font-size:1.1rem;">Vennuez</div>
-            <div style="margin:0.5rem 0; color:#bdbdbd;">Connecting gamers with gaming centers</div>
-            <div style="margin:1rem 0;">
-                <a href="{{ url_for('available_slots') }}" style="color:#bdbdbd; margin-right:1.5rem; text-decoration:none;">Browse Slots</a>
-                <a href="{{ url_for('register') }}" style="color:#bdbdbd; text-decoration:none;">Register</a>
-            </div>
-            <div style="color:#bdbdbd; font-size:0.95rem;">support@vennuez.com</div>
-            <div style="margin-top:1rem; color:#bdbdbd; font-size:0.9rem;">&copy; 2024 Vennuez. All rights reserved.</div>
-        </div>
-    </footer>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
-    <script>
-        // Dropdown functionality
-        function toggleDropdown(dropdownId) {
-            const dropdown = document.getElementById(dropdownId);
-            const chevron = document.getElementById(dropdownId.replace('Dropdown', 'Chevron'));
-            const isShown = dropdown.classList.contains('show');
-
-            // Close all other dropdowns
-            document.querySelectorAll('.dropdown-menu').forEach(menu => {
-                menu.classList.remove('show');
-            });
-            document.querySelectorAll('.chevron').forEach(chevron => {
-                chevron.classList.remove('rotated');
-            });
-
-            // Toggle current dropdown
-            if (!isShown) {
-                dropdown.classList.add('show');
-                chevron.classList.add('rotated');
-            }
-        }
-
-        // Close dropdowns when clicking outside
-        document.addEventListener('click', function(event) {
-            if (!event.target.closest('.dropdown')) {
-                document.querySelectorAll('.dropdown-menu').forEach(menu => {
-                    menu.classList.remove('show');
-                });
-                document.querySelectorAll('.chevron').forEach(chevron => {
-                    chevron.classList.remove('rotated');
-                });
-            }
-        });
-
-        // Prevent dropdown from closing when clicking inside
-        document.querySelectorAll('.dropdown-menu').forEach(menu => {
-            menu.addEventListener('click', function(event) {
-                event.stopPropagation();
-            });
-        });
-    </script>
-    {% block extra_scripts %}{% endblock %}
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  {% block extra_scripts %}{% endblock %}
 </body>
 </html>
