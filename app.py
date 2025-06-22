@@ -57,7 +57,7 @@ migrate = Migrate(app, db)
 with app.app_context():
     # Import models to ensure tables are created
     from models import Owner, Console, TimeSlot, User
-    import routes
+    from routes import *
 
     # Create all tables
     db.create_all()

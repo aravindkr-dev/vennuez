@@ -1,7 +1,7 @@
 from flask import render_template, request, redirect, url_for, flash, session, jsonify, send_file
 from werkzeug.security import generate_password_hash, check_password_hash
 from app import app, db
-from models import Owner, Console, TimeSlot, User, UserCoinBalance, CoinTransaction, Snack, ConsolePricingTier
+from models import Owner, Console, TimeSlot, User, UserCoinBalance, CoinTransaction, Snack, ConsolePricingTier , Subscription , UsedToken
 from datetime import datetime, timedelta
 from functools import wraps
 from flask_login import login_user, logout_user, login_required, current_user
@@ -12,6 +12,14 @@ import cloudinary
 import cloudinary.uploader
 import os
 import json
+from itsdangerous.url_safe import URLSafeTimedSerializer
+from sqlalchemy import func
+import qrcode
+import base64
+
+serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
+
+
 
 def venue_details_required(f):
     @wraps(f)
@@ -1025,6 +1033,120 @@ def set_owner_location():
         db.session.commit()
         return jsonify({'success': True})
     return jsonify({'success': False, 'error': 'Invalid data'})
+
+
+@app.route('/add_subscription', methods=['GET', 'POST'])
+@login_required
+def add_subscription():
+    if request.method == 'POST':
+        amount = float(request.form['amount'])
+        phone = int(request.form['phone'])
+
+        user = User.query.filter_by(phone = phone).first()
+
+        user_exist = Subscription.query.filter_by(user_id = user.id).first()
+
+        if user_exist:
+            user_exist.amount += amount
+
+        new_sub = Subscription(amount=amount, owner_id=current_user.id, user_id=user.id)
+        db.session.add(new_sub)
+        db.session.commit()
+        return redirect(url_for('add_subscription'))
+
+    return render_template('add_subscription.html')
+
+
+@app.route('/owner/<int:owner_id>/subscriptions')
+def owner_subscriptions(owner_id):
+    owner = Owner.query.get_or_404(owner_id)
+    subscriptions = Subscription.query.filter_by(owner_id=owner.id).all()
+
+    return render_template('owner_subscriptions.html', owner=owner, subscriptions=subscriptions)
+
+
+@app.route('/my_subscriptions')
+@login_required
+def my_subscriptions():
+    totals = db.session.query(
+        Owner.id,
+        Owner.gaming_center_name,
+        func.sum(Subscription.amount).label('total')
+    ).join(Subscription, Subscription.owner_id == Owner.id) \
+    .filter(Subscription.user_id == current_user.id) \
+    .group_by(Owner.id, Owner.username) \
+    .having(func.sum(Subscription.amount) > 0) \
+    .all()
+
+    # Debug output
+    for o in totals:
+        print(o)
+
+    return render_template("my_subscriptions.html", venues=totals)
+
+
+
+@app.route('/generate_qr', methods=['GET', 'POST'])
+@login_required
+def generate_qr():
+    if request.method == 'POST':
+        amount = float(request.form['amount'])
+        owner_id = current_user.id
+
+        # Signed token with expiry
+        token = serializer.dumps({'owner_id': owner_id, 'amount': amount})
+        scan_url = url_for('scan_qr', token=token, _external=True)
+        print(scan_url)
+
+        # Generate QR
+        qr = qrcode.make(scan_url)
+        buffer = io.BytesIO()
+        qr.save(buffer, format="PNG")
+        qr_b64 = base64.b64encode(buffer.getvalue()).decode()
+
+        return render_template("show_qr.html", qr_code=qr_b64, amount=amount, scan_url=scan_url)
+
+    return render_template("generate_qr.html")
+
+
+
+@app.route('/scan_qr/<token>')
+@login_required
+def scan_qr(token):
+    from sqlalchemy import exists
+
+    # Step 1: Check if token was already used
+    if db.session.query(exists().where(UsedToken.token == token)).scalar():
+        return "❌ This QR code has already been used.", 400
+
+    # Step 2: Try to load token
+    from itsdangerous import SignatureExpired, BadSignature
+
+    try:
+        data = serializer.loads(token, max_age=300)  # 5 min expiry
+        owner_id = data['owner_id']
+        amount = data['amount']
+    except SignatureExpired:
+        return "❌ QR code expired!", 400
+    except BadSignature:
+        return "❌ Invalid QR code!", 400
+
+    # Step 3: Check user's balance at that venue
+    total = db.session.query(func.sum(Subscription.amount)) \
+        .filter_by(user_id=current_user.id, owner_id=owner_id).scalar() or 0
+
+    if total < amount:
+        return "❌ Insufficient balance!", 400
+
+    # Step 4: Log deduction
+    deduction = Subscription(user_id=current_user.id, owner_id=owner_id, amount=-amount)
+    db.session.add(deduction)
+
+    # Step 5: Mark token as used
+    db.session.add(UsedToken(token=token))
+    db.session.commit()
+
+    return f"✅ ₹{amount} deducted successfully!"
 
 
 

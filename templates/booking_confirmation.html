@@ -49,9 +49,6 @@
             </div>
             <div class="mt-4">
                 <a href="{{ url_for('available_slots') }}" class="btn btn-secondary">Back to Available Slots</a>
-                {% if slot.payment_status == 'pending' %}
-                <a href="{{ url_for('payment', booking_id=slot.booking_id) }}" class="btn btn-primary">Complete Payment</a>
-                {% endif %}
             </div>
         </div>
     </div>

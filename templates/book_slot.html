@@ -167,36 +167,15 @@
     }
 
     function updateTotalAmount() {
-        const people = parseInt(document.getElementById('number_of_people').value);
-        const hourlyRate = {{ slot.console.hourly_rate }}; // assuming this is available in your template
-        let pricingTier;
-
-        for (let i = 0; i < pricingTiers.length; i++) {
-            if (people <= pricingTiers[i].max_people) {
-                pricingTier = pricingTiers[i];
-                break;
-            }
-        }
-
-        const ratePerPerson = pricingTier ? pricingTier.rate_per_person : hourlyRate;
-
-        document.getElementById('rate-per-person').textContent = `₹${ratePerPerson}`;
-        const total = ratePerPerson * people;
-        document.getElementById('people-display').textContent = people;
-        document.getElementById('total-amount-display').textContent = `₹${Math.round(total)}`;
-
-        // Update summary
-        document.getElementById('summary-people').textContent = people;
-        document.getElementById('summary-total').textContent = `₹${Math.round(total)}`;
-    }function updateTotalAmount() {
     const people = parseInt(document.getElementById('number_of_people').value);
+
     let pricingTier;
 
     // Sort pricing tiers by max capacity in ascending order
     pricingTiers.sort((a, b) => a.max_people - b.max_people);
 
     for (let i = 0; i < pricingTiers.length; i++) {
-        if (people <= pricingTiers[i].max_people) {
+        if (pricingTiers[i].max_people >= people) {
             pricingTier = pricingTiers[i];
             break;
         }
@@ -206,6 +185,7 @@
 
     document.getElementById('rate-per-person').textContent = `₹${ratePerPerson}`;
     const total = ratePerPerson * people;
+    console.log(total)
     document.getElementById('people-display').textContent = people;
     document.getElementById('total-amount-display').textContent = `₹${Math.round(total)}`;
 
@@ -213,15 +193,6 @@
     document.getElementById('summary-people').textContent = people;
     document.getElementById('summary-total').textContent = `₹${Math.round(total)}`;
 }
-
-    function getRateForPeople(people) {
-        for (let i = 0; i < pricingTiers.length; i++) {
-            if (people <= pricingTiers[i].max_people) {
-                return pricingTiers[i].rate_per_person;
-            }
-        }
-        return hourlyRate;
-    }
 
     // Update the existing time slot selection handler
     function selectTimeSlot(slotElement) {

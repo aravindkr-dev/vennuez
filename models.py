@@ -29,6 +29,7 @@ class Owner(UserMixin, db.Model):
 
     # Relationships
     consoles = db.relationship('Console', backref='owner', lazy=True, cascade='all, delete-orphan')
+    subscriptions = db.relationship("Subscription", back_populates="owner", cascade="all, delete")
 
     def __repr__(self):
         return f'<Owner {self.username}>'
@@ -111,11 +112,10 @@ class TimeSlot(db.Model):
 
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
-
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=True)
-    phone = db.Column(db.String(20), nullable=False)
+    phone = db.Column(db.String(20), nullable=False , unique = True)
     password_hash = db.Column(db.String(256), nullable=False)
     full_name = db.Column(db.String(120), nullable=True)
     age = db.Column(db.Integer, nullable=True)
@@ -125,6 +125,7 @@ class User(UserMixin, db.Model):
     # Relationships
     bookings = db.relationship('TimeSlot', backref='user', lazy=True, foreign_keys='TimeSlot.user_id')
     coin_balances = db.relationship('UserCoinBalance', backref='user', lazy=True)
+    subscriptions = db.relationship("Subscription", back_populates="user", cascade="all, delete")
 
     def set_password(self, password):
         """Set the user's password hash"""
@@ -203,3 +204,25 @@ class ConsolePricingTier(db.Model):
 
     def __repr__(self):
         return f'<ConsolePricingTier {self.console_id}:up to {self.max_people}:{self.rate_per_person}>'
+
+
+
+class Subscription(db.Model):
+    __tablename__ = "subscription"
+    id = db.Column(db.Integer, primary_key=True)
+    amount = db.Column(db.Float, nullable=False)
+
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    owner_id = db.Column(db.Integer, db.ForeignKey('owners.id'), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    user = db.relationship("User", back_populates="subscriptions")
+    owner = db.relationship("Owner", back_populates="subscriptions")
+
+
+
+
+class UsedToken(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    token = db.Column(db.String(512), unique=True, nullable=False)
+    used_at = db.Column(db.DateTime, default=datetime.utcnow)

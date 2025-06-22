@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Subscribers of {{ owner.username }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- Bootstrap CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+    <div class="container mt-5">
+        <div class="text-center mb-4">
+            <h2>Users Subscribed to {{ owner.username }}</h2>
+        </div>
+
+        {% if subscriptions %}
+        <table class="table table-bordered table-striped">
+            <thead class="table-dark">
+                <tr>
+                    <th>User ID</th>
+                    <th>Username</th>
+                    <th>Phone</th>
+                    <th>Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for sub in subscriptions %}
+                <tr>
+                    <td>{{ sub.user.id }}</td>
+                    <td>{{ sub.user.username }}</td>
+                    <td>{{ sub.user.phone }}</td>
+                    <td>₹{{ '%.2f'|format(sub.amount) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+            <div class="alert alert-info text-center">
+                No users have subscribed to this venue yet.
+            </div>
+        {% endif %}
+    </div>
+
+</body>
+</html>
