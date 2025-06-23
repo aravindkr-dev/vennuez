@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Book Gaming Slot{% endblock %}
+
 {% block content %}
 <section class="booking-section" style="padding: 2rem 0;">
     <div class="container" style="max-width: 600px;">
@@ -23,13 +23,14 @@
                         <div style="display: none;">Debug: {{ available_dates }}</div>
                         <div style="display: none;">Debug: Slot console_id: {{ slot.console_id }}</div>
                         <div style="display: none;">Debug: Selected date: {{ selected_date }}</div>
+                        <div style="display: none;">Debug: Slot duration: {{ slot_info.duration_hours if slot_info else 'N/A' }}</div>
                         {% if available_dates %}
                             {% for date in available_dates %}
                                 <div class="date-item" data-date="{{ date }}">
                                     {{ date }}
-    </div>
+                                </div>
                             {% endfor %}
-                            {% else %}
+                        {% else %}
                             <div style="text-align: center; padding: 1rem; color: #666;">
                                 No available dates found. Please check back later.
                             </div>
@@ -45,30 +46,18 @@
                     <h3 style="font-size: 1.1rem; margin-bottom: 1rem;">Number of People</h3>
                     <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
                         <button type="button" class="btn btn-outline-primary btn-sm" onclick="decrementPeople()">-</button>
-                        <input type="number" id="number_of_people" name="number_of_people" value="1" min="1" max="10" class="form-control" style="width: 80px; text-align: center;" onchange="updateTotalAmount()">
+                        <input type="number" id="number_of_people" name="number_of_people" value="1" min="1" max="5" class="form-control" style="width: 80px; text-align: center;" onchange="calculateTotal()">
                         <button type="button" class="btn btn-outline-primary btn-sm" onclick="incrementPeople()">+</button>
                     </div>
-                    <div class="amount-breakdown" style="background: white; padding: 1rem; border-radius: 4px;">
-                        <div style="margin-bottom: 1rem;">
-                            <strong>Pricing Tiers:</strong>
-                            <table class="table table-sm" id="pricing-tiers-table">
-                                <thead><tr><th>Up to (people)</th><th>Rate/person (₹)</th></tr></thead>
-                                <tbody id="pricing-tiers-body">
-                                    <tr><td colspan="2">Loading...</td></tr>
-                                </tbody>
-                            </table>
+
+                    <!-- Price breakdown display -->
+                    <div class="pricing-info">
+                        <div id="price_breakdown" class="price-breakdown">
+                            <!-- Dynamic pricing breakdown will be inserted here -->
                         </div>
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-                            <span>Rate (per person):</span>
-                            <span id="rate-per-person">₹{{ slot.console.hourly_rate }}</span>
-                        </div>
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-                            <span>Number of People:</span>
-                            <span id="people-display">1</span>
-                        </div>
-                        <div style="display: flex; justify-content: space-between; font-weight: bold; border-top: 1px solid #dee2e6; padding-top: 0.5rem;">
-                            <span>Total Amount:</span>
-                            <span id="total-amount-display">₹0</span>
+
+                        <div class="total-amount">
+                            <h4>Total Amount: <span id="total_amount_display">₹0.00</span></h4>
                         </div>
                     </div>
                 </div>
@@ -79,27 +68,29 @@
             <div class="card">
                 <h2>Confirm Your Booking</h2>
                 <form id="booking-form" method="POST" action="{{ url_for('book_slot', slot_id=slot.id) }}">
+                    <!-- Hidden input to store the calculated total for form submission -->
+                    <input type="hidden" id="total_amount" name="total_amount" value="0">
                     <input type="hidden" name="number_of_people" id="form_number_of_people">
                     <input type="hidden" name="selected_date" id="form_selected_date">
                     <input type="hidden" name="selected_time" id="form_selected_time">
-                    
+
                     {% if user %}
                     <div class="user-details">
                         <h3>Your Details</h3>
                         <p><strong>Name:</strong> {{ user.username }}</p>
                         <p><strong>Phone:</strong> {{ user.phone }}</p>
                         <p><strong>Email:</strong> {{ user.email }}</p>
-                </div>
-                                        {% else %}
+                    </div>
+                    {% else %}
                     <div class="alert alert-warning">
                         Please <a href="{{ url_for('login') }}">login</a> to book a slot.
-                                </div>
-                                        {% endif %}
+                    </div>
+                    {% endif %}
 
-                                    <div class="form-group">
+                    <div class="form-group">
                         <label for="special_requests">Special Requests (Optional)</label>
                         <textarea id="special_requests" name="special_requests" class="form-control" rows="3"></textarea>
-                                </div>
+                    </div>
 
                     <div class="booking-summary">
                         <h3>Booking Summary</h3>
@@ -111,25 +102,29 @@
                             <span>Time:</span>
                             <span id="summary-time"></span>
                         </div>
-                                <div class="summary-item">
+                        <div class="summary-item">
+                            <span>Duration:</span>
+                            <span id="summary-duration">{{ slot_info.duration_hours if slot_info else 1 }} hours</span>
+                        </div>
+                        <div class="summary-item">
                             <span>Number of People:</span>
-                            <span id="summary-people"></span>
+                            <span id="summary-people">1</span>
                         </div>
                         <div class="summary-item total">
                             <span>Total Amount:</span>
-                            <span id="summary-total"></span>
+                            <span id="summary-total">₹0.00</span>
                         </div>
-                                </div>
+                    </div>
                     <div class="form-group" style="margin-top: 1.5rem;">
                         <div class="form-check" style="display: flex; align-items: center; flex-direction: row-reverse; justify-content: flex-end;">
                             <input type="checkbox" id="terms" name="terms" class="form-check-input" required style="margin-left: 0.5rem;">
                             <label class="form-check-label" for="terms">I agree to the terms and conditions</label>
                         </div>
-                                </div>
+                    </div>
                     <button type="submit" class="btn btn-primary" style="margin-top: 1.5rem; width: 100%;" {% if not user %}disabled{% endif %}>Confirm Booking</button>
-                    </form>
-                </div>
+                </form>
             </div>
+        </div>
         <!-- Navigation Buttons -->
         <div class="nav-buttons" style="display: flex; justify-content: space-between; margin-top: 1.5rem;">
             <button class="btn btn-secondary nav-btn" data-action="prev" style="display: none;">Previous</button>
@@ -137,188 +132,267 @@
         </div>
     </div>
 </section>
+
+<!-- Add some CSS for better styling -->
+<style>
+.pricing-breakdown {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 5px;
+    margin: 15px 0;
+    border: 1px solid #dee2e6;
+}
+
+.pricing-breakdown div {
+    margin: 5px 0;
+    padding: 2px 0;
+}
+
+.total-line {
+    border-top: 1px solid #ccc;
+    margin-top: 10px;
+    padding-top: 10px;
+}
+
+.total-amount {
+    text-align: center;
+    margin: 20px 0;
+    padding: 15px;
+    background: #e7f3ff;
+    border-radius: 5px;
+    border: 2px solid #007bff;
+}
+
+.total-amount h4 {
+    margin: 0;
+    color: #007bff;
+}
+
+.date-item {
+    padding: 10px;
+    margin: 5px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    cursor: pointer;
+    text-align: center;
+}
+
+.date-item:hover, .date-item.selected {
+    background-color: #007bff;
+    color: white;
+}
+
+.time-slot {
+    padding: 10px;
+    margin: 5px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    cursor: pointer;
+    text-align: center;
+}
+
+.time-slot:hover, .time-slot.selected {
+    background-color: #007bff;
+    color: white;
+}
+
+.summary-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 5px 0;
+}
+
+.summary-item.total {
+    font-weight: bold;
+    border-top: 1px solid #ddd;
+    margin-top: 10px;
+    padding-top: 10px;
+}
+</style>
 {% endblock %}
 
 {% block extra_scripts %}
 <script>
-  const CONSOLE_ID = {{ slot.console_id }};
-</script>
-<script src="{{ url_for('static', filename='js/main.js') }}"></script>
-<script>
-    let selectedDuration = 0;
-    const hourlyRate = {{ slot.console.hourly_rate }};
-    console.log(hourlyRate)
-    let pricingTiers = [];
+// Add this JavaScript to your book_slot.html template
+function calculateTotal() {
+    const numberOfPeople = parseInt(document.getElementById('number_of_people').value) || 1;
+    const slotInfo = {{ slot_info|tojson if slot_info else '{}' }};
 
-    function incrementPeople() {
-        const input = document.getElementById('number_of_people');
-        if (input.value < 10) {
-            input.value = parseInt(input.value) + 1;
-            updateTotalAmount();
+    let ratePerPerson = slotInfo.hourly_rate || 100; // Default rate
+
+    // Check pricing tiers if they exist
+    if (slotInfo.pricing_tiers && slotInfo.pricing_tiers.length > 0) {
+        // Find the appropriate pricing tier for this number of people
+        for (let tier of slotInfo.pricing_tiers.sort((a, b) => a.max_people - b.max_people)) {
+            if (numberOfPeople <= tier.max_people) {
+                ratePerPerson = tier.rate_per_person;
+                break;
+            }
         }
     }
 
-    function decrementPeople() {
-        const input = document.getElementById('number_of_people');
-        if (input.value > 1) {
-            input.value = parseInt(input.value) - 1;
-            updateTotalAmount();
-        }
+    const duration = slotInfo.duration_hours || 1;
+    const totalAmount = ratePerPerson * numberOfPeople * duration;
+
+    // Update the total amount display
+    const totalAmountElement = document.getElementById('total_amount_display');
+    const totalAmountInput = document.getElementById('total_amount');
+    const summaryTotal = document.getElementById('summary-total');
+    const summaryPeople = document.getElementById('summary-people');
+
+    if (totalAmountElement) {
+        totalAmountElement.textContent = '₹' + totalAmount.toFixed(2);
     }
 
-    function updateTotalAmount() {
-    const people = parseInt(document.getElementById('number_of_people').value);
-
-    let pricingTier;
-
-    // Sort pricing tiers by max capacity in ascending order
-    pricingTiers.sort((a, b) => a.max_people - b.max_people);
-
-    for (let i = 0; i < pricingTiers.length; i++) {
-        if (pricingTiers[i].max_people >= people) {
-            pricingTier = pricingTiers[i];
-            break;
-        }
+    if (totalAmountInput) {
+        totalAmountInput.value = totalAmount.toFixed(2);
     }
 
-    const ratePerPerson = pricingTier ? pricingTier.rate_per_person : {{ slot.console.hourly_rate }};
+    if (summaryTotal) {
+        summaryTotal.textContent = '₹' + totalAmount.toFixed(2);
+    }
 
-    document.getElementById('rate-per-person').textContent = `₹${ratePerPerson}`;
-    const total = ratePerPerson * people;
-    console.log(total)
-    document.getElementById('people-display').textContent = people;
-    document.getElementById('total-amount-display').textContent = `₹${Math.round(total)}`;
+    if (summaryPeople) {
+        summaryPeople.textContent = numberOfPeople;
+    }
 
-    // Update summary
-    document.getElementById('summary-people').textContent = people;
-    document.getElementById('summary-total').textContent = `₹${Math.round(total)}`;
+    // Update form hidden field
+    const formPeopleInput = document.getElementById('form_number_of_people');
+    if (formPeopleInput) {
+        formPeopleInput.value = numberOfPeople;
+    }
+
+    // Update breakdown display if it exists
+    const breakdownElement = document.getElementById('price_breakdown');
+    if (breakdownElement) {
+        breakdownElement.innerHTML = `
+            <div class="pricing-breakdown">
+                <div>Rate per person: ₹${ratePerPerson}</div>
+                <div>Number of people: ${numberOfPeople}</div>
+                <div>Duration: ${duration} hours</div>
+                <div class="total-line"><strong>Total: ₹${totalAmount.toFixed(2)}</strong></div>
+            </div>
+        `;
+    }
 }
 
-    // Update the existing time slot selection handler
-    function selectTimeSlot(slotElement) {
-        // Remove selected class from all slots
-        document.querySelectorAll('.time-slot').forEach(slot => {
-            slot.classList.remove('selected');
-        });
-        
-        // Add selected class to clicked slot
-        slotElement.classList.add('selected');
-        
-        // Get time from data attribute
-        const timeRange = slotElement.dataset.time;
-        // Update summary with selected date and time
-        const selectedDate = document.querySelector('.date-item.selected');
-        if (selectedDate) {
-            const dateText = selectedDate.textContent.trim();
-            document.getElementById('summary-date').textContent = dateText;
-            document.getElementById('form_selected_date').value = dateText;
-        }
-        document.getElementById('summary-time').textContent = timeRange;
-        document.getElementById('form_selected_time').value = timeRange;
-        // Update total amount
-        updateTotalAmount();
-        // Show step 2
-        document.querySelector('.booking-step[data-step="1"]').style.display = 'none';
-        document.querySelector('.booking-step[data-step="2"]').style.display = 'block';
+function incrementPeople() {
+    const input = document.getElementById('number_of_people');
+    if (input.value < 10) {
+        input.value = parseInt(input.value) + 1;
+        calculateTotal();
+    }
+}
+
+function decrementPeople() {
+    const input = document.getElementById('number_of_people');
+    if (input.value > 1) {
+        input.value = parseInt(input.value) - 1;
+        calculateTotal();
+    }
+}
+
+// Initialize calculation when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    calculateTotal();
+
+    // Recalculate when number of people changes
+    const numberOfPeopleInput = document.getElementById('number_of_people');
+    if (numberOfPeopleInput) {
+        numberOfPeopleInput.addEventListener('change', calculateTotal);
+        numberOfPeopleInput.addEventListener('input', calculateTotal);
     }
 
-    document.addEventListener('DOMContentLoaded', function() {
-        // Set initial values
-        const initialPeople = parseInt(document.getElementById('number_of_people').value);
-        document.getElementById('people-display').textContent = initialPeople;
-        document.getElementById('form_number_of_people').value = initialPeople;
-        // Add click handlers for date selection
-        document.querySelectorAll('.date-item').forEach(dateItem => {
-            dateItem.addEventListener('click', function() {
-                document.querySelectorAll('.date-item').forEach(item => item.classList.remove('selected'));
-                this.classList.add('selected');
-                // Update summary date when date is selected
-                const dateText = this.textContent.trim();
-                document.getElementById('summary-date').textContent = dateText;
-                document.getElementById('form_selected_date').value = dateText;
-            });
-        });
-        // Initialize total amount
-        updateTotalAmount();
-        // Add form submission handler
-        var bookingForm = document.getElementById('booking-form');
-        if (bookingForm) {
-            bookingForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-                if (!document.querySelector('.date-item.selected')) {
-                    alert('Please select a date');
-                    return;
-                }
-                if (!document.querySelector('.time-slot.selected')) {
-                    alert('Please select a time slot');
-                    return;
-                }
-                if (!document.getElementById('terms').checked) {
-                    alert('Please agree to the terms and conditions');
-            return;
-        }
-                // Get selected date and time
-                const selectedDate = document.querySelector('.date-item.selected').textContent.trim();
-                const selectedTime = document.querySelector('.time-slot.selected').dataset.time;
-                // Update hidden fields
-                document.getElementById('form_selected_date').value = selectedDate;
-                document.getElementById('form_selected_time').value = selectedTime;
-                // Disable submit button and show loading state
-        const submitBtn = this.querySelector('button[type="submit"]');
-        submitBtn.disabled = true;
-                submitBtn.innerHTML = '<span class="loading"></span> Confirming...';
-                // Simulate processing
-                setTimeout(() => {
-                    this.submit();
-                }, 1000);
-            });
-        }
-        // Next button handler
-        const nextBtn = document.querySelector('.nav-btn[data-action="next"]');
-        if (nextBtn) {
-            nextBtn.addEventListener('click', function() {
-                const selectedDate = document.querySelector('.date-item.selected');
-                const selectedTime = document.querySelector('.time-slot.selected');
-                if (!selectedDate) {
-                    alert('Please select a date.');
-                    return;
-                }
-                if (!selectedTime) {
-                    alert('Please select a time slot.');
-                    return;
-                }
-                document.getElementById('summary-date').textContent = selectedDate.textContent.trim();
-                document.getElementById('summary-time').textContent = selectedTime.dataset.time;
-                document.querySelector('.booking-step[data-step="1"]').style.display = 'none';
-                document.querySelector('.booking-step[data-step="2"]').style.display = 'block';
-                document.querySelector('.nav-btn[data-action="prev"]').style.display = 'inline-block';
-                nextBtn.style.display = 'none';
-            });
-        }
-        // Previous button handler
-        const prevBtn = document.querySelector('.nav-btn[data-action="prev"]');
-        if (prevBtn) {
-            prevBtn.addEventListener('click', function() {
-                document.querySelector('.booking-step[data-step="2"]').style.display = 'none';
-                document.querySelector('.booking-step[data-step="1"]').style.display = 'block';
-                prevBtn.style.display = 'none';
-                nextBtn.style.display = 'inline-block';
-        });
-        }
-
-        fetch(`/console/${CONSOLE_ID}/pricing/json`).then(r => r.json()).then(data => {
-            pricingTiers = data;
-            const tbody = document.getElementById('pricing-tiers-body');
-            if (pricingTiers.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="2">No pricing tiers set. Default rate applies.</td></tr>';
-            } else {
-                tbody.innerHTML = '';
-                pricingTiers.forEach(tier => {
-                    tbody.innerHTML += `<tr><td>${tier.max_people}</td><td>₹${tier.rate_per_person}</td></tr>`;
-                });
-            }
-            updateTotalAmount();
+    // Add click handlers for date selection
+    document.querySelectorAll('.date-item').forEach(dateItem => {
+        dateItem.addEventListener('click', function() {
+            document.querySelectorAll('.date-item').forEach(item => item.classList.remove('selected'));
+            this.classList.add('selected');
+            // Update summary date when date is selected
+            const dateText = this.textContent.trim();
+            document.getElementById('summary-date').textContent = dateText;
+            document.getElementById('form_selected_date').value = dateText;
         });
     });
+
+    // Add form submission handler
+    var bookingForm = document.getElementById('booking-form');
+    if (bookingForm) {
+        bookingForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            if (!document.querySelector('.date-item.selected')) {
+                alert('Please select a date');
+                return;
+            }
+            if (!document.querySelector('.time-slot.selected')) {
+                alert('Please select a time slot');
+                return;
+            }
+            if (!document.getElementById('terms').checked) {
+                alert('Please agree to the terms and conditions');
+                return;
+            }
+
+            // Update all form fields before submission
+            calculateTotal();
+
+            // Get selected date and time
+            const selectedDate = document.querySelector('.date-item.selected').textContent.trim();
+            const selectedTime = document.querySelector('.time-slot.selected').dataset.time;
+            // Update hidden fields
+            document.getElementById('form_selected_date').value = selectedDate;
+            document.getElementById('form_selected_time').value = selectedTime;
+
+            // Disable submit button and show loading state
+            const submitBtn = this.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="loading"></span> Confirming...';
+
+            // Submit the form
+            setTimeout(() => {
+                this.submit();
+            }, 1000);
+        });
+    }
+
+    // Next button handler
+    const nextBtn = document.querySelector('.nav-btn[data-action="next"]');
+    if (nextBtn) {
+        nextBtn.addEventListener('click', function() {
+            const selectedDate = document.querySelector('.date-item.selected');
+            const selectedTime = document.querySelector('.time-slot.selected');
+            if (!selectedDate) {
+                alert('Please select a date.');
+                return;
+            }
+            if (!selectedTime) {
+                alert('Please select a time slot.');
+                return;
+            }
+            document.getElementById('summary-date').textContent = selectedDate.textContent.trim();
+            document.getElementById('summary-time').textContent = selectedTime.dataset.time;
+
+            // Update calculation
+            calculateTotal();
+
+            document.querySelector('.booking-step[data-step="1"]').style.display = 'none';
+            document.querySelector('.booking-step[data-step="2"]').style.display = 'block';
+            document.querySelector('.nav-btn[data-action="prev"]').style.display = 'inline-block';
+            nextBtn.style.display = 'none';
+        });
+    }
+
+    // Previous button handler
+    const prevBtn = document.querySelector('.nav-btn[data-action="prev"]');
+    if (prevBtn) {
+        prevBtn.addEventListener('click', function() {
+            document.querySelector('.booking-step[data-step="2"]').style.display = 'none';
+            document.querySelector('.booking-step[data-step="1"]').style.display = 'block';
+            prevBtn.style.display = 'none';
+            nextBtn.style.display = 'inline-block';
+        });
+    }
+});
 </script>
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
 {% endblock %}

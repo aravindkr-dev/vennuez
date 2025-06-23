@@ -463,6 +463,12 @@ def available_slots():
                          })
 
 
+# ============================================================================
+# BACKEND FIXES
+# ============================================================================
+
+# 1. Update your book_slot route
+# Fixed book_slot route - console variable defined at the top
 @app.route('/book_slot/<int:slot_id>', methods=['GET', 'POST'])
 def book_slot(slot_id):
     slot = TimeSlot.query.get_or_404(slot_id)
@@ -470,6 +476,21 @@ def book_slot(slot_id):
     if slot.is_booked:
         flash('This slot is already booked', 'error')
         return redirect(url_for('available_slots'))
+
+    # Define console at the top to avoid UnboundLocalError
+    console = slot.console
+
+    # Calculate duration from start_time and end_time
+    def calculate_slot_duration(start_time, end_time):
+        if not start_time or not end_time:
+            return 1.0
+        try:
+            duration = (end_time - start_time).total_seconds() / 3600
+            return round(duration * 2) / 2  # Round to nearest 0.5 hour
+        except:
+            return 1.0
+
+    slot_duration = calculate_slot_duration(slot.start_time, slot.end_time)
 
     # Existing user logic
     user = None
@@ -479,11 +500,37 @@ def book_slot(slot_id):
     if request.method == 'POST':
         # Get booking details from form
         number_of_people = request.form.get('number_of_people', type=int, default=1)
+        selected_date = request.form.get('selected_date', '')
+        selected_time = request.form.get('selected_time', '')
+        total_amount = request.form.get('total_amount', type=float, default=0.0)
         special_requests = request.form.get('special_requests', '')
+
         customer_name = user.full_name if user else request.form.get('customer_name', '')
         customer_phone = user.phone if user else request.form.get('customer_phone', '')
         customer_email = user.email if user else request.form.get('customer_email', '')
         customer_age = user.age if user else request.form.get('customer_age', type=int)
+
+        # Validate required fields
+        if not selected_date or not selected_time:
+            flash('Please select a date and time', 'error')
+            return redirect(url_for('book_slot', slot_id=slot_id))
+
+        # Calculate total amount on backend using calculated duration
+        hourly_rate = console.hourly_rate if console else 100
+
+        # Get pricing tier for this number of people
+        pricing_tier = None
+        if hasattr(console, 'pricing_tiers'):
+            for tier in console.pricing_tiers:
+                if tier.max_people >= number_of_people:
+                    pricing_tier = tier
+                    break
+
+        rate_per_person = pricing_tier.rate_per_person if pricing_tier else hourly_rate
+        calculated_total = rate_per_person * number_of_people * slot_duration
+
+        # Use calculated total if frontend total seems wrong
+        final_total = calculated_total if abs(calculated_total - total_amount) > 1 else total_amount
 
         # Mark slot as booked and save details
         slot.is_booked = True
@@ -494,12 +541,21 @@ def book_slot(slot_id):
         slot.customer_age = customer_age
         slot.special_requests = special_requests
         slot.number_of_people = number_of_people
+        slot.selected_date = selected_date
+        slot.selected_time = selected_time
+        slot.total_amount = final_total
         slot.booking_time = datetime.now()
-        slot.booking_id = slot.generate_booking_id() if hasattr(slot, 'generate_booking_id') else f"BK{slot.id}{int(datetime.now().timestamp())}"
-        db.session.commit()
+        slot.booking_id = slot.generate_booking_id() if hasattr(slot,
+                                                                'generate_booking_id') else f"BK{slot.id}{int(datetime.now().timestamp())}"
 
-        flash('Booking successful!', 'success')
-        return redirect(url_for('booking_confirmation', booking_id=slot.booking_id))
+        try:
+            db.session.commit()
+            flash(f'Booking successful! Total amount: ₹{final_total}', 'success')
+            return redirect(url_for('booking_confirmation', booking_id=slot.booking_id))
+        except Exception as e:
+            db.session.rollback()
+            flash('Error processing booking. Please try again.', 'error')
+            return redirect(url_for('book_slot', slot_id=slot_id))
 
     # Get all unique future dates for this console
     available_dates = (
@@ -515,7 +571,95 @@ def book_slot(slot_id):
     )
     available_dates = [d[0].strftime("%Y-%m-%d") if hasattr(d[0], 'strftime') else str(d[0]) for d in available_dates]
 
-    return render_template('book_slot.html', slot=slot, user=user, available_dates=available_dates)
+    # Get pricing tiers for frontend calculation
+    pricing_tiers = []
+    if hasattr(console, 'pricing_tiers') and console.pricing_tiers:
+        pricing_tiers = [
+            {
+                'max_people': tier.max_people,
+                'rate_per_person': tier.rate_per_person
+            }
+            for tier in console.pricing_tiers
+        ]
+
+    # Pass calculated duration and pricing info to template
+    slot_info = {
+        'id': slot.id,
+        'console_id': slot.console_id,
+        'start_time': slot.start_time.isoformat() if slot.start_time else '',
+        'end_time': slot.end_time.isoformat() if slot.end_time else '',
+        'duration_hours': slot_duration,
+        'hourly_rate': console.hourly_rate if console else 100,
+        'pricing_tiers': pricing_tiers
+    }
+
+    return render_template('book_slot.html',
+                           slot=slot,
+                           user=user,
+                           available_dates=available_dates,
+                           slot_info=slot_info)
+
+# ============================================================================
+# 2. Add helper function for duration calculation
+# ============================================================================
+
+def calculate_duration_from_times(start_time, end_time):
+    """Calculate duration in hours from start and end datetime objects"""
+    if not start_time or not end_time:
+        return 1.0
+
+    try:
+        duration = (end_time - start_time).total_seconds() / 3600
+        return round(duration * 2) / 2  # Round to nearest 0.5 hour
+    except Exception as e:
+        print(f"Error calculating duration: {e}")
+        return 1.0
+
+
+# ============================================================================
+# 3. Add API endpoint to get slot duration info
+# ============================================================================
+
+@app.route('/api/slot/<int:slot_id>/info')
+def get_slot_info(slot_id):
+    """API endpoint to get slot duration and pricing info"""
+    try:
+        slot = TimeSlot.query.get_or_404(slot_id)
+        duration = calculate_duration_from_times(slot.start_time, slot.end_time)
+
+        console = slot.console
+        hourly_rate = console.hourly_rate if console else 100
+
+        return jsonify({
+            'duration_hours': duration,
+            'hourly_rate': hourly_rate,
+            'start_time': slot.start_time.isoformat() if slot.start_time else '',
+            'end_time': slot.end_time.isoformat() if slot.end_time else '',
+            'console_id': slot.console_id
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+# ============================================================================
+# 4. Update TimeSlot model (optional - add calculated property)
+# ============================================================================
+
+"""
+Add this to your TimeSlot model class:
+
+@property
+def calculated_duration_hours(self):
+    '''Calculate duration in hours from start_time and end_time'''
+    if not self.start_time or not self.end_time:
+        return 1.0
+
+    try:
+        duration = (self.end_time - self.start_time).total_seconds() / 3600
+        return round(duration * 2) / 2  # Round to nearest 0.5 hour
+    except Exception:
+        return 1.0
+"""
 
 
 @app.route('/payment/<booking_id>')
@@ -1089,24 +1233,22 @@ def my_subscriptions():
 @app.route('/generate_qr', methods=['GET', 'POST'])
 @login_required
 def generate_qr():
+    qr_code = None
+    amount = None
     if request.method == 'POST':
         amount = float(request.form['amount'])
         owner_id = current_user.id
 
-        # Signed token with expiry
         token = serializer.dumps({'owner_id': owner_id, 'amount': amount})
         scan_url = url_for('scan_qr', token=token, _external=True)
-        print(scan_url)
 
-        # Generate QR
+        # Create QR in memory
         qr = qrcode.make(scan_url)
         buffer = io.BytesIO()
         qr.save(buffer, format="PNG")
-        qr_b64 = base64.b64encode(buffer.getvalue()).decode()
+        qr_code = base64.b64encode(buffer.getvalue()).decode()
 
-        return render_template("show_qr.html", qr_code=qr_b64, amount=amount, scan_url=scan_url)
-
-    return render_template("generate_qr.html")
+    return render_template("show_qr.html", qr_code=qr_code, amount=amount)
 
 
 

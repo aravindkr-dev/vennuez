@@ -68,6 +68,7 @@ class TimeSlot(db.Model):
     final_amount = db.Column(db.Float, default=0.0)
     completed = db.Column(db.Boolean, default=False)
     number_of_people = db.Column(db.Integer, default=1)  # New field for number of people
+    duration_hours = db.Column(db.Float, default=1.0)
 
     # Booking details
     booking_id = db.Column(db.String(20), unique=True, nullable=True)

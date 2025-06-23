@@ -19,7 +19,7 @@ def run_migrations():
             logger.info('Starting database initialization...')
             
             # Import models
-            from models import Owner, Console, TimeSlot, User
+            from models import TimeSlot
             
             # Initialize database
             db.create_all()

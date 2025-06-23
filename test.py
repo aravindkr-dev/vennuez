@@ -1,9 +1,7 @@
-from app import db , app
+# Run this in your Flask shell (flask shell)
+from app import app , db
 from sqlalchemy import text
-from models import Subscription, Owner
-
 with app.app_context():
-    subscription = Subscription.query.filter_by(user_id = 1).all()
-    for x in subscription:
-        venue = Owner.query.get_or_404(x.owner_id)
-        print(venue.gaming_center_name , x.amount , x.user_id , x.owner_id , x.created_at)
+    with db.engine.connect() as conn:
+        conn.execute(text("ALTER TABLE time_slots ADD COLUMN duration_hours REAL DEFAULT 1.0"))
+        conn.commit()
