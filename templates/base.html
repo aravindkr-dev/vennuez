@@ -123,7 +123,10 @@
             <ul class="dropdown-menu dropdown-menu-end">
               {% if session.user_type == 'owner' %}
                 <li><a class="dropdown-item" href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('logout') }}">Logout</a></li>
               {% endif %}
+              <li><a class="dropdown-item" href="{{ url_for('user_dashboard') }}">My Bookings</a></li>
+              <li><a class="dropdown-item" href="{{ url_for('my_subscriptions') }}">My Subscriptions</a></li>
               <li><a class="dropdown-item" href="{{ url_for('logout') }}">Logout</a></li>
             </ul>
           </div>

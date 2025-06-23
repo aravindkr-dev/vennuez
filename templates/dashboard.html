@@ -13,7 +13,7 @@
         </div>
         <div style="display: flex; justify-content: center; align-items: center; margin-bottom: 1.5rem;">
             {% if not owner.google_maps_link %}
-            <button id="set-location-btn" class="btn btn-danger" style="background-color: #dc3545; border-color: #dc3545; color: #fff;" onclick="setMyLocation()">
+            <button id="set-location-btn" class="btn btn-outline-danger" onclick="setMyLocation()">
                 <i class="fas fa-map-marker-alt"></i> Set My Location
             </button>
             <script>
@@ -49,7 +49,6 @@
         </div>
         {% endif %}
 
-        <!-- Venue Details Section -->
         {% if not venue_details_complete %}
         <div class="card" style="margin-bottom: 2rem;">
             <div class="card-body">
@@ -95,7 +94,7 @@
                         <input type="text" name="amenities" class="form-control" value="{{ owner.amenities or '' }}" placeholder="e.g., WiFi, Parking, Air Conditioning, Refreshments">
                         <div class="form-text">Enter amenities separated by commas</div>
                     </div>
-                    <button type="submit" class="btn btn-primary">
+                    <button type="submit" class="btn btn-outline-primary">
                         <i class="fas fa-save"></i> Save Venue Details
                     </button>
                 </form>
@@ -117,16 +116,22 @@
                 <div style="color: var(--secondary);">Total Revenue</div>
             </div>
         </div>
-        <div style="text-align: right; margin-bottom: 1.5rem;">
-            <a href="{{ url_for('add_console') }}" class="btn">
-                <i class="fas fa-plus"></i> Add New Console
-            </a>
-            <a href="{{ url_for('manage_snacks') }}" class="btn btn-warning" style="margin-left: 1rem;">
-                <i class="fas fa-cookie-bite"></i> Manage Snacks
-            </a>
-            <a href="{{ url_for('export_bookings') }}" class="btn btn-success" style="margin-left: 1rem;">
-                <i class="fas fa-file-excel"></i> Export Bookings
-            </a>
+        <div class="d-flex flex-wrap justify-content-end gap-2 mb-4">
+          <a href="{{ url_for('add_console') }}" class="btn btn-outline-primary">
+            <i class="fas fa-plus"></i> Add New Console
+          </a>
+          <a href="{{ url_for('manage_snacks') }}" class="btn btn-outline-warning">
+            <i class="fas fa-cookie-bite"></i> Manage Snacks
+          </a>
+          <a href="{{ url_for('export_bookings') }}" class="btn btn-outline-success">
+            <i class="fas fa-file-excel"></i> Export Bookings
+          </a>
+          <a href="{{ url_for('add_subscription') }}" class="btn btn-outline-info">
+            <i class="bi bi-person-plus"></i> Add subscription
+          </a>
+          <a href="{{ url_for('generate_qr') }}" class="btn btn-outline-dark">
+            <i class="fas fa-qrcode"></i> Generate Qr
+          </a>
         </div>
         <div class="dashboard-consoles">
             <h2 style="font-size: 1.3rem; font-weight: 600; margin-bottom: 1rem; color: var(--primary);">Your Consoles</h2>
@@ -138,7 +143,7 @@
                     <div style="margin-bottom: 0.5rem;"><i class="fas fa-rupee-sign"></i> ₹{{ console.hourly_rate }}/hr</div>
                     <div style="margin-bottom: 0.5rem;"><i class="fas fa-calendar-alt"></i> Added: {{ console.added_on }}</div>
                     <div style="margin-bottom: 1rem;">
-                        <a href="{{ url_for('console_details', console_id=console.id) }}" class="btn btn-secondary" style="width: 100%;">Manage</a>
+                        <a href="{{ url_for('console_details', console_id=console.id) }}" class="btn btn-outline-secondary" style="width: 100%;">Manage</a>
                     </div>
                 </div>
                 {% else %}
