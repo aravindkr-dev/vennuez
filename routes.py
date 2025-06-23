@@ -1149,7 +1149,40 @@ def scan_qr(token):
     return f"✅ ₹{amount} deducted successfully!"
 
 
+@app.route('/my_subscription_history')
+@login_required
+def subscription_history():
+    subs = Subscription.query.filter_by(user_id=current_user.id).all()
+    history = []
 
+    for sub in subs:
+        venue = Owner.query.get(sub.owner_id)
+        history.append({
+            "venue_name": venue.gaming_center_name,
+            "amount": sub.amount,
+            "created_at": sub.created_at
+        })
+
+    return render_template("my_subscription_history.html", subscriptions=history)
+
+
+@app.route('/owner/subscription_history')
+@login_required
+def owner_subscription_history():
+    owner_id = current_user.id
+    subscriptions = Subscription.query.filter_by(owner_id=owner_id).order_by(Subscription.created_at.desc()).all()
+
+    detailed_subs = []
+    for sub in subscriptions:
+        user = User.query.get(sub.user_id)
+        detailed_subs.append({
+            "user_name": user.username,
+            "user_phone": user.phone,
+            "amount": sub.amount,
+            "created_at": sub.created_at
+        })
+
+    return render_template("owner_subscription_history.html", subscriptions=detailed_subs)
 
 
 # Error handlers

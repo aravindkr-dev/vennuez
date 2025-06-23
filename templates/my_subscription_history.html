@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}Subscription History{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-center mb-4 text-primary">My Subscription History</h2>
+    
+    {% if subscriptions %}
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped shadow-sm">
+            <thead class="table-dark">
+                <tr>
+                    <th>#</th>
+                    <th>Venue</th>
+                    <th>Amount (₹)</th>
+                    <th>Subscribed On</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for sub in subscriptions %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>{{ sub.venue_name }}</td>
+                    <td>{{ sub.amount }}</td>
+                    <td>{{ sub.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="text-center text-muted">No subscription history found.</p>
+    {% endif %}
+</div>
+{% endblock %}
