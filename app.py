@@ -54,29 +54,6 @@ db.init_app(app)
 
 migrate = Migrate(app, db)
 
-with app.app_context():
-    logging.info("Using database: %s", db.engine.url)
-    # Import models to ensure tables are created
-    from models import Owner, Console, TimeSlot, User
-    from routes import *
-
-    # Create all tables
-    db.create_all()
-
-    # Add some default data if tables are empty
-    if Owner.query.count() == 0:
-        logging.info("Creating default admin user...")
-        admin = Owner(
-            username="admin",
-            email="admin@gamingcenter.com",
-            password_hash=generate_password_hash("admin123"),
-            phone="9876543210",
-            gaming_center_name="Demo Gaming Center",
-            address="123 Gaming Street, Tech City, TC 12345"
-        )
-        db.session.add(admin)
-        db.session.commit()
-        logging.info("Default admin user created (username: admin, password: admin123)")
 
 @app.route('/register', methods=['GET', 'POST'])
 def user_signup():
@@ -109,3 +86,15 @@ def user_signup():
         return redirect(url_for('login'))
     
     return render_template('register.html')
+
+
+
+
+with app.app_context():
+    logging.info("Using database: %s", db.engine.url)
+    # Import models to ensure tables are created
+    from models import *
+    from routes import *
+
+    # Create all tables
+    db.create_all()
