@@ -1187,7 +1187,7 @@ def set_owner_location():
 def add_subscription():
     if request.method == 'POST':
         amount = float(request.form['amount'])
-        phone = int(request.form['phone'])
+        phone = request.form['phone']
         username = request.form["username"]
 
         user = User.query.filter_by(phone = phone).first()
