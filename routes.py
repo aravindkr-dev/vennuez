@@ -1,4 +1,5 @@
 from flask import render_template, request, redirect, url_for, flash, session, jsonify, send_file
+from openpyxl.styles.builtins import headline_1
 from werkzeug.security import generate_password_hash, check_password_hash
 from app import app, db
 from models import Owner, Console, TimeSlot, User, UserCoinBalance, CoinTransaction, Snack, ConsolePricingTier , Subscription , UsedToken
@@ -138,6 +139,8 @@ def walkin_book_slot():
     no_of_people = data.get('no_of_people')
     start_time_str = data.get('slotStartTime')
     end_time_str = data.get('slotEndTime')
+
+    print(no_of_people)
 
     if not all([console_id, start_time_str, end_time_str, username, phone , no_of_people]):
         return jsonify({'success': False, 'message': 'Missing required fields.'}), 400
@@ -1185,8 +1188,12 @@ def add_subscription():
     if request.method == 'POST':
         amount = float(request.form['amount'])
         phone = int(request.form['phone'])
+        username = request.form["username"]
 
         user = User.query.filter_by(phone = phone).first()
+
+        if user.username != username:
+            return "<h1>Enter the Correct Username</h1>"
 
         user_exist = Subscription.query.filter_by(user_id = user.id).first()
 
@@ -1248,7 +1255,7 @@ def generate_qr():
         qr.save(buffer, format="PNG")
         qr_code = base64.b64encode(buffer.getvalue()).decode()
 
-    return render_template("show_qr.html", qr_code=qr_code, amount=amount)
+    return render_template("generate_qr.html", qr_code=qr_code, amount=amount)
 
 
 
