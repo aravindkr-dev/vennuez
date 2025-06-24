@@ -55,6 +55,7 @@ db.init_app(app)
 migrate = Migrate(app, db)
 
 with app.app_context():
+    logging.info("Using database: %s", db.engine.url)
     # Import models to ensure tables are created
     from models import Owner, Console, TimeSlot, User
     from routes import *
