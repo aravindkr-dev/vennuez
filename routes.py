@@ -1349,7 +1349,23 @@ def internal_error(error):
     return render_template('500.html'), 500
 
 
-@app.route('/init_db')
-def init_db():
-    db.create_all()
-    return "Database initialized!"
+
+@app.route('/un_book', methods=["GET", "POST"])
+def un_book():
+    if request.method == "POST":
+        slot_id = request.form.get("id")
+
+        slot = TimeSlot.query.get(slot_id)
+        if slot:
+            if slot.is_booked and not slot.completed:
+                slot.is_booked = False
+                db.session.commit()
+                flash("Slot successfully unbooked!", "success")
+            else:
+                flash("Slot is already unbooked.", "warning")
+        else:
+            flash("Slot not found.", "danger")
+
+        return redirect(url_for('un_book'))
+
+    return render_template('un_book.html')

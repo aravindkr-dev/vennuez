@@ -124,6 +124,7 @@
               {% if session.user_type == 'owner' %}
                 <li><a class="dropdown-item" href="{{ url_for('dashboard') }}">Dashboard</a></li>
                 <li><a class="dropdown-item" href="{{ url_for('owner_subscription_history') }}">Subscription History</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('un_book') }}">Undo Booking</a></li>
                 <li><a class="dropdown-item" href="{{ url_for('logout') }}">Logout</a></li>
               {% elif session.user_type == 'user' %}
               <li><a class="dropdown-item" href="{{ url_for('available_slots') }}">Book Game</a></li>

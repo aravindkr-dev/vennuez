@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}Unbook Slot{% endblock %}
+
+{% block content %}
+<style>
+  .card-custom {
+    border-radius: 1.5rem;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    background: #ffffff;
+  }
+
+  .btn-danger-custom {
+    background-color: #d62828;
+    color: white;
+    border: none;
+    transition: 0.3s ease;
+  }
+
+  .btn-danger-custom:hover {
+    background-color: #a61e1e;
+  }
+</style>
+
+<div class="container d-flex justify-content-center align-items-center" style="min-height: 80vh;">
+  <div class="col-md-6">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <div class="card card-custom p-4">
+      <h3 class="text-center mb-4 text-dark">Unbook a Slot</h3>
+      <form method="POST">
+        <div class="mb-3">
+          <label for="slotId" class="form-label">Slot ID</label>
+          <input type="number" class="form-control" id="slotId" name="id" placeholder="Enter Slot ID" required>
+        </div>
+        <button type="submit" class="btn btn-danger-custom w-100">Unbook Slot</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

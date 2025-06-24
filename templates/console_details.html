@@ -63,6 +63,7 @@
                 <div class="card" style="background: var(--muted); padding: 1rem; margin: 0;" data-slot-id="{{ slot.id }}" data-end-time="{{ slot.end_time.isoformat() }}">
                     <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 2rem; justify-content: space-between;">
                         <div style="flex: 2; min-width: 200px;">
+                            <div style="margin-bottom: 0.3rem;">Slot Id - {{ slot.id }}</div>
                             <div style="margin-bottom: 0.3rem;"><i class="fas fa-calendar-alt"></i> {{ slot.start_time.strftime('%d %b %Y') }}</div>
                             <div style="margin-bottom: 0.3rem; color: var(--success);">{% if not slot.is_booked %}✔Available{% else %}Booked{% endif %}</div>
                             <div style="margin-bottom: 0.3rem;"><i class="fas fa-clock"></i> {{ slot.start_time.strftime('%I:%M %p') }} - {{ slot.end_time.strftime('%I:%M %p') }}</div>
