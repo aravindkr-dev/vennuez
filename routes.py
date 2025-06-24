@@ -1347,3 +1347,9 @@ def not_found(error):
 def internal_error(error):
     db.session.rollback()
     return render_template('500.html'), 500
+
+
+@app.route('/init_db')
+def init_db():
+    db.create_all()
+    return "Database initialized!"
