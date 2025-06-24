@@ -1192,6 +1192,9 @@ def add_subscription():
 
         user = User.query.filter_by(phone = phone).first()
 
+        if not user:
+            return "<h1>No user found with this phone number</h1>"
+
         if user.username != username:
             return "<h1>Enter the Correct Username</h1>"
 
