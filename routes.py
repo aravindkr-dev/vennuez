@@ -1369,3 +1369,24 @@ def un_book():
         return redirect(url_for('un_book'))
 
     return render_template('un_book.html')
+
+
+@app.route('/confirm_payment', methods=['POST'])
+@login_required
+def confirm_payment():
+    if request.form.get('update_payment_status') == 'completed':
+        try:
+            slot_id = int(request.form.get('slot_id'))  # make sure it's an int
+            slot = TimeSlot.query.get(slot_id)
+
+            if slot:
+                slot.payment_status = 'paid'
+                db.session.commit()
+                flash(f"Payment confirmed for Slot ID {slot_id}.", "success")
+            else:
+                flash(f"No slot found with ID {slot_id}.", "danger")
+        except Exception as e:
+            db.session.rollback()
+            flash(f"Error confirming payment: {str(e)}", "danger")
+
+    return redirect(url_for('dashboard'))  # Replace with appropriate view (e.g. 'dashboard', 'slots', etc.)

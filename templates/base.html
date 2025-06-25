@@ -22,30 +22,60 @@
 
     .navbar {
       background-color: white;
-      padding: 0.75rem 1rem;
+      padding: 1rem;
       border-bottom: 1px solid #e5e5e5;
     }
 
     .navbar .nav-link {
       color: var(--primary);
       font-weight: 500;
+      padding: 0.5rem 1rem;
+      border-radius: 5px;
+      transition: all 0.3s ease;
     }
 
     .navbar .nav-link:hover,
     .navbar .nav-link.active {
       background-color: var(--primary);
       color: #fff !important;
-      border-radius: 5px;
-      padding: 0.4rem 0.75rem;
     }
 
     .navbar-brand {
       font-weight: bold;
       color: var(--primary) !important;
+      font-size: 1.5rem;
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      background-color: #f8f9fa;
+      border-radius: 8px;
+      border: 1px solid #e5e5e5;
+      color: var(--primary);
+      font-weight: 500;
+    }
+
+    .user-info i {
+      color: var(--primary);
     }
 
     .dropdown-menu {
       min-width: 200px;
+      border: 1px solid #e5e5e5;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .dropdown-item:hover {
+      background-color: var(--primary);
+      color: white;
+    }
+
+    .auth-buttons {
+      display: flex;
+      gap: 0.5rem;
     }
 
     .footer {
@@ -56,107 +86,212 @@
       font-size: 0.9rem;
     }
 
-    @media (max-width: 768px) {
-      .navbar .container {
-        flex-direction: column;
-        align-items: stretch;
+    /* Mobile First Approach */
+    @media (max-width: 991px) {
+      .navbar {
+        padding: 1rem 0.5rem;
+      }
+      
+      .navbar-collapse {
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid #e5e5e5;
       }
 
       .navbar-nav {
-        flex-direction: column;
-        align-items: center;
+        margin-bottom: 1rem;
       }
 
-      .navbar-collapse {
-        width: 100%;
-        justify-content: center;
+      .navbar-nav .nav-link {
+        text-align: center;
+        margin: 0.25rem 0;
       }
 
-      .navbar-buttons {
+      .auth-section {
         display: flex;
         flex-direction: column;
-        gap: 0.5rem;
-        width: 100%;
-        align-items: center;
+        gap: 1rem;
       }
 
-      .navbar-buttons .btn {
+      .user-info {
+        justify-content: center;
+        margin-bottom: 0.5rem;
+      }
+
+      .auth-buttons {
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+
+      .auth-buttons .btn {
         width: 100%;
+      }
+
+      .dropdown-menu {
+        width: 100%;
+        text-align: center;
       }
     }
 
-    .navbar-buttons {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
+    @media (min-width: 992px) {
+      .navbar-nav {
+        margin: 0 auto;
+      }
+      
+      .auth-section {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+      }
+    }
+
+    /* Dropdown toggle styling */
+    .dropdown-toggle::after {
+      margin-left: 0.5rem;
+    }
+
+    .btn-outline-primary {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    .btn-outline-primary:hover {
+      background-color: var(--primary);
+      border-color: var(--primary);
+    }
+
+    .btn-primary {
+      background-color: var(--primary);
+      border-color: var(--primary);
+    }
+
+    .btn-primary:hover {
+      background-color: #002240;
+      border-color: #002240;
+    }
+
+    .btn-outline-secondary {
+      border-color: #6c757d;
+      color: #6c757d;
+    }
+
+    .btn-outline-secondary:hover {
+      background-color: #6c757d;
+      border-color: #6c757d;
     }
   </style>
   {% block extra_head %}{% endblock %}
 </head>
 <body>
-  <nav class="navbar navbar-expand-md">
-    <div class="container d-flex flex-wrap justify-content-between align-items-center">
+  <nav class="navbar navbar-expand-lg">
+    <div class="container">
       <a class="navbar-brand" href="{{ url_for('index') }}">Vennuez</a>
 
-      <!-- Center Nav Item -->
-      <div class="d-none d-md-block mx-auto">
-        {% if current_user.is_authenticated %}
-          {% if session.user_type != 'owner' %}
-            <a href="{{ url_for('user_dashboard') }}" class="nav-link {% if request.endpoint == 'user_dashboard' %}active{% endif %}">
-              My Bookings
-            </a>
-          {% elif session.user_type == 'owner' %}
-            <a href="{{ url_for('dashboard') }}" class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}">
-              Dashboard
-            </a>
+      <!-- Mobile toggle button -->
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <!-- Center Navigation -->
+        <ul class="navbar-nav">
+          {% if current_user.is_authenticated %}
+            {% if session.user_type != 'owner' %}
+              <li class="nav-item">
+
+              </li>
+            {% elif session.user_type == 'owner' %}
+              <li class="nav-item">
+                <a href="{{ url_for('dashboard') }}" class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}">
+                  <i class="fas fa-tachometer-alt me-1"></i> Dashboard
+                </a>
+              </li>
+            {% endif %}
           {% endif %}
-        {% endif %}
-      </div>
+        </ul>
 
-      <!-- Right Buttons -->
-      <div class="navbar-buttons">
-        {% if current_user.is_authenticated %}
-          <div class="dropdown">
-            <button class="btn btn-outline-secondary dropdown-toggle btn-sm" data-bs-toggle="dropdown">
-              <i class="fas fa-user"></i> {{ current_user.username }}
-            </button>
-            <ul class="dropdown-menu dropdown-menu-end">
-              {% if session.user_type == 'owner' %}
-                <li><a class="dropdown-item" href="{{ url_for('dashboard') }}">Dashboard</a></li>
-                <li><a class="dropdown-item" href="{{ url_for('owner_subscription_history') }}">Subscription History</a></li>
-                <li><a class="dropdown-item" href="{{ url_for('un_book') }}">Undo Booking</a></li>
-                <li><a class="dropdown-item" href="{{ url_for('logout') }}">Logout</a></li>
-              {% elif session.user_type == 'user' %}
-              <li><a class="dropdown-item" href="{{ url_for('available_slots') }}">Book Game</a></li>
-              <li><a class="dropdown-item" href="{{ url_for('user_dashboard') }}">My Bookings</a></li>
-              <li><a class="dropdown-item" href="{{ url_for('my_subscriptions') }}">My Subscriptions</a></li>
-              <li><a class="dropdown-item" href="{{ url_for('subscription_history') }}">Subscription History</a></li>
-              <li><a class="dropdown-item" href="{{ url_for('logout') }}">Logout</a></li>
-              {% endif %}
+        <!-- Authentication Section -->
+        <div class="auth-section ms-auto">
+          {% if current_user.is_authenticated %}
+            <!-- User Info Display -->
+            <div class="user-info">
+              <i class="fas fa-user"></i>
+              <span>{{ current_user.username }}</span>
+            </div>
 
-            </ul>
-          </div>
-        {% else %}
-          <div class="dropdown">
-            <button class="btn btn-outline-primary dropdown-toggle btn-sm" data-bs-toggle="dropdown">
-              Login
-            </button>
-            <ul class="dropdown-menu dropdown-menu-end">
-              <li><a class="dropdown-item" href="{{ url_for('user_login') }}">User Login</a></li>
-              <li><a class="dropdown-item" href="{{ url_for('login') }}">Venue Login</a></li>
-            </ul>
-          </div>
+            <!-- User Menu Dropdown -->
+            <div class="dropdown">
+              <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="fas fa-cog"></i> Menu
+              </button>
+              <ul class="dropdown-menu dropdown-menu-end">
+                {% if session.user_type == 'owner' %}
+                  <li><a class="dropdown-item" href="{{ url_for('dashboard') }}">
+                    <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                  </a></li>
+                  <li><a class="dropdown-item" href="{{ url_for('owner_subscription_history') }}">
+                    <i class="fas fa-history me-2"></i>Subscription History
+                  </a></li>
+                  <li><a class="dropdown-item" href="{{ url_for('un_book') }}">
+                    <i class="fas fa-undo me-2"></i>Undo Booking
+                  </a></li>
+                  <li><hr class="dropdown-divider"></li>
+                  <li><a class="dropdown-item" href="{{ url_for('logout') }}">
+                    <i class="fas fa-sign-out-alt me-2"></i>Logout
+                  </a></li>
+                {% elif session.user_type == 'user' %}
+                  <li><a class="dropdown-item" href="{{ url_for('available_slots') }}">
+                    <i class="fas fa-gamepad me-2"></i>Book Game
+                  </a></li>
+                  <li><a class="dropdown-item" href="{{ url_for('user_dashboard') }}">
+                    <i class="fas fa-calendar-alt me-2"></i>My Bookings
+                  </a></li>
+                  <li><a class="dropdown-item" href="{{ url_for('my_subscriptions') }}">
+                    <i class="fas fa-star me-2"></i>My Subscriptions
+                  </a></li>
+                  <li><a class="dropdown-item" href="{{ url_for('subscription_history') }}">
+                    <i class="fas fa-history me-2"></i>Subscription History
+                  </a></li>
+                  <li><hr class="dropdown-divider"></li>
+                  <li><a class="dropdown-item" href="{{ url_for('logout') }}">
+                    <i class="fas fa-sign-out-alt me-2"></i>Logout
+                  </a></li>
+                {% endif %}
+              </ul>
+            </div>
+          {% else %}
+            <!-- Login and Register Buttons -->
+            <div class="auth-buttons">
+              <div class="dropdown">
+                <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                  <i class="fas fa-sign-in-alt me-1"></i> Login
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                  <li><a class="dropdown-item" href="{{ url_for('user_login') }}">
+                    <i class="fas fa-user me-2"></i>User Login
+                  </a></li>
+                  <li><a class="dropdown-item" href="{{ url_for('login') }}">
+                    <i class="fas fa-building me-2"></i>Venue Login
+                  </a></li>
+                </ul>
+              </div>
 
-          <div class="dropdown">
-            <button class="btn btn-primary dropdown-toggle btn-sm" data-bs-toggle="dropdown">
-              Register
-            </button>
-            <ul class="dropdown-menu dropdown-menu-end">
-              <li><a class="dropdown-item" href="{{ url_for('user_register') }}">User Register</a></li>
-              <li><a class="dropdown-item" href="{{ url_for('register') }}">Register Center</a></li>
-            </ul>
-          </div>
-        {% endif %}
+              <div class="dropdown">
+                <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                  <i class="fas fa-user-plus me-1"></i> Register
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                  <li><a class="dropdown-item" href="{{ url_for('user_register') }}">
+                    <i class="fas fa-user me-2"></i>User Register
+                  </a></li>
+                  <li><a class="dropdown-item" href="{{ url_for('register') }}">
+                    <i class="fas fa-building me-2"></i>Register Center
+                  </a></li>
+                </ul>
+              </div>
+            </div>
+          {% endif %}
+        </div>
       </div>
     </div>
   </nav>

@@ -90,7 +90,11 @@
                             {% endif %}
                             {% if slot.is_booked and not slot.completed %}
                                 <button class="btn btn-warning" type="button" onclick="toggleCalculator({{ slot.id }})" id="calc_btn_{{ slot.id }}">Open Calculator</button>
+                            <form id="confirmForm_{{ slot.id }}" action="{{ url_for('confirm_payment') }}" method="post">
+                                <input type="hidden" name="update_payment_status" value="completed">
+                                <input type="hidden" name="slot_id" value="{{ slot.id }}">
                                 <button class="btn btn-success" type="button" id="confirm_payment_btn_{{ slot.id }}" style="display:none; margin-top: 0.5rem;" onclick="submitCalculatorForm({{ slot.id }})">Confirm Payment</button>
+                            </form>
                             {% endif %}
                         </div>
                     </div>
@@ -252,11 +256,20 @@ function toggleCalculator(slotId) {
                 }
 }
 function submitCalculatorForm(slotId) {
-    const form = document.getElementById(`calculator_form_${slotId}`);
-    if (form) {
-        form.submit();
+    const calculatorForm = document.getElementById(`calculator_form_${slotId}`);
+    const confirmForm = document.getElementById(`confirmForm_${slotId}`);
+
+    if (calculatorForm) {
+        calculatorForm.submit(); // Submit calculator form first
+    }
+
+    // Optional: Wait before submitting the next form, or only one should submit
+    // If you only want to submit confirmForm:
+    if (confirmForm) {
+        confirmForm.submit(); // Then submit confirm/payment form
     }
 }
+
 function checkConfirmPaymentTime() {
     const now = new Date();
     document.querySelectorAll('[data-end-time]').forEach(slot => {

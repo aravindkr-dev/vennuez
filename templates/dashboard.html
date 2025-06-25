@@ -2,154 +2,515 @@
 
 {% block title %}Dashboard - Vennuez{% endblock %}
 
+{% block extra_head %}
+<style>
+    .dashboard-page {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        min-height: calc(100vh - 200px);
+        padding: 2rem 0;
+    }
+
+    .welcome-header {
+        background: linear-gradient(135deg, var(--primary) 0%, #004a5c 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 15px;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 30px rgba(0, 48, 73, 0.3);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .welcome-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -20%;
+        width: 100px;
+        height: 100px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+        animation: float 6s ease-in-out infinite;
+    }
+
+    @keyframes float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-20px); }
+    }
+
+    .location-section {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        margin-bottom: 2rem;
+        border-left: 4px solid var(--accent);
+    }
+
+    .alert-modern {
+        border: none;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 15px rgba(214, 40, 40, 0.15);
+        border-left: 4px solid var(--accent);
+    }
+
+    .venue-details-card {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+        overflow: hidden;
+        border: none;
+    }
+
+    .venue-details-card .card-header {
+        background: linear-gradient(135deg, var(--primary) 0%, #004a5c 100%);
+        color: white;
+        padding: 1.5rem;
+        border: none;
+    }
+
+    .venue-details-card .card-body {
+        padding: 2rem;
+    }
+
+    .image-upload-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .image-upload-item {
+        position: relative;
+        border: 2px dashed #ddd;
+        border-radius: 12px;
+        padding: 1rem;
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+
+    .image-upload-item:hover {
+        border-color: var(--primary);
+        background-color: #f8f9fa;
+    }
+
+    .image-upload-item img {
+        width: 100%;
+        height: 100px;
+        object-fit: cover;
+        border-radius: 8px;
+        margin-top: 0.5rem;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: white;
+        padding: 2rem;
+        border-radius: 15px;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border: none;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary), var(--accent));
+    }
+
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: var(--primary);
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+
+    .stat-label {
+        color: #6c757d;
+        font-weight: 500;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        letter-spacing: 0.5px;
+    }
+
+    .action-buttons {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .action-btn {
+        padding: 1rem 1.5rem;
+        border-radius: 12px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        text-align: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    }
+
+    .action-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+
+    .consoles-section {
+        background: white;
+        padding: 2rem;
+        border-radius: 15px;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+    }
+
+    .consoles-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.5rem;
+        margin-top: 1.5rem;
+    }
+
+    .console-card {
+        background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
+        border-radius: 15px;
+        padding: 2rem;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .console-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+        border-color: var(--primary);
+    }
+
+    .console-card::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 20px;
+        height: 20px;
+        background: rgba(0, 48, 73, 0.1);
+        border-radius: 50%;
+        animation: float 8s ease-in-out infinite;
+    }
+
+    .console-name {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: var(--primary);
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .console-detail {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.75rem;
+        color: #6c757d;
+        font-weight: 500;
+    }
+
+    .console-detail i {
+        color: var(--accent);
+        width: 20px;
+    }
+
+    .manage-btn {
+        width: 100%;
+        padding: 0.75rem;
+        border-radius: 10px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        margin-top: 1rem;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        color: #6c757d;
+    }
+
+    .empty-state i {
+        font-size: 4rem;
+        color: #dee2e6;
+        margin-bottom: 1rem;
+    }
+
+    @media (max-width: 768px) {
+        .dashboard-page {
+            padding: 1rem 0;
+        }
+
+        .welcome-header {
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .action-buttons {
+            grid-template-columns: 1fr;
+        }
+
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .consoles-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .image-upload-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (max-width: 480px) {
+        .image-upload-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<section class="dashboard-page" style="padding: 2rem 0;">
-    <div class="container" style="max-width: 900px;">
-        <div class="page-header" style="margin-bottom: 2rem; text-align: center;">
-            <h1 style="font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem;">
-                <i class="fas fa-tachometer-alt" style="color: var(--accent);"></i> Welcome, {{ owner.username }}!
-            </h1>
-            <p style="color: var(--secondary);">Manage your gaming center and track your business performance</p>
+<section class="dashboard-page">
+    <div class="container" style="max-width: 1200px;">
+        <!-- Welcome Header -->
+        <div class="welcome-header">
+            <div class="text-center">
+                <h1 class="mb-3">
+                    <i class="fas fa-tachometer-alt me-2"></i>
+                    Welcome, {{ owner.username }}!
+                </h1>
+                <p class="mb-0 opacity-75">Manage your gaming center and track your business performance</p>
+            </div>
         </div>
-        <div style="display: flex; justify-content: center; align-items: center; margin-bottom: 1.5rem;">
-            {% if not owner.google_maps_link %}
-            <button id="set-location-btn" class="btn btn-outline-danger" onclick="setMyLocation()">
-                <i class="fas fa-map-marker-alt"></i> Set My Location
-            </button>
-            <script>
-            function setMyLocation() {
-                if (navigator.geolocation) {
-                    navigator.geolocation.getCurrentPosition(function(pos) {
-                        fetch("{{ url_for('set_owner_location') }}", {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ latitude: pos.coords.latitude, longitude: pos.coords.longitude })
-                        }).then(r => r.json()).then(data => {
-                            if (data.success) {
-                                document.getElementById('set-location-btn').style.display = 'none';
-                                alert('Location set!');
-                                location.reload();
-                            } else {
-                                alert('Failed to set location.');
-                            }
-                        });
-                    }, function() {
-                        alert('Could not get your location.');
+
+        <!-- Location Section -->
+        {% if not owner.google_maps_link %}
+        <div class="location-section">
+            <div class="text-center">
+                <h5 class="mb-3">
+                    <i class="fas fa-map-marker-alt text-danger me-2"></i>
+                    Set Your Venue Location
+                </h5>
+                <p class="text-muted mb-3">Help customers find you by setting your venue location</p>
+                <button id="set-location-btn" class="btn btn-danger btn-lg" onclick="setMyLocation()">
+                    <i class="fas fa-crosshairs me-2"></i> Set My Location
+                </button>
+            </div>
+        </div>
+        <script>
+        function setMyLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function(pos) {
+                    fetch("{{ url_for('set_owner_location') }}", {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ latitude: pos.coords.latitude, longitude: pos.coords.longitude })
+                    }).then(r => r.json()).then(data => {
+                        if (data.success) {
+                            document.getElementById('set-location-btn').style.display = 'none';
+                            alert('Location set!');
+                            location.reload();
+                        } else {
+                            alert('Failed to set location.');
+                        }
                     });
-                } else {
-                    alert('Geolocation is not supported by your browser.');
-                }
+                }, function() {
+                    alert('Could not get your location.');
+                });
+            } else {
+                alert('Geolocation is not supported by your browser.');
             }
-            </script>
-            {% endif %}
-        </div>
+        }
+        </script>
+        {% endif %}
+
+        <!-- Warning Alert -->
         {% if not owner.images_uploaded %}
-        <div class="alert alert-warning" role="alert" style="margin-bottom: 2rem;">
-            <strong>Important!</strong> Please upload your venue images and details below. This is mandatory for your venue to be visible to users.
+        <div class="alert alert-warning alert-modern" role="alert">
+            <div class="d-flex align-items-center">
+                <i class="fas fa-exclamation-triangle fa-2x me-3"></i>
+                <div>
+                    <h6 class="mb-1">Complete Your Venue Setup</h6>
+                    <p class="mb-0">Please upload your venue images and details below. This is mandatory for your venue to be visible to users.</p>
+                </div>
+            </div>
         </div>
         {% endif %}
 
+        <!-- Venue Details Form -->
         {% if not venue_details_complete %}
-        <div class="card" style="margin-bottom: 2rem;">
-            <div class="card-body">
-                <h3 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 1rem;">
-                    <i class="fas fa-store"></i> Venue Details
+        <div class="card venue-details-card">
+            <div class="card-header">
+                <h3 class="mb-0">
+                    <i class="fas fa-store me-2"></i>
+                    Complete Your Venue Profile
                 </h3>
+            </div>
+            <div class="card-body">
                 <form action="{{ url_for('upload_venue_details') }}" method="POST" enctype="multipart/form-data">
-                    <div class="mb-3">
-                        <label class="form-label">Venue Images (Required)</label>
-                        <div class="row g-3">
-                            <div class="col-md-3">
-                                <input type="file" name="image1" class="form-control" accept="image/*" {% if not owner.venue_image1 %}required{% endif %}>
-                                {% if owner.venue_image1 %}
-                                <img src="{{ owner.venue_image1 }}" class="img-thumbnail mt-2" alt="Venue Image 1">
+                    <div class="mb-4">
+                        <label class="form-label fw-bold mb-3">
+                            <i class="fas fa-images me-2"></i>Venue Images (Required)
+                        </label>
+                        <div class="image-upload-grid">
+                            {% for i in range(1, 5) %}
+                            <div class="image-upload-item">
+                                <input type="file" name="image{{ i }}" class="form-control" accept="image/*"
+                                       {% if not owner['venue_image' + i|string] %}required{% endif %}>
+                                <small class="text-muted">Image {{ i }}</small>
+                                {% if owner['venue_image' + i|string] %}
+                                    <img src="{{ owner['venue_image' + i|string] }}" alt="Venue Image {{ i }}">
                                 {% endif %}
                             </div>
-                            <div class="col-md-3">
-                                <input type="file" name="image2" class="form-control" accept="image/*" {% if not owner.venue_image2 %}required{% endif %}>
-                                {% if owner.venue_image2 %}
-                                <img src="{{ owner.venue_image2 }}" class="img-thumbnail mt-2" alt="Venue Image 2">
-                                {% endif %}
-                            </div>
-                            <div class="col-md-3">
-                                <input type="file" name="image3" class="form-control" accept="image/*" {% if not owner.venue_image3 %}required{% endif %}>
-                                {% if owner.venue_image3 %}
-                                <img src="{{ owner.venue_image3 }}" class="img-thumbnail mt-2" alt="Venue Image 3">
-                                {% endif %}
-                            </div>
-                            <div class="col-md-3">
-                                <input type="file" name="image4" class="form-control" accept="image/*" {% if not owner.venue_image4 %}required{% endif %}>
-                                {% if owner.venue_image4 %}
-                                <img src="{{ owner.venue_image4 }}" class="img-thumbnail mt-2" alt="Venue Image 4">
-                                {% endif %}
-                            </div>
+                            {% endfor %}
                         </div>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label">Google Maps Link</label>
-                        <input type="url" name="google_maps_link" class="form-control" value="{{ owner.google_maps_link or '' }}" placeholder="Enter Google Maps link to your venue">
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">
+                            <i class="fas fa-map-marked-alt me-2"></i>Google Maps Link
+                        </label>
+                        <input type="url" name="google_maps_link" class="form-control form-control-lg"
+                               value="{{ owner.google_maps_link or '' }}"
+                               placeholder="Enter Google Maps link to your venue">
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label">Amenities (comma-separated)</label>
-                        <input type="text" name="amenities" class="form-control" value="{{ owner.amenities or '' }}" placeholder="e.g., WiFi, Parking, Air Conditioning, Refreshments">
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">
+                            <i class="fas fa-star me-2"></i>Amenities
+                        </label>
+                        <input type="text" name="amenities" class="form-control form-control-lg"
+                               value="{{ owner.amenities or '' }}"
+                               placeholder="e.g., WiFi, Parking, Air Conditioning, Refreshments">
                         <div class="form-text">Enter amenities separated by commas</div>
                     </div>
-                    <button type="submit" class="btn btn-outline-primary">
-                        <i class="fas fa-save"></i> Save Venue Details
+
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="fas fa-save me-2"></i> Save Venue Details
                     </button>
                 </form>
             </div>
         </div>
         {% endif %}
 
-        <div class="dashboard-stats" style="display: flex; flex-wrap: wrap; gap: 2rem; justify-content: center; margin-bottom: 2rem;">
-            <div class="card" style="min-width: 180px; text-align: center;">
-                <div style="font-size: 1.5rem; font-weight: 700; color: var(--primary);">{{ stats.total_slots }}</div>
-                <div style="color: var(--secondary);">Total Slots</div>
+        <!-- Dashboard Stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <span class="stat-number">{{ stats.total_slots }}</span>
+                <div class="stat-label">Total Slots</div>
             </div>
-            <div class="card" style="min-width: 180px; text-align: center;">
-                <div style="font-size: 1.5rem; font-weight: 700; color: var(--primary);">{{ stats.available_slots }}</div>
-                <div style="color: var(--success);">Available Slots</div>
+            <div class="stat-card">
+                <span class="stat-number">{{ stats.available_slots }}</span>
+                <div class="stat-label">Available Slots</div>
             </div>
-            <div class="card" style="min-width: 180px; text-align: center;">
-                <div style="font-size: 1.5rem; font-weight: 700; color: var(--primary);">₹{{ stats.total_revenue }}</div>
-                <div style="color: var(--secondary);">Total Revenue</div>
+            <div class="stat-card">
+                <span class="stat-number">₹{{ stats.total_revenue }}</span>
+                <div class="stat-label">Total Revenue</div>
             </div>
         </div>
-        <div class="d-flex flex-wrap justify-content-end gap-2 mb-4">
-          <a href="{{ url_for('add_console') }}" class="btn btn-outline-primary">
-            <i class="fas fa-plus"></i> Add New Console
-          </a>
-          <a href="{{ url_for('manage_snacks') }}" class="btn btn-outline-warning">
-            <i class="fas fa-cookie-bite"></i> Manage Snacks
-          </a>
-          <a href="{{ url_for('export_bookings') }}" class="btn btn-outline-success">
-            <i class="fas fa-file-excel"></i> Export Bookings
-          </a>
-          <a href="{{ url_for('add_subscription') }}" class="btn btn-outline-info">
-            <i class="bi bi-person-plus"></i> Add subscription
-          </a>
-          <a href="{{ url_for('generate_qr') }}" class="btn btn-outline-dark">
-            <i class="fas fa-qrcode"></i> Generate Qr
-          </a>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <a href="{{ url_for('add_console') }}" class="btn btn-outline-primary action-btn">
+                <i class="fas fa-plus"></i> Add New Console
+            </a>
+            <a href="{{ url_for('manage_snacks') }}" class="btn btn-outline-warning action-btn">
+                <i class="fas fa-cookie-bite"></i> Manage Snacks
+            </a>
+            <a href="{{ url_for('export_bookings') }}" class="btn btn-outline-success action-btn">
+                <i class="fas fa-file-excel"></i> Export Bookings
+            </a>
+            <a href="{{ url_for('add_subscription') }}" class="btn btn-outline-info action-btn">
+                <i class="fas fa-user-plus"></i> Add Subscription
+            </a>
+            <a href="{{ url_for('generate_qr') }}" class="btn btn-outline-dark action-btn">
+                <i class="fas fa-qrcode"></i> Generate QR
+            </a>
         </div>
-        <div class="dashboard-consoles">
-            <h2 style="font-size: 1.3rem; font-weight: 600; margin-bottom: 1rem; color: var(--primary);">Your Consoles</h2>
-            <div style="display: flex; flex-wrap: wrap; gap: 2rem;">
+
+        <!-- Consoles Section -->
+        <div class="consoles-section">
+            <h2 class="mb-0">
+                <i class="fas fa-gamepad me-2" style="color: var(--accent);"></i>
+                Your Gaming Consoles
+            </h2>
+            <p class="text-muted mt-2">Manage and monitor your gaming equipment</p>
+
+            {% if consoles %}
+            <div class="consoles-grid">
                 {% for console in consoles %}
-                <div class="card" style="min-width: 220px; flex: 1 1 220px;">
-                    <div style="font-weight: 600; color: var(--primary); margin-bottom: 0.5rem;">{{ console.name }}</div>
-                    <div style="color: var(--secondary); margin-bottom: 0.5rem;"><i class="fas fa-gamepad"></i> {{ console.console_type }}</div>
-                    <div style="margin-bottom: 0.5rem;"><i class="fas fa-rupee-sign"></i> ₹{{ console.hourly_rate }}/hr</div>
-                    <div style="margin-bottom: 0.5rem;"><i class="fas fa-calendar-alt"></i> Added: {{ console.added_on }}</div>
-                    <div style="margin-bottom: 1rem;">
-                        <a href="{{ url_for('console_details', console_id=console.id) }}" class="btn btn-outline-secondary" style="width: 100%;">Manage</a>
+                <div class="console-card">
+                    <div class="console-name">
+                        <i class="fas fa-gamepad"></i>
+                        {{ console.name }}
                     </div>
+
+                    <div class="console-detail">
+                        <i class="fas fa-tv"></i>
+                        <span>{{ console.console_type }}</span>
+                    </div>
+
+                    <div class="console-detail">
+                        <i class="fas fa-rupee-sign"></i>
+                        <span>₹{{ console.hourly_rate }}/hour</span>
+                    </div>
+
+                    <div class="console-detail">
+                        <i class="fas fa-calendar-plus"></i>
+                        <span>Added: {{ console.added_on }}</span>
+                    </div>
+
+                    <a href="{{ url_for('console_details', console_id=console.id) }}"
+                       class="btn btn-outline-primary manage-btn">
+                        <i class="fas fa-cog me-2"></i>Manage Console
+                    </a>
                 </div>
-                {% else %}
-                <div style="color: var(--secondary); font-size: 1.1rem;">No consoles added yet.</div>
                 {% endfor %}
             </div>
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-gamepad"></i>
+                <h5>No Consoles Added Yet</h5>
+                <p class="text-muted">Start by adding your first gaming console to begin accepting bookings.</p>
+                <a href="{{ url_for('add_console') }}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-plus me-2"></i>Add Your First Console
+                </a>
+            </div>
+            {% endif %}
         </div>
     </div>
 </section>

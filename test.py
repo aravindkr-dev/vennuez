@@ -1,7 +1,13 @@
-# Run this in your Flask shell (flask shell)
-from app import app , db
-from sqlalchemy import text
+from app import app, db
+from models import TimeSlot
+
 with app.app_context():
-    with db.engine.connect() as conn:
-        conn.execute(text("ALTER TABLE time_slots ADD COLUMN duration_hours REAL DEFAULT 1.0"))
-        conn.commit()
+    slot_id = 6  # ID of the slot you want to update
+    slot = TimeSlot.query.get(slot_id)
+
+    if slot:
+        slot.payment_status = 'paid'
+        db.session.commit()
+        print(f"Slot ID {slot_id} payment status updated to 'paid'.")
+    else:
+        print(f"No slot found with ID {slot_id}.")
