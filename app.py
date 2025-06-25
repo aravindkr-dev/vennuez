@@ -21,7 +21,7 @@ login_manager = LoginManager()
 
 # Create the app
 app = Flask(__name__)
-app.secret_key = os.environ.get("SESSION_SECRET", "dev-secret-key-change-in-production")
+app.secret_key = os.environ.get("SESSION_SECRET", "D85*/#(fdsGFHGFh^65675&^576FDGFDt.[[;};=--=0-0)_-9089*&*^8hjhjggh")
 app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 
 # Initialize Flask-Login
@@ -91,7 +91,6 @@ def user_signup():
 
 
 with app.app_context():
-    logging.info("Using database: %s", db.engine.url)
     # Import models to ensure tables are created
     from models import *
     from routes import *
