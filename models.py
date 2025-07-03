@@ -227,3 +227,28 @@ class UsedToken(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     token = db.Column(db.String(512), unique=True, nullable=False)
     used_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class Notification(db.Model):
+    __tablename__ = 'notifications'
+
+    id = db.Column(db.Integer, primary_key=True)
+    owner_id = db.Column(db.Integer, db.ForeignKey('owners.id'), nullable=False)
+    message = db.Column(db.String(255), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    is_read = db.Column(db.Boolean, default=False)
+
+    owner = db.relationship('Owner', backref='notifications')
+
+    def __repr__(self):
+        return f'<Notification {self.message}>'
+
+
+class UserNotification(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    message = db.Column(db.String(255), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    is_read = db.Column(db.Boolean, default=False)
+    is_flash = db.Column(db.Boolean, default=False)  # ✅ NEW field for flashable messages
+

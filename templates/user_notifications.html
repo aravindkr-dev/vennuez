@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}Notifications - Vennuez{% endblock %}
+
+{% block content %}
+<section class="user-dashboard">
+  <div class="page-header">
+    <h1 class="page-title">
+      <i class="fas fa-bell"></i> My Notifications
+    </h1>
+    <p class="page-subtitle">Stay updated with your booking alerts</p>
+  </div>
+
+  <ul class="space-y-4 mt-6">
+    {% for notif in notifications %}
+      <li class="p-4 border border-gray-200 rounded-lg bg-white shadow-sm">
+        <div class="flex justify-between items-start">
+          <div>
+            <p class="font-medium text-gray-800">{{ notif.message }}</p>
+            <p class="text-sm text-gray-500 mt-1">
+              {{ notif.created_at.strftime('%d %b %Y %I:%M %p') }}
+            </p>
+          </div>
+          {% if not notif.is_read %}
+            <span class="inline-block text-xs font-semibold bg-yellow-100 text-yellow-800 px-2 py-1 rounded">
+              New
+            </span>
+          {% endif %}
+        </div>
+      </li>
+    {% else %}
+      <div class="empty-state">
+        <i class="fas fa-inbox"></i>
+        <h3>No Notifications Yet</h3>
+        <p>We'll notify you here when something important happens — like booking updates.</p>
+        <a href="{{ url_for('user_dashboard') }}" class="btn btn-primary">
+          <i class="fas fa-home"></i> Go to Dashboard
+        </a>
+      </div>
+    {% endfor %}
+  </ul>
+</section>
+{% endblock %}

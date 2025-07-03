@@ -1,0 +1,84 @@
+<div class="booking-card">
+    <div class="booking-header">
+        <div class="console-name">
+            <i class="fas fa-gamepad"></i>
+            {{ slot.console.name if slot.console else 'Unknown Console' }}
+        </div>
+        <div class="console-type">{{ slot.console.console_type if slot.console else '' }}</div>
+    </div>
+
+    <div class="booking-body">
+        <div class="booking-details">
+            <div class="detail-row">
+                <span class="detail-label">Date</span>
+                <span class="detail-value">{{ slot.start_time.strftime('%d %b %Y') }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Time</span>
+                <span class="detail-value">{{ slot.start_time.strftime('%H:%M') }} - {{ slot.end_time.strftime('%H:%M') }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Duration</span>
+                <span class="detail-value">{{ ((slot.end_time - slot.start_time).total_seconds() / 3600)|round }} hours</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">People</span>
+                <span class="detail-value">{{ slot.number_of_people }}</span>
+            </div>
+        </div>
+
+        <div class="payment-section">
+            <div class="payment-row">
+                <span>Slot Price</span>
+                <span>₹{{ slot.total_amount }}</span>
+            </div>
+            <div class="payment-row">
+                <span>Snacks</span>
+                <span>₹{{ slot.snacks_amount or 0 }}</span>
+            </div>
+            <div class="payment-row">
+                <span>Total Amount</span>
+                <span>₹{{ slot.final_amount if slot.final_amount else slot.total_amount + (slot.snacks_amount or 0) }}</span>
+            </div>
+        </div>
+
+        <div class="booking-status
+            {% if not slot.is_booked %}
+                status-cancelled
+            {% elif slot.start_time > now %}
+                status-upcoming
+            {% elif slot.completed %}
+                status-completed
+            {% else %}
+                status-completed
+            {% endif %}">
+            <i class="fas
+                {% if not slot.is_booked %}
+                    fa-times-circle
+                {% elif slot.start_time > now %}
+                    fa-clock
+                {% else %}
+                    fa-check-circle
+                {% endif %}"></i>
+
+            {% if not slot.is_booked %}
+                Cancelled
+            {% elif slot.start_time > now %}
+                Upcoming
+            {% else %}
+                Completed
+            {% endif %}
+        </div>
+
+        <div class="booking-actions">
+            {% if slot.start_time > now and slot.is_booked %}
+                <button class="btn btn-outline" onclick="cancelBooking('{{ slot.id }}')">
+                    <i class="fas fa-times"></i> Cancel Booking
+                </button>
+            {% endif %}
+            <a href="{{ url_for('book_slot', slot_id=slot.console.id) }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Book Again
+            </a>
+        </div>
+    </div>
+</div>

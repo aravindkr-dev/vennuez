@@ -2,7 +2,7 @@ from flask import render_template, request, redirect, url_for, flash, session, j
 from openpyxl.styles.builtins import headline_1
 from werkzeug.security import generate_password_hash, check_password_hash
 from app import app, db
-from models import Owner, Console, TimeSlot, User, UserCoinBalance, CoinTransaction, Snack, ConsolePricingTier , Subscription , UsedToken
+from models import Owner, Console, TimeSlot, User, UserCoinBalance, CoinTransaction, Snack, ConsolePricingTier , Subscription , UsedToken , Notification , UserNotification
 from datetime import datetime, timedelta
 from functools import wraps
 from flask_login import login_user, logout_user, login_required, current_user
@@ -595,6 +595,13 @@ def book_slot(slot_id):
         'hourly_rate': console.hourly_rate if console else 100,
         'pricing_tiers': pricing_tiers
     }
+    # now store the notification
+    notif = Notification(
+        owner_id=console.owner_id,
+        message=f"New booking for {slot.start_time.strftime('%I:%M %p')} - {slot.end_time.strftime('%I:%M %p')}"
+    )
+    db.session.add(notif)
+    db.session.commit()
 
     return render_template('book_slot.html',
                            slot=slot,
@@ -767,16 +774,36 @@ def user_register():
 @app.route('/user_dashboard')
 @login_required
 def user_dashboard():
-    # The login_required decorator handles authentication.
-    # No need for explicit session checks here.
-
     user = User.query.get(session['user_id'])
-    bookings = TimeSlot.query.filter_by(user_id=user.id).order_by(TimeSlot.start_time.desc()).all()
+    now = datetime.utcnow()
 
-    # Get coin balances for all gaming centers
+    upcoming_bookings = TimeSlot.query.filter(
+        TimeSlot.user_id == user.id,
+        TimeSlot.start_time > now,
+        TimeSlot.is_booked == True
+    ).order_by(TimeSlot.start_time.asc()).all()
+
+    past_bookings = TimeSlot.query.filter(
+        TimeSlot.user_id == user.id,
+        TimeSlot.start_time <= now,
+        TimeSlot.is_booked == True
+    ).order_by(TimeSlot.start_time.desc()).all()
+
+    cancelled_bookings = TimeSlot.query.filter(
+        TimeSlot.user_id == user.id,
+        TimeSlot.is_booked == False
+    ).order_by(TimeSlot.start_time.desc()).all()
+
     coin_balances = UserCoinBalance.query.filter_by(user_id=user.id).all()
 
-    return render_template('user_dashboard.html', user=user, bookings=bookings, coin_balances=coin_balances , now=datetime.now())
+    return render_template(
+        'user_dashboard.html',
+        upcoming_bookings=upcoming_bookings,
+        past_bookings=past_bookings,
+        cancelled_bookings=cancelled_bookings,
+        coin_balances=coin_balances,
+        now=now  # ✅ this line is the fix
+    )
 
 
 @app.route('/manage_coins/<int:user_id>', methods=['GET', 'POST'])
@@ -1359,7 +1386,16 @@ def un_book():
         if slot:
             if slot.is_booked and not slot.completed:
                 slot.is_booked = False
-                db.session.commit()
+                if slot.user_id:
+                    msg = f"Your booking from {slot.start_time.strftime('%I:%M %p')} to {slot.end_time.strftime('%I:%M %p')} on {slot.start_time.strftime('%d %b %Y')} has been cancelled by the venue."
+
+                    notif = UserNotification(
+                        user_id=slot.user_id,
+                        message=msg,
+                        is_flash=True
+                    )
+                    db.session.add(notif)
+                    db.session.commit()
                 flash("Slot successfully unbooked!", "success")
             else:
                 flash("Slot is already unbooked.", "warning")
@@ -1390,3 +1426,64 @@ def confirm_payment():
             flash(f"Error confirming payment: {str(e)}", "danger")
 
     return redirect(url_for('dashboard'))  # Replace with appropriate view (e.g. 'dashboard', 'slots', etc.)
+
+
+
+@app.route('/check_notifications')
+@login_required
+def check_notifications():
+    if not isinstance(current_user, Owner):
+        return jsonify({'new': False})
+
+    last_id = session.get('last_notification_id', 0)
+
+    notif = Notification.query.filter(
+        Notification.owner_id == current_user.id,
+        Notification.id > last_id
+    ).order_by(Notification.id.desc()).first()
+
+    if notif:
+        session['last_notification_id'] = notif.id
+        return jsonify({
+            'new': True,
+            'message': notif.message,
+            'time': notif.created_at.strftime("%I:%M %p")
+        })
+
+    return jsonify({'new': False})
+
+
+@app.route('/notifications')
+@login_required
+def all_notifications():
+    if not isinstance(current_user, Owner):
+        flash("Access denied", "danger")
+        return redirect(url_for('dashboard'))
+
+    notifs = Notification.query.filter_by(owner_id=current_user.id).order_by(Notification.created_at.desc()).all()
+    return render_template('notifications.html', notifs=notifs)
+
+
+@app.route('/user_notifications')
+@login_required
+def user_notifications():
+    user_id = current_user.id
+
+    unread_notifications = UserNotification.query.filter_by(
+        user_id=user_id,
+        is_read=False
+    ).all()
+
+    # 🔔 If user has unread notifications, show a flash message
+    if unread_notifications:
+        flash(f"You have {len(unread_notifications)} new notification(s).", "info")
+
+    # Then mark them as read
+    for n in unread_notifications:
+        n.is_read = True
+    db.session.commit()
+
+    # Fetch all (including already-read ones)
+    notifications = UserNotification.query.filter_by(user_id=user_id).order_by(UserNotification.created_at.desc()).all()
+
+    return render_template("user_notifications.html", notifications=notifications)

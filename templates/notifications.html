@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2 class="text-xl font-bold mb-4">📬 Notifications</h2>
+<ul class="space-y-2">
+  {% for notif in notifs %}
+    <li class="border p-2 rounded bg-gray-100 shadow-sm">
+      <strong>{{ notif.message }}</strong><br>
+      <small class="text-sm text-gray-600">{{ notif.created_at.strftime('%d %b %Y, %I:%M %p') }}</small>
+    </li>
+  {% else %}
+    <li>No notifications found.</li>
+  {% endfor %}
+</ul>
+{% endblock %}

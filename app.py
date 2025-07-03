@@ -88,7 +88,24 @@ def user_signup():
     return render_template('register.html')
 
 
+from models import UserNotification  # adjust import path if needed
 
+@app.before_request
+def show_user_flash_notifications():
+    if current_user.is_authenticated and hasattr(current_user, 'id'):
+        notifs = UserNotification.query.filter_by(
+            user_id=current_user.id,
+            is_flash=True,
+            is_read=False
+        ).all()
+
+        for notif in notifs:
+            flash(notif.message, "info")
+            notif.is_flash = False
+            notif.is_read = True
+
+        if notifs:
+            db.session.commit()
 
 with app.app_context():
     # Import models to ensure tables are created

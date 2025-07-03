@@ -1,6 +1,42 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  {% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div class="container mt-4">
+      {% for category, message in messages %}
+        <div class="alert alert-{{ category }} alert-dismissible fade show fs-5 shadow" role="alert">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <div id="flash-msg" class="hidden bg-yellow-200 text-black rounded px-4 py-2 shadow fixed top-4 right-4 z-50"></div>
+
+<script>
+function showFlash(msg) {
+  const box = document.getElementById("flash-msg");
+  box.innerText = msg;
+  box.classList.remove("hidden");
+  setTimeout(() => box.classList.add("hidden"), 5000);
+}
+
+setInterval(() => {
+  fetch('/check_notifications')
+    .then(res => res.json())
+    .then(data => {
+      if (data.new) {
+        showFlash(`🔔 ${data.message} at ${data.time}`);
+      }
+    });
+}, 10000); // check every 10 seconds
+</script>
+
+
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>{% block title %}Vennuez{% endblock %}</title>
@@ -183,6 +219,7 @@
   {% block extra_head %}{% endblock %}
 </head>
 <body>
+
   <nav class="navbar navbar-expand-lg">
     <div class="container">
       <a class="navbar-brand" href="{{ url_for('index') }}">Vennuez</a>
@@ -198,12 +235,27 @@
           {% if current_user.is_authenticated %}
             {% if session.user_type != 'owner' %}
               <li class="nav-item">
+  <a class="nav-link position-relative" href="{{ url_for('user_notifications') }}">
+    <i class="fas fa-bell"></i>
+    Notifications
+    {% if current_user.is_authenticated and current_user.notifications|selectattr('is_read', 'equalto', False)|list|length > 0 %}
+      <span class="badge badge-pill badge-danger" style="position:absolute; top:0; right:0; font-size: 0.6rem;">
+        {{ current_user.notifications|selectattr('is_read', 'equalto', False)|list|length }}
+      </span>
+    {% endif %}
+  </a>
+</li>
 
-              </li>
             {% elif session.user_type == 'owner' %}
               <li class="nav-item">
                 <a href="{{ url_for('dashboard') }}" class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}">
                   <i class="fas fa-tachometer-alt me-1"></i> Dashboard
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="{{ url_for('all_notifications') }}" class="nav-link" title="View Notifications">
+                  <i class="fas fa-bell me-2"></i>
+                  Notifications
                 </a>
               </li>
             {% endif %}

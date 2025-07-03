@@ -3,6 +3,7 @@
 {% block title %}Dashboard - Vennuez{% endblock %}
 
 {% block extra_head %}
+
 <style>
     .dashboard-page {
         background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
@@ -31,6 +32,30 @@
         background: rgba(255, 255, 255, 0.1);
         border-radius: 50%;
         animation: float 6s ease-in-out infinite;
+    }
+
+    .notification-icon {
+        background: #d32f2f;
+        border: 2px solid #b71c1c;
+        border-radius: 25px;
+        padding: 0.75rem 1.5rem;
+        color: white !important;
+        font-size: 1rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        display: inline-flex;
+        align-items: center;
+    }
+
+    .notification-icon:hover {
+        background: #f44336;
+        border-color: #d32f2f;
+        color: white !important;
+        transform: translateY(-2px);
+        text-decoration: none;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
     }
 
     @keyframes float {
@@ -278,6 +303,11 @@
             text-align: center;
         }
 
+        .notification-icon {
+            padding: 0.6rem 1rem;
+            font-size: 0.9rem;
+        }
+
         .action-buttons {
             grid-template-columns: 1fr;
         }
@@ -296,6 +326,18 @@
     }
 
     @media (max-width: 480px) {
+        .notification-icon {
+            padding: 0.5rem 0.8rem;
+            font-size: 0.8rem;
+            width: 100%;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .d-flex.justify-content-end {
+            justify-content: center !important;
+        }
+
         .image-upload-grid {
             grid-template-columns: 1fr;
         }
@@ -306,6 +348,11 @@
 {% block content %}
 <section class="dashboard-page">
     <div class="container" style="max-width: 1200px;">
+        <!-- Notification Icon -->
+        <div class="d-flex justify-content-end mb-3">
+
+        </div>
+
         <!-- Welcome Header -->
         <div class="welcome-header">
             <div class="text-center">
