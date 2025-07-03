@@ -54,40 +54,6 @@ db.init_app(app)
 
 migrate = Migrate(app, db)
 
-
-@app.route('/register', methods=['GET', 'POST'])
-def user_signup():
-    if request.method == 'POST':
-        username = request.form.get('username', '')  # Default to empty string if missing
-        email = request.form.get('email', '')
-        password = request.form.get('password', '')
-        confirm_password = request.form.get('confirm_password', '')
-        phone = request.form.get('phone', '')
-        role = request.form.get('role', 'user')
-        
-        if not all([username, email, password, confirm_password, phone]):
-            flash('All fields are required', 'danger')
-            return redirect(url_for('user_signup'))
-        
-        if password != confirm_password:
-            flash('Passwords do not match', 'danger')
-            return redirect(url_for('user_signup'))
-        
-        if User.query.filter_by(email=email).first():
-            flash('Email already registered', 'danger')
-            return redirect(url_for('user_signup'))
-        
-        hashed_password = generate_password_hash(password)
-        new_user = User(username=username, email=email, password=hashed_password, phone=phone, role=role)
-        db.session.add(new_user)
-        db.session.commit()
-        
-        flash('Registration successful! Please login.', 'success')
-        return redirect(url_for('login'))
-    
-    return render_template('register.html')
-
-
 from models import UserNotification  # adjust import path if needed
 
 @app.before_request
